@@ -425,38 +425,4 @@ class Files extends Page{
 		$breadcrumb = '<ol class="uk-breadcrumb uk-box-shadow-medium uk-overlay-default uk-padding-small">'.$breadcrumb;
 		return $breadcrumb;
 	}
-
-	/**
-	 * Permet de construire une URL pour appeler le module avec des arguments
-	 *
-	 * Exemple pour un module `Users` :
-	 *  <code>$this->buildModuleQuery(array(id => 2));</code>
-	 *  Donne l'URL :
-	 *  <code>http://poulpe2/module/Users?id=2</code>
-	 *
-	 * @param array $args Arguments à passer dans l'URL de la forme array(`argument` => `valeur`)
-	 *
-	 * @return string
-	 */
-	protected function buildArgsURL(Array $args){
-		$url = $this->url;
-		if (stripos($url, '?') !== false) {
-			// Pas de pretty Url du type `poulpe2/module/<moduleName>`
-			foreach ($args as $key => $value){
-				$url .= '&'.$key.'='.$value;
-			}
-		}else{
-			// Pretty Url
-			$isFirst = true;
-			foreach ($args as $key => $value){
-				if ($isFirst){
-					$url .= '?'.$key.'='.$value;
-					$isFirst = false;
-				}else{
-					$url .= '&'.$key.'='.$value;
-				}
-			}
-		}
-		return $url;
-	}
 }

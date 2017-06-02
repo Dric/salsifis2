@@ -1,15 +1,9 @@
 <?php
 
 namespace Transmission;
-use Forms\Fields\BoolField;
-use Forms\Fields\Button;
-use Forms\Fields\Hidden;
-use Forms\Fields\Select;
-use Forms\Form;
-use Forms\JSSwitch;
-use Forms\PostedData;
+
 use Sanitize;
-use Users\ACL;
+use Settings;
 
 /**
  * CLasse de torrent
@@ -31,8 +25,7 @@ use Users\ACL;
  * @property-read string    $totalSize          Taille totale (en format lisible ko, Mo, etc)
  * @property-read int       $totalSizeInt       Taille totale (en octets)
  * @property-read string    $downloadDir        Répertoire de téléchargement (relatif)
- * @property-read array     $downloadsDir       Liste des répertoires de téléchargement
- * @property-read int       $uploadedEver       Taille des données envoyées
+ * @property-read string    $uploadedEver       Taille des données envoyées
  * @property-read bool      $isFinished         Téléchargement terminé
  * @property-read int       $leftUntilDone      Taille restante à télécharger
  * @property-read float     $percentDone        Pourcentage de téléchargement accompli
@@ -124,13 +117,6 @@ Class Torrent{
 	* @var string
 	*/
 	protected $downloadDir = '';
-	
-	/**
-	* Libellés des répertoires de téléchargements
-	* @var array()
-	* 
-	*/
-	protected $downloadDirs = array();
 
 	/**
 	* Nombre d'octets partagés (envoyés vers d'autres peers)
@@ -210,7 +196,6 @@ Class Torrent{
 	 * @param object $RPCTorrent Objet de torrent renvoyé par la classe RPCTransmission
 	 */
 	public function __construct($RPCTorrent){
-		$this->downloadDirs = \Settings::DOWNLOAD_DIRS;
 		$RPCprops = get_object_vars($RPCTorrent);
 
 		foreach ($RPCprops as $prop => $value){
@@ -317,7 +302,7 @@ Class Torrent{
 			case 'statusInt':
 				return $this->status;
 			case 'downloadDir':
-				return (!array_search($this->downloadDir, $this->downloadDirs)) ? $this->downloadDir : array_search($this->downloadDir, $this->downloadDirs);
+				return (isset(Settings::DOWNLOAD_DIRS[$this->downloadDir])) ? Settings::DOWNLOAD_DIRS[$this->downloadDir] : $this->downloadDir;
 			case 'rawDownloadDir':
 				return $this->downloadDir;
 			case 'statusIcon':

@@ -239,7 +239,10 @@ class Downloads extends Page{
 			<td class="uk-table-shrink uk-text-nowrap uk-visible@m" data-order="<?php echo $torrent->statusInt; ?>"><span title="<?php echo $torrent->status; ?>" uk-tooltip="pos: bottom" class="fa fa-<?php echo $torrent->statusIcon; ?>"></span></td>
 			<td class="uk-table-shrink uk-text-nowrap uk-visible@m"><?php echo $torrent->downloadDir; ?></td>
 			<td class="uk-table-shrink uk-text-nowrap uk-visible@l" data-order="<?php echo $torrent->uploadRatio; ?>">
-				<?php	echo ($this->transSession->isRatioLimited) ? '<abbr title="' . $torrent->ratioPercentDone . '% de la limite de ratio atteinte" uk-tooltip="pos: bottom">' . $torrent->uploadRatio . '</abbr>' : $torrent->uploadRatio; ?>
+				<abbr title="<?php if ($this->transSession->isRatioLimited) { echo $torrent->ratioPercentDone . '% de la limite de ratio atteinte - '; } ?><?php echo $torrent->uploadedEver; ?> envoyés" uk-tooltip="pos: bottom">
+					<?php	echo ($this->transSession->isRatioLimited) ? '<span class="uk-text-' . (($torrent->ratioPercentDone >= 100) ? 'success' : 'default' ) . '">' . $torrent->uploadRatio . '</span>' : $torrent->uploadRatio ; ?>
+				</abbr>
+				?>
 			</td>
 			<td class="uk-table-shrink uk-text-nowrap uk-visible@l" data-order="<?php echo $torrent->totalSizeInt; ?>">
 				<?php
@@ -264,9 +267,9 @@ class Downloads extends Page{
 		if ($this->transSession){
 			$ret = $this->runAction();
 			if($this->transSession->altModeEnabled){
-				Components::Alert('warning', 'Le mode tortue est activé : vos téléchargements sont bridés à '.$this->transSession->altDlSpeed.'/s en téléchargement et '.$this->transSession->altUpSpeed.'/s en partage.');
+				Components::Alert('warning', '<span class="fa-stack fa-lg"><i class="fa fa-rocket fa-flip-horizontal fa-stack-1x"></i><i class="fa fa-ban fa-stack-2x uk-text-danger"></i></span> Le mode tortue est activé : vos téléchargements sont bridés à '.$this->transSession->altDlSpeed.'/s en téléchargement et '.$this->transSession->altUpSpeed.'/s en partage.');
 			} else {
-				Components::Alert('primary', 'Le mode tortue est désactivé : vous êtes à '.$this->transSession->dlSpeed.'/s en téléchargement et '.$this->transSession->upSpeed.'/s en partage.');
+				Components::Alert('primary', '<span class="fa-stack fa-lg"><i class="fa fa-rocket fa-flip-horizontal fa-stack-1x"></i><i class="fa fa-circle-o fa-stack-2x uk-text-success"></i></span> Le mode tortue est désactivé : vous êtes à '.$this->transSession->dlSpeed.'/s en téléchargement et '.$this->transSession->upSpeed.'/s en partage.');
 			}
 			// On affiche les torrents
 			$this->listTorrents();
@@ -289,6 +292,11 @@ class Downloads extends Page{
 		<ul class="uk-nav uk-nav-default uk-margin-auto-vertical">
 			<li><a href=".">Retour à l'accueil</a></li>
 			<li><a href="<?php echo Settings::TRANSMISSION_WEB_URL; ?>" title="Transmission est le composant qui permet de gérer les téléchargements du serveur.<br>Il possède une interface web un peu austère qui apporte plus de fonctionnalités que celle-ci." uk-tooltip="pos: bottom">Interface Web de Transmission</a></li>
+			<?php
+			if ($this->transSession){
+				?><li><a href="<?php $this->buildArgsURL(array('action' => 'changeAltMode')); ?>"><?php echo ($this->transSession->altModeEnabled) ? 'Désactiver' : 'Activer' ; ?> le mode tortue</a></li><?php
+			}
+			?>
 		</ul>
 		<?php
 	}

@@ -13,12 +13,12 @@ class DefaultSettings {
 	const TRANSMISSION_WEB_URL  = "/:9091/bt/web";
 	const TRANSMISSION_RPC_URL  = "http://localhost:9091/bt/rpc";
 	const DOWNLOAD_DIRS         = array(
-		'Vidéos/Adultes'  => 'dnla/videos/Adultes',
-	  'Vidéos/Enfants'  => 'dnla/videos/Enfants',
-	  'Vidéos/Séries'   => 'dnla/videos/Series',
-		'Musique'         => 'dlna/musique',
-	  'Jeux'            => 'jeux',
-	  'Livres'          => 'livres',
-	  'Fichiers'        => 'fichiers'
+		'dnla/videos/Adultes' => 'Vidéos/Adultes',
+	  'dnla/videos/Enfants' => 'Vidéos/Enfants',
+	  'dnla/videos/Series'  => 'Vidéos/Séries',
+		'dlna/musique'        => 'Musique',
+	  'jeux'                => 'Jeux',
+	  'livres'              => 'Livres',
+	  'fichiers'            => 'Fichiers'
 	);
 }

@@ -30,7 +30,7 @@ class Async {
 			$dataPart = Components::getDiskStatus(Settings::DATA_PARTITION);
 			if ($dataPart) {
 				?>
-				Espace disque occupé sur "<mark><code><?php echo Settings::DATA_PARTITION;?></code></mark>" (<?php echo Sanitize::readableFileSize($dataPart['free']); ?> libres) :<br>
+				Espace disque occupé sur <code><?php echo Settings::DATA_PARTITION;?></code> (<?php echo Sanitize::readableFileSize($dataPart['free']); ?> libres) :<br>
 				<progress class="uk-progress uk-border-rounded uk-box-shadow-medium" title="Occupation : <?php echo Sanitize::readableFileSize($dataPart['load']) .'/'. Sanitize::readableFileSize($dataPart['total']); ?>" value="<?php echo $dataPart['load']; ?>" max="<?php echo $dataPart['total']; ?>" uk-tooltip><?php echo Sanitize::readableFileSize($dataPart['load']) .'/'. Sanitize::readableFileSize($dataPart['total']); ?></progress>
 				<?php
 			} else {

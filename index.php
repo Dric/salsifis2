@@ -138,10 +138,13 @@ if (isset($_REQUEST['aSync'])){
 	<script src="inc/uikit/dist/js/uikit.min.js"></script>
 	<script src="inc/uikit/dist/js/uikit-icons.min.js"></script>
 	<?php
-	if (in_array($_REQUEST['page'], array('downloads', 'files'))) {
+	if (isset($_REQUEST['page']) and in_array($_REQUEST['page'], array('downloads', 'files'))) {
 		?><script src="inc/datatables.net/js/jquery.dataTables.min.js"></script><?php
 	}
 	?>
+	<script type="text/javascript">
+		var isHomePage = <?php echo (!isset($_REQUEST['page'])) ? 'true' : 'false' ; ?>;
+	</script>
 	<script src="js/salsifis2.js"></script>
 
 </body>
