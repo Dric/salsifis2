@@ -299,37 +299,45 @@ class File {
 			case 'Répertoire':
 				return 'folder';
 			case 'Fichier texte':
-				return 'hashtag';
+				return 'file-text-o';
 			case 'Archive':
-				return 'database';
+				return 'file-archive-o';
 			case 'Archives Outlook':
-				return 'mail';
+				return 'envelope-o';
 			case 'Exécutable':
 				return 'cog';
-			case 'Certificat':
-				return 'lock';
 			case 'Composant':
-				return 'nut';
+				return 'cube';
+			case 'Certificat':
+				return 'key';
 			case 'Fichier code':
-				return 'code';
+				return 'file-code-o';
 			case 'Paramétrage':
-				return 'settings';
+				return 'sliders';
 			case 'Installateur':
 				return 'download';
 			case 'Image ISO':
-				return 'database';
+				return 'hdd-o';
 			case 'Image':
 				return 'image';
 			case 'Information':
-				return 'info';
+				return 'info-circle';
 			case 'Raccourci':
-				return 'forward';
+				return 'share-square-o';
+			case 'Document Word':
+				return 'file-word-o';
+			case 'Document Excel':
+				return 'file-excel-o';
+			case 'Document Powerpoint':
+				return 'file-powerpoint-o';
 			case 'Musique':
-				return 'play-circle';
+				return 'music';
+			case 'PDF':
+				return 'file-pdf-o';
 			case 'Vidéo':
-				return 'video-camera';
+				return 'film';
 			default:
-				return 'file';
+				return 'file-o';
 		}
 	}
 

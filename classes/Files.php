@@ -54,74 +54,68 @@ class Files extends Page{
 	protected function displayFolder($folder){
 		$rootFolder = realpath(Settings::DATA_PARTITION);
 		$fs = new Fs($folder);
-		$filesInDir = $fs->getFilesInDir(null, null, array('dateModified', 'type', 'size', 'extension'));
-		// On classe les items, les répertoires sont en premier
-		$files = $folders = array();
-		/**
-		 * @var File $item
-		 */
-		foreach ($filesInDir as $item){
-			if ($item->type == 'Répertoire'){
-				$folders[] = $item;
-			}else{
-				$files[] = $item;
-			}
-		}
-		unset($filesInDir);
-		$folders = \Sanitize::sortObjectList($folders, 'name');
-		$files = \Sanitize::sortObjectList($files, 'name');
-		$files = array_merge($folders, $files);
-		$parentFolder = dirname($folder);
-		?>
-		<?php echo $this->breadcrumbTitle($folder); ?>
-		<?php if (strpos($parentFolder, $rootFolder) !== false and $folder != $parentFolder) { ?><p><a class="uk-link-reset" href="<?php echo $this->buildArgsURL(array('folder' => urlencode($parentFolder))); ?>"  uk-icon="icon: arrow-up"> Remonter d'un niveau</a></p><?php } ?>
-		<div class="table-responsive uk-box-shadow-medium uk-overlay-default uk-padding-small">
-			<table id="fileBrowser" class="uk-table uk-table-divider uk-table-small uk-table-justify">
-				<thead>
-				<tr>
-					<td>Nom</td>
-					<td class="uk-visible@m">Type</td>
-					<td class="uk-visible@m">Taille</td>
-					<td class="uk-visible@l">Dernière modification</td>
-				</tr>
-				</thead>
-				<tbody>
-				<?php
-				foreach ($files as $i => $item){
-					if ($item->type != 'Répertoire') {
-						$itemUrl = $this->buildArgsURL(
-							array(
-								'file' => urlencode($item->fullName),
-								'folder' => urlencode($item->parentFolder)
-							)
-						);
-					}else{
-						$itemUrl = $this->buildArgsURL(
-							array(
-								'folder' => urlencode($item->fullName)
-							)
-						);
-					}
-
-					?>
-					<tr class="<?php echo $item->colorClass(); ?>">
-						<td class="uk-table-link uk-text-truncate" data-order="<?php echo $i; ?>">
-							<a href="<?php echo $itemUrl; ?>" class="<?php echo $item->colorClass(); ?> uk-link-reset">
-								<span uk-icon="icon: <?php echo $item->getIcon(); ?>"></span>
-								<?php $item->display(); ?>
-							</a>
-						</td>
-						<td class="uk-table-shrink uk-text-nowrap uk-visible@m"><abbr title="<?php echo $item->fullType; ?>" uk-tooltip="pos: bottom"><?php echo $item->type; ?></abbr></td>
-						<td class="uk-table-shrink uk-text-nowrap uk-visible@m" data-order="<?php echo ($item->type == 'Répertoire') ? 0 : $item->size; ?>"><?php if ($item->type != 'Répertoire') echo \Sanitize::readableFileSize($item->size); ?></td>
-						<td class="uk-table-shrink uk-text-nowrap uk-visible@l" data-order="<?php echo $item->dateModified; ?>"><?php echo \Sanitize::date($item->dateModified, 'dateTime'); ?></td>
-					</tr>
-					<?php
+		if (!$fs->getIsMounted()){
+			Components::Alert('danger', 'Impossible d\'afficher le contenu du répertoire !');
+		} else {
+			$filesInDir = $fs->getFilesInDir(null, null, array('dateModified', 'type', 'size', 'extension'));
+			// On classe les items, les répertoires sont en premier
+			$files = $folders = array();
+			/**
+			 * @var File $item
+			 */
+			foreach ($filesInDir as $item) {
+				if ($item->type == 'Répertoire') {
+					$folders[] = $item;
+				} else {
+					$files[] = $item;
 				}
-				?>
-				</tbody>
-			</table>
-		</div>
-		<?php
+			}
+			unset($filesInDir);
+			$folders      = \Sanitize::sortObjectList($folders, 'name');
+			$files        = \Sanitize::sortObjectList($files, 'name');
+			$files        = array_merge($folders, $files);
+			$parentFolder = dirname($folder);
+			?><?php echo $this->breadcrumbTitle($folder); ?><?php if (strpos($parentFolder, $rootFolder) !== false and $folder != $parentFolder) { ?><p><a class="uk-link-reset" href="<?php echo $this->buildArgsURL(array('folder' => urlencode($parentFolder))); ?>" uk-icon="icon: arrow-up"> Remonter d'un niveau</a></p><?php } ?>
+			<div class="table-responsive uk-box-shadow-medium uk-overlay-default uk-padding-small" id="salsifis-table-container">
+				<table id="fileBrowser" class="uk-table uk-table-divider uk-table-small uk-table-justify">
+					<thead>
+					<tr>
+						<td>Nom</td>
+						<td class="uk-visible@m">Type</td>
+						<td class="uk-visible@m">Taille</td>
+						<td class="uk-visible@l">Dernière modification</td>
+					</tr>
+					</thead>
+					<tbody>
+					<?php
+					foreach ($files as $i => $item) {
+						if ($item->type != 'Répertoire') {
+							$itemUrl = $this->buildArgsURL(array('file' => urlencode($item->fullName), 'folder' => urlencode($item->parentFolder)
+								));
+						} else {
+							$itemUrl = $this->buildArgsURL(array('folder' => urlencode($item->fullName)
+								));
+						}
+
+						?>
+						<tr class="<?php echo $item->colorClass(); ?>">
+							<td class="uk-table-link uk-text-truncate" data-order="<?php echo $i; ?>">
+								<a href="<?php echo $itemUrl; ?>" class="<?php echo $item->colorClass(); ?> uk-link-reset">
+									<?php $item->display(); ?>
+								</a>
+							</td>
+							<td class="uk-table-shrink uk-text-nowrap uk-visible@m"><?php echo ($item->type != 'Répertoire') ? '<abbr title="' . ((!empty($item->fullType)) ? $item->fullType : 'Format inconnu') . '" uk-tooltip="pos: bottom">' . $item->type . '</abbr>': $item->type; ?></td>
+							<td class="uk-table-shrink uk-text-nowrap uk-visible@m" data-order="<?php echo ($item->type == 'Répertoire') ? 0 : $item->size; ?>"><?php if ($item->type != 'Répertoire') echo \Sanitize::readableFileSize($item->size); ?></td>
+							<td class="uk-table-shrink uk-text-nowrap uk-visible@l" data-order="<?php echo $item->dateModified; ?>"><?php echo \Sanitize::date($item->dateModified, 'dateTime'); ?></td>
+						</tr>
+						<?php
+					}
+					?>
+					</tbody>
+				</table>
+			</div>
+			<?php
+		}
 	}
 
 	protected function displayFile($file){

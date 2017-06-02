@@ -28,7 +28,8 @@ use Users\ACL;
  * @property-read int       $statusInt          Statut en nombre entier
  * @property-read string[]  $statusLabels       Libellés des status
  * @property-read string    $statusIcon         Icône du statut
- * @property-read int       $totalSize          Taille totale
+ * @property-read string    $totalSize          Taille totale (en format lisible ko, Mo, etc)
+ * @property-read int       $totalSizeInt       Taille totale (en octets)
  * @property-read string    $downloadDir        Répertoire de téléchargement (relatif)
  * @property-read array     $downloadsDir       Liste des répertoires de téléchargement
  * @property-read int       $uploadedEver       Taille des données envoyées
@@ -103,13 +104,13 @@ Class Torrent{
 	* @var array
 	*/
 	protected $statusIcons = array(
-		0 => 'ban',
-		1 => 'clock',
-  	2 => 'question',
-		3 => 'clock',
+		0 => 'pause',
+		1 => 'spinner',
+  	2 => 'warning',
+		3 => 'spinner',
 		4 => 'cloud-download',
-		5 => 'clock',
-		6 => 'cloud-download'
+		5 => 'spinner',
+		6 => 'cloud-upload'
 	);
 	
 	/**
@@ -290,6 +291,8 @@ Class Torrent{
 			case 'leftUntilDone':
 			case 'uploadedEver':
 				return Sanitize::readableFileSize($this->$prop);
+			case 'totalSizeInt':
+				return $this->totalSize;
 			case 'eta':
 				return ($this->eta != -1) ? Sanitize::timeDuration($this->$prop) : 'Inconnu';
 			case 'isFinished':

@@ -1,5 +1,5 @@
 {
-  "name": "salsifis²",
+  "name": "salsifis2",
   "authors": [
     "Dric"
   ],
@@ -17,6 +17,8 @@
     ".idea"
   ],
   "dependencies": {
-    "uikit": "^3.0.0-beta.24"
+    "uikit": "^3.0.0-beta.24",
+    "datatables.net": "latest",
+    "components-font-awesome": "latest"
   }
 }

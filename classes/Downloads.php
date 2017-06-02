@@ -39,7 +39,7 @@ class Downloads extends Page{
 
 	/**
 	 * Session transmission
-	 * @var object
+	 * @var TransSession
 	 */
 	protected $transSession = null;
 
@@ -184,9 +184,9 @@ class Downloads extends Page{
 				}
 			}else{
 				// Aucun jour n'est sélectionné, on désactive la planification
-				$this->transSession->setAltModeEnabled(false);
+				$this->transSession->altModeEnabled = false;
 			}
-			$this->transSession->setAltDaysSchedule($altDays);
+			$this->transSession->altDaysSchedule = $altDays;
 		}
 		// Envoi des paramètres au serveur Transmission
 		return $this->transSession->saveSession();
@@ -200,27 +200,26 @@ class Downloads extends Page{
 		if (!empty($torrents)){
 			?>
 			<h2><?php echo count($torrents); ?> téléchargements affichés</h2>
-			<div class="table-responsive uk-box-shadow-medium uk-overlay-default uk-padding-small">
-			<table id="fileBrowser" class="uk-table uk-table-divider uk-table-small uk-table-justify">
-				<thead>
-				<tr>
-					<td>Nom</td>
-					<td class="uk-visible@m">Statut</td>
-					<td class="uk-visible@m">Emplacement</td>
-					<td class="uk-visible@l">Ratio</td>
-					<td class="uk-visible@l">Taille</td>
-					<td>Actions</td>
-				</tr>
-				</thead>
-				<tbody>
-				<?php
-				foreach ($torrents as $torrentRPC){
-					$torrent = new Torrent($torrentRPC);
-					$this->displayTorrent($torrent);
-				}
-				?>
-			</tbody>
-			</table>
+			<div class="table-responsive uk-box-shadow-medium uk-overlay-default uk-padding-small" id="salsifis-table-container">
+				<table id="torrentBrowser" class="uk-table uk-table-divider uk-table-small uk-table-justify">
+					<thead>
+					<tr>
+						<td>Nom</td>
+						<td class="uk-visible@m">Statut</td>
+						<td class="uk-visible@m">Emplacement</td>
+						<td class="uk-visible@l">Ratio</td>
+						<td class="uk-visible@l">Taille</td>
+					</tr>
+					</thead>
+					<tbody>
+					<?php
+					foreach ($torrents as $torrentRPC){
+						$torrent = new Torrent($torrentRPC);
+						$this->displayTorrent($torrent);
+					}
+					?>
+					</tbody>
+				</table>
 			</div>
 			<?php
 		}else{
@@ -236,13 +235,15 @@ class Downloads extends Page{
 	protected function displayTorrent(Torrent $torrent){
 		?>
 		<tr id="torrent_<?php echo $torrent->id; ?>">
-			<td class="uk-table-link uk-text-truncate"><span uk-icon="icon: <?php echo $torrent->statusIcon; ?>"></span><?php echo $torrent->sanitizedName; ?></td>
-			<td class="uk-table-shrink uk-text-nowrap uk-visible@m"><?php echo $torrent->status; ?></td>
+			<td class="uk-table-expand uk-table-link uk-text-truncate"><?php echo $torrent->sanitizedName; ?></td>
+			<td class="uk-table-shrink uk-text-nowrap uk-visible@m" data-order="<?php echo $torrent->statusInt; ?>"><span title="<?php echo $torrent->status; ?>" uk-tooltip="pos: bottom" class="fa fa-<?php echo $torrent->statusIcon; ?>"></span></td>
 			<td class="uk-table-shrink uk-text-nowrap uk-visible@m"><?php echo $torrent->downloadDir; ?></td>
-			<td class="uk-table-shrink uk-text-nowrap uk-visible@l"><abbr title="<?php echo $torrent->ratioPercentDone; ?>" uk-tooltip="pos: bottom"><?php echo $torrent->uploadRatio; ?></abbr></td>
-			<td class="uk-table-shrink uk-text-nowrap uk-visible@l">
+			<td class="uk-table-shrink uk-text-nowrap uk-visible@l" data-order="<?php echo $torrent->uploadRatio; ?>">
+				<?php	echo ($this->transSession->isRatioLimited) ? '<abbr title="' . $torrent->ratioPercentDone . '% de la limite de ratio atteinte" uk-tooltip="pos: bottom">' . $torrent->uploadRatio . '</abbr>' : $torrent->uploadRatio; ?>
+			</td>
+			<td class="uk-table-shrink uk-text-nowrap uk-visible@l" data-order="<?php echo $torrent->totalSizeInt; ?>">
 				<?php
-				if (!$torrent->isFinished) {
+				if ($torrent->isFinished) {
 					echo $torrent->totalSize;
 				} else {
 					// En cours de téléchargement
@@ -251,12 +252,6 @@ class Downloads extends Page{
 					<?php
 					}
 				?>
-			</td>
-			<td>
-				<ul class="uk-iconnav">
-					<li><a href="#" title="Déplacer les fichiers du téléchargement" class="uk-icon-link uk-margin-small-right" uk-icon="icon: forward" uk-tooltip="pos: bottom">Déplacer</a></li>
-					<li><a href="#" title="Supprimer le téléchargement" class="uk-icon-link" uk-icon="icon: trash" uk-tooltip="pos: bottom">Supprimer</a></li>
-				</ul>
 			</td>
 		</tr>
 		<?php
