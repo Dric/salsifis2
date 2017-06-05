@@ -6,19 +6,30 @@
  * Time: 10:00
  */
 class DefaultSettings {
+	/** Nom du serveur */
 	const TITLE                 = 'Les Salsifis';
+	/** Mode debug */
 	const DEBUG                 = false;
+	/** Image de fond */
 	const BG_IMG                = "bg.jpg";
+	/** Répertoire des données */
 	const DATA_PARTITION        = '/media/data';
+	/** Lien vers l'interface web de Transmission */
 	const TRANSMISSION_WEB_URL  = "/:9091/bt/web";
+	/** Lien vers l'API RPC de Transmission */
 	const TRANSMISSION_RPC_URL  = "http://localhost:9091/bt/rpc";
+	/** Répertoires de téléchargement */
 	const DOWNLOAD_DIRS         = array(
-		'dnla/videos/Adultes' => 'Vidéos/Adultes',
-	  'dnla/videos/Enfants' => 'Vidéos/Enfants',
-	  'dnla/videos/Series'  => 'Vidéos/Séries',
+		'dlna/videos/Adultes' => 'Vidéos/Adultes',
+	  'dlna/videos/Enfants' => 'Vidéos/Enfants',
+	  'dlna/videos/Séries'  => 'Vidéos/Séries',
 		'dlna/musique'        => 'Musique',
 	  'jeux'                => 'Jeux',
 	  'livres'              => 'Livres',
 	  'fichiers'            => 'Fichiers'
 	);
+	/** Utilisation d'un mot de passe pour se connecter */
+	const USE_AUTH              = false;
+	/** Mot de passe */
+	const PASSWORD              = null;
 }

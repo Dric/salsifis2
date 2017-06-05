@@ -25,6 +25,7 @@ use Settings;
  * @property-read string    $totalSize          Taille totale (en format lisible ko, Mo, etc)
  * @property-read int       $totalSizeInt       Taille totale (en octets)
  * @property-read string    $downloadDir        Répertoire de téléchargement (relatif)
+ * @property-read string    $rawDownloadDir     Répertoire de téléchargement (absolu)
  * @property-read string    $uploadedEver       Taille des données envoyées
  * @property-read bool      $isFinished         Téléchargement terminé
  * @property-read int       $leftUntilDone      Taille restante à télécharger
@@ -194,15 +195,17 @@ Class Torrent{
 	 * Construction de la classe
 	 *
 	 * @param object $RPCTorrent Objet de torrent renvoyé par la classe RPCTransmission
+	 * @param Float  $ratioLimit
 	 */
-	public function __construct($RPCTorrent){
+	public function __construct($RPCTorrent, Float $ratioLimit){
 		$RPCprops = get_object_vars($RPCTorrent);
-
+		//echo '<pre><code>';var_dump($RPCprops);echo '</code></pre>';
 		foreach ($RPCprops as $prop => $value){
 			if (isset($this->$prop)){
 				$this->$prop = $value;
 			}
 		}
+		$this->ratioLimit = $ratioLimit;
 		$fileDesc = array();
 		$torrentImg = array();
 		$this->files = Sanitize::sortObjectList($this->files, 'name');
@@ -231,6 +234,7 @@ Class Torrent{
 			$this->img = (!empty($torrentImg['source'])) ? urlencode($torrentImg['source']) : '';
 			$this->nfo = (!empty($fileDesc['source'])) ? $fileDesc['source'] : '';
 		}
+		//echo '<pre><code>';var_dump($this);echo '</code></pre>';
 	}
 	
 	/**

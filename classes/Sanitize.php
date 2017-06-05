@@ -158,7 +158,7 @@ class Sanitize {
 				// Au cas où l'heure soit déjà un timestamp
 				if (is_numeric($time)) return $time;
 				$parsed = date_parse($time);
-				return (int)($parsed['hour'] * 3600 + $parsed['minute'] * 60 + $parsed['second']);
+				return (int)(($parsed['hour'] * 3600) + ($parsed['minute'] * 60) + $parsed['second']);
 			case 'time' :       return gmdate('H:i', $time);
 			case 'fullTime':    return gmdate('H:i:s', $time);
 			default:            return false;

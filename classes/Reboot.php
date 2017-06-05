@@ -48,8 +48,8 @@ class Reboot extends Page{
 					<button class="uk-button uk-button-danger uk-button-large" <?php if ($disabled) { echo 'disabled'; } ?> type="submit">Redémarrer</button>
 				</form>
 			</div>
-		<?php
-	}
+			<?php
+		}
 	}
 
 	/**

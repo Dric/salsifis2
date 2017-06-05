@@ -126,7 +126,7 @@ if (isHomePage) {
 
 }
 
-if(typeof callback === 'DataTable'){
+if ($.fn.DataTable) {
 
 	var dataTablesLanguage = {
 		processing:     "Traitement en cours...",
@@ -165,6 +165,8 @@ if(typeof callback === 'DataTable'){
 		language: dataTablesLanguage,
 		autoWidth: false,
 		"initComplete": function(settings, json) {
+			console.log('Terminé !');
+
 			$('#salsifis-table-container').fadeIn();
 		}
 	});

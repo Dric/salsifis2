@@ -66,4 +66,23 @@ class Components {
 		</div>
 		<?php
 	}
+
+	/**
+	 * Affichage d'une icône d'aide
+	 *
+	 * Le contenu de l'aide est affiché dans une infobulle
+	 *
+	 * @param string $text
+	 * @param string $tooltipPosition
+	 *  Ce paramètre peut prendre les valeurs suivantes
+	 *  - bottom
+	 *  - top
+	 *  - left
+	 *  - right
+	 */
+	public static function iconHelp($text, $tooltipPosition = 'bottom'){
+		?>
+		<span class="fa fa-question-circle help-icon" title="<?php echo $text; ?>" uk-tooltip="pos: <?php echo $tooltipPosition; ?>"></span>
+		<?php
+	}
 }

@@ -36,8 +36,11 @@ if (\Settings::DEBUG) {
 
 $absolutePath = dirname(__FILE__);
 
+
 // Actions
-if (isset($_REQUEST['aSync'])){
+if (Settings::USE_AUTH and !Auth::isLoggedIn()) {
+	$page = new Login;
+}elseif (isset($_REQUEST['aSync'])){
 	Async::getAsyncRequest();
 	exit;
 }elseif(isset($_REQUEST['page'])){
@@ -114,7 +117,8 @@ if (isset($_REQUEST['aSync'])){
 		<!-- Bouton affichant le menu -->
 		<a title="Menu" uk-tooltip="pos: bottom" href="#offcanvas-usage" uk-toggle="target: #menu" type="button" uk-icon="icon: menu; ratio: 2" class="uk-position-top-right uk-margin-right uk-margin-top salsifis-menu-button"></a>
 		<!-- Contenu principal -->
-		<div class="uk-section">
+		<div class="uk-visible@l uk-padding">&nbsp;</div>
+		<div class="uk-section uk-padding-remove-top">
 			<div class="uk-container uk-container-small">
 				<?php $page->main(); ?>
 			</div>
@@ -146,6 +150,11 @@ if (isset($_REQUEST['aSync'])){
 		var isHomePage = <?php echo (!isset($_REQUEST['page'])) ? 'true' : 'false' ; ?>;
 	</script>
 	<script src="js/salsifis2.js"></script>
-
+	<?php
+	if (Settings::DEBUG) {
+		$endTime = microtime(true);
+		?><!-- Page générée <?php echo Sanitize::timeDuration($endTime - $startTime); ?>. --><?php
+	}
+	?>
 </body>
 </html>

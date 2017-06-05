@@ -15,7 +15,7 @@ class Page {
 
 	protected $title = null;
 
-	var $url = '';
+	protected $url = '';
 
 	/**
 	 * Entête

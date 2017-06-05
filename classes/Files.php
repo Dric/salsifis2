@@ -10,6 +10,7 @@ use FileSystem\Fs;
 class Files extends Page{
 	var $url = '?page=files';
 	protected $title = 'Fichiers';
+	protected $tmdbUrl = 'https://www.themoviedb.org/';
 
 	public function main() {
 		$file = null;
@@ -281,6 +282,7 @@ class Files extends Page{
 		//var_dump($name);
 		echo '<!-- name : '.\Get::varDump($name).' -->'."\n";
 		if ($type =='tv') echo '<!-- saison : '.\Get::varDump($season).' - épisode : '.\Get::varDump($episode).' -->'."\n";
+		/** @var \TMDB\Client $tmdb */
 		$tmdb = \TMDB\Client::getInstance('dfac51ae8cfdf42455ba6b01f392940f');
 		$tmdb->language ='fr';
 		$tmdb->paged = true;
@@ -306,6 +308,7 @@ class Files extends Page{
 			}
 			//var_dump($results);
 			if (is_null($result)) $result = reset($results);
+			/** @var \TMDB\structures\Movie $movie */
 			$movie = new $class($result->id);
 			if ($type == 'movie'){
 				// On récupère la date de sortie en France
@@ -317,19 +320,21 @@ class Files extends Page{
 
 				$release = $release[0];
 			}else{
+				/** @var \TMDB\structures\Tv $movie */
 				$release = new \StdClass();
 				$release->release_date = $movie->first_air_date;
 			}
+			//echo Get::varDump($movie);
 			?>
 			<div class="uk-box-shadow-medium uk-overlay-default uk-padding-small">
 
 				<h2><a href="<?php echo $this->tmdbUrl.$type.'/'.$movie->id; ?>"><?php echo ($type == 'movie') ? $movie->title : $movie->name; ?></a></h2>
-				<p>Il est possible que le film indiqué ci-dessous ne soit pas le bon. L'interrogation de la base IMDB retourne parfois des résultats étranges...</p>
+				<p><i>Il est possible que le film indiqué ci-dessous ne soit pas le bon. L'interrogation de la base IMDB retourne parfois des résultats étranges...</i></p>
 				<img class="uk-align-right" alt="<?php echo $movie->title; ?>" src="<?php echo $movie->poster('300'); ?>">
 				<ul>
 					<li>Date de <?php echo ($type == 'movie') ? 'sortie en France' : 'première diffusion aux USA'; ?> : <?php echo date("d/m/Y", strtotime($release->release_date)); ?></li>
 					<?php if ($type == 'movie'){ ?>
-						<li>Classification : <span class="badge tooltip-bottom" title="<?php echo (is_numeric($release->certification)) ? 'Interdit aux moins de '.$release->certification.' ans' : (in_array($release->certification, array('U', 'PG'))) ? 'Tout public' : 'Classification : '.$release->certification; ?>"><?php echo (is_numeric($release->certification)) ? '-'.$release->certification : $release->certification; ?></span></li>
+						<li>Classification : <span class="uk-badge" uk-tooltip="pos: bottom" title="<?php echo (is_numeric($release->certification)) ? 'Interdit aux moins de '.$release->certification.' ans' : (in_array($release->certification, array('U', 'PG'))) ? 'Tout public' : 'Classification : '.$release->certification; ?>"><?php echo (is_numeric($release->certification)) ? '-'.$release->certification : $release->certification; ?></span></li>
 					<?php }else{ ?>
 						<li>Série<?php echo ($movie->status == 'Ended') ? '' : ' non'; ?> terminée</li>
 						<li>Nombre de saisons : <?php echo $movie->number_of_seasons; ?></li>
@@ -340,7 +345,7 @@ class Files extends Page{
 				<h3>Genre(s)</h3>
 				<?php
 				foreach ($movie->genres as $genre){
-					?><span class="badge badge-info"><?php echo $genre->name; ?></span>&nbsp;<?php
+					?><span class="uk-badge badge-info"><?php echo $genre->name; ?></span>&nbsp;<?php
 				}
 				?>
 				<?php if ($type == 'movie'){ ?>
@@ -349,9 +354,9 @@ class Files extends Page{
 					$casting = $movie->casts();
 					$director = \Get::getObjectsInList($casting['crew'], 'job', 'Director')[0];
 					?>
-					<div class="media">
+					<div class="media uk-panel">
 						<a class="pull-left" href="<?php echo $this->tmdbUrl.'person/'.$director->id; ?>">
-							<img class="media-object" src="<?php echo (!empty($director->profile_path)) ? $tmdb->image_url('poster', 80, $director->profile_path) : \Settings::AVATAR_PATH.DIRECTORY_SEPARATOR.\Settings::AVATAR_DEFAULT; ?>" alt="<?php echo $director->name; ?>">
+							<img class="media-object uk-border-circle" src="<?php echo (!empty($director->profile_path)) ? $tmdb->image_url('poster', 80, $director->profile_path) : \Settings::AVATAR_PATH.DIRECTORY_SEPARATOR.\Settings::AVATAR_DEFAULT; ?>" alt="<?php echo $director->name; ?>">
 						</a>
 						<div class="media-body">
 							<h4 class="media-heading"><a href="<?php echo $this->tmdbUrl.'person/'.$director->id; ?>"><?php echo $director->name; ?></a></h4>
@@ -361,9 +366,9 @@ class Files extends Page{
 					<?php
 					foreach ($casting['cast'] as $actor){
 						?>
-						<div class="media">
+						<div class="media uk-panel">
 							<a class="pull-left" href="<?php echo $this->tmdbUrl.'person/'.$actor->id; ?>">
-								<img class="media-object" src="<?php echo (!empty($actor->profile_path)) ? $tmdb->image_url('poster', 80, $actor->profile_path) : \Settings::AVATAR_PATH.DIRECTORY_SEPARATOR.\Settings::AVATAR_DEFAULT; ?>" alt="<?php echo $actor->name; ?>">
+								<img class="media-object uk-border-circle" src="<?php echo (!empty($actor->profile_path)) ? $tmdb->image_url('poster', 80, $actor->profile_path) : \Settings::AVATAR_PATH.DIRECTORY_SEPARATOR.\Settings::AVATAR_DEFAULT; ?>" alt="<?php echo $actor->name; ?>">
 							</a>
 							<div class="media-body">
 								<h4 class="media-heading"><a href="<?php echo $this->tmdbUrl.'person/'.$actor->id; ?>"><?php echo $actor->name; ?></a></h4>

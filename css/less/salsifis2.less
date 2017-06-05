@@ -2,23 +2,25 @@
 // Core
 //
 
-@import "../../inc/uikit/src/less/components/_import.less";
+@import "../../inc/uikit/src/less/uikit.theme.less";
 @import "../../inc/components-font-awesome/less/font-awesome.less";
 @import "inc/dataTables";
 @import "inc/front";
 @import "inc/fixes";
 
 @fa-font-path:        "../inc/components-font-awesome/fonts";
+
+
 //
 // Colors
 //
 
 @global-color:                                  #FFF;
-@global-emphasis-color:                         #EEE;
-@global-muted-color:                            #CCC;
+@global-emphasis-color:                         #AAA;
+@global-muted-color:                            #AAA;
 
-@global-link-color:                             #1e87f0;
-@global-link-hover-color:                       #0f6ecd;
+@global-link-color: #f03045;
+@global-link-hover-color:                       lighten(tint(@global-link-color, 20%), 20%);
 
 @global-inverse-color:                          #000;
 
@@ -29,12 +31,13 @@
 @global-background:                             #000;
 
 @global-muted-background:                       #f8f8f8;
-@global-primary-background:                     #1e87f0;
+@global-primary-background:                     @global-link-color;
 @global-secondary-background:                   #999;
 
+@global-info-background:                        #529CD2;
 @global-success-background:                     #32d296;
 @global-warning-background:                     #faa05a;
-@global-danger-background:                      #f0506e;
+@global-danger-background:                      #f00037;
 
 //
 // Box-Shadows
@@ -77,6 +80,9 @@
 // Forms
 //
 @form-background:                               fade(@global-background, 20%);
+@form-focus-background:                         fade(@global-background, 40%);
+
+@form-radio-checked-background:                 @form-background;
 
 //
 // Alerts
@@ -91,5 +97,26 @@
 @alert-warning-color:                           lighten(tint(@global-warning-background, 25%), 15%);
 @alert-warning-background:                      @global-warning-background;
 
-@alert-danger-color:                            lighten(tint(@global-danger-background, 20%), 20%);
+@alert-danger-color:                            lighten(tint(@global-danger-background, 40%), 40%);
 @alert-danger-background:                       @global-danger-background;
+
+//
+// Modals
+//
+@modal-dialog-background:                       @global-muted-background;
+@modal-header-background:                       @global-muted-background;
+@modal-footer-background:                       @global-muted-background;
+
+//
+// Buttons
+//
+@button-default-background:                     fade(@global-background, 40%);
+
+@button-primary-color:                          @global-color;
+@button-primary-hover-background:               lighten(@button-primary-background, 10%);
+
+//
+// Titles
+//
+@base-heading-color:                            @global-color;
+@base-heading-font-weight:                      400;

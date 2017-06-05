@@ -8,17 +8,20 @@ namespace Transmission;
  * @see <https://trac.transmissionbt.com/browser/trunk/extras/rpc-spec.txt>
  * @package Transmission
  *
- * @property float      $ratioLimit
- * @property bool       $isRatioLimited
- * @property int        $dlSpeed
- * @property int        $upSpeed
- * @property int        $altDlSpeed
- * @property int        $altUpSpeed
- * @property bool       $altSpeedEnabled
- * @property int        $altBegin
- * @property int        $altEnd
- * @property int[]|int  $altDaysSchedule
- * @property bool       $altModeEnabled
+ * @property      float       $ratioLimit         Limite de ratio définie
+ * @property      bool        $isRatioLimited     Statut de la limite de ratio (activée/désactivée)
+ * @property      int         $dlSpeed            Vitesse de téléchargement en mode normal
+ * @property      int         $upSpeed            Vitesse de partage en mode normal
+ * @property      int         $altDlSpeed         Vitesse de téléchargement en mode tortue
+ * @property      int         $altUpSpeed         Vitesse de partage en mode tortue
+ * @property      bool        $altSpeedEnabled    Statut du mode tortue (activé/désactivé)
+ * @property      int         $altBegin           Heure de début du mode tortue
+ * @property      int         $altEnd             Heure de fin du mode tortue
+ * @property      int[]|int   $altDaysSchedule    Jours d'activation du mode tortue
+ * @property      bool        $altModeEnabled     Mode tortue paramétré
+ * @property      string      $blockList          Liste de blocages d'adresses IP
+ * @property      bool        $blockListEnabled   Activation de la liste de blocage
+ * @property-read string      $defaultDownloadDir Répertoire de téléchargement par défaut
  */
 class TransSession extends TransmissionRPC{
 
@@ -111,6 +114,24 @@ class TransSession extends TransmissionRPC{
 	 */
 	protected $altModeEnabled = true;
 
+	/**
+	 * Répertoire de téléchargement par défaut
+	 * @var string
+	 */
+	protected $defaultDownloadDir = null;
+
+	/**
+	 * Liste de blocage d'adresses IP
+	 * @var string
+	 */
+	protected $blockList = null;
+
+	/**
+	 * Activation de la liste de blocage
+	 * @var bool
+	 */
+	protected $blockListEnabled = true;
+
 
 	/**
 	 * @param string $transmissionURL URL de transmissionRPC
@@ -118,17 +139,22 @@ class TransSession extends TransmissionRPC{
 	public function __construct($transmissionURL){
 		parent::__construct($transmissionURL);
 		$settings = $this->request("session-get", array())->arguments;
-		$this->ratioLimit			  = round($settings->seedRatioLimit, 1);
-		$this->isRatioLimited   = (bool)$settings->seedRatioLimited;
-		$this->dlSpeed					= (int)$settings->speed_limit_down;
-		$this->upSpeed					= (int)$settings->speed_limit_up;
-		$this->altDlSpeed			  = (int)$settings->alt_speed_down;
-		$this->altUpSpeed			  = (int)$settings->alt_speed_up;
-		$this->altSpeedEnabled	= (bool)$settings->alt_speed_enabled;
-		$this->altBegin				  = (int)($settings->alt_speed_time_begin*60);
-		$this->altEnd					  = (int)($settings->alt_speed_time_end*60);
-		$this->altDaysSchedule	= (int)$settings->alt_speed_time_day;
-		$this->altModeEnabled	  = (bool)$settings->alt_speed_time_enabled;
+		//echo '<pre><code>';var_dump($settings);echo '</code></pre>';
+		$this->ratioLimit			    = round($settings->seedRatioLimit, 1);
+		$this->isRatioLimited     = (isset($settings->seedRatioLimited)) ? (bool)$settings->seedRatioLimited : false;
+		$this->dlSpeed					  = (int)$settings->speed_limit_down;
+		$this->upSpeed					  = (int)$settings->speed_limit_up;
+		$this->altDlSpeed			    = (int)$settings->alt_speed_down;
+		$this->altUpSpeed			    = (int)$settings->alt_speed_up;
+		$this->altSpeedEnabled	  = (isset($settings->alt_speed_enabled)) ? (bool)$settings->alt_speed_enabled : false;
+		$this->altBegin				    = (int)($settings->alt_speed_time_begin*60);
+		$this->altEnd					    = (int)($settings->alt_speed_time_end*60);
+		$this->altDaysSchedule	  = (int)$settings->alt_speed_time_day;
+		$this->altModeEnabled	    = (isset($settings->alt_speed_time_enabled)) ? (bool)$settings->alt_speed_time_enabled : false;
+		$this->defaultDownloadDir = $settings->download_dir;
+		$this->blockList          = $settings->blocklist_url;
+		$this->blockListEnabled   = (isset($settings->blocklist_enabled)) ? (bool)$settings->blocklist_enabled : false;
+		//echo \Get::varDump($this);
 	}
 
 	/**
@@ -136,17 +162,17 @@ class TransSession extends TransmissionRPC{
 	 */
 	public function saveSession(){
 		$arguments = array(
-			'seedRatioLimit'        => $this->ratioLimit,
-			'seedRatioLimited'      => $this->isRatioLimited,
+			'seedRatioLimit'        => ($this->ratioLimit > 0) ?$this->ratioLimit : 0,
+			'seedRatioLimited'      => (int)$this->isRatioLimited,
 		  'speed-limit-down'      => $this->dlSpeed,
 		  'speed-limit-up'        => $this->upSpeed,
 		  'alt-speed-down'        => $this->altDlSpeed,
 		  'alt-speed-up'          => $this->altUpSpeed,
-		  'alt-speed-enabled'     => $this->altSpeedEnabled,
+		  'alt-speed-enabled'     => (int)$this->altSpeedEnabled,
 		  'alt-speed-time-begin'  => floor($this->altBegin/60),
 		  'alt-speed-time-end'    => floor($this->altEnd/60),
 		  'alt-speed-time-day'    => $this->altDaysSchedule,
-		  'alt-speed-time-enabled'=> $this->altModeEnabled
+		  'alt-speed-time-enabled'=> (int)$this->altModeEnabled
 		);
 		$ret = $this->sset($arguments);
 		if ($ret->result == 'success'){
@@ -189,16 +215,22 @@ class TransSession extends TransmissionRPC{
 	 *
 	 * Les propriétés de la classe étant privées, pour y accéder il suffit de demander la variable sans le préfixe '_'.
 	 * Ex : Pour obtenir la taille totale du torrent, qui est la propriété $totalSize, il suffit de demander $torrent->totalsize ou encore $this->get('totalSize') à l'intérieur de la classe
+	 *
 	 * @param string $prop Propriété à retourner.
+	 *
+	 * @param bool   $realValue
 	 *
 	 * @return mixed
 	 */
-	protected function getProp($prop, Bool $realValue = false){
+	public function getProp($prop, Bool $realValue = false){
 		switch ($prop){
 			case 'ratioLimit':
 			case 'isRatioLimited':
 			case 'altSpeedEnabled':
 			case 'altModeEnabled':
+			case 'defaultDownloadDir':
+			case 'blockList':
+			case 'blockListEnabled':
 				return $this->$prop;
 			case 'dlSpeed':
 			case 'upSpeed':
@@ -208,7 +240,7 @@ class TransSession extends TransmissionRPC{
 			case 'altBegin':
 				return ($realValue) ? $this->altBegin : \Sanitize::time($this->altBegin, 'time');
 			case 'altEnd':
-				return ($realValue) ? $this->altEnd : gmdate('H:i', floor(($this->altEnd) * 60));
+				return ($realValue) ? $this->altEnd : \Sanitize::time($this->altEnd, 'time');
 			case 'altDaysSchedule':
 				if ($realValue) {
 					return $this->altDaysSchedule;
@@ -216,7 +248,7 @@ class TransSession extends TransmissionRPC{
 					$days = $this->altDaysSchedule;
 					if (in_array($days, array(127, 65, 62, 0))) return array($days);
 					$daysArr = array();
-					for ($i=0;$i<8;$i++){
+					for ($i=1;$i<8;$i++){
 						if ($this->nbit($days, $i) === 1){
 							// Pour obtenir la valeur numérique, on fait 2^($i-1). ex : pour une valeur de 1 sur le 4è bit, on a une valeur numérique 2^3 = 8
 							$ro = (String)($i - 1);
@@ -278,11 +310,16 @@ class TransSession extends TransmissionRPC{
 			case 'altDaysSchedule':
 				if (is_int($value) and $value < 128) {
 					$tmpVal = $value;
-					for ($i=0;$i<8;$i++){
+					for ($i=1;$i<8;$i++){
 						if ($this->nbit($value, $i) === 1){
 							$ro = (String)($i - 1);
 							// On soustraie 2 puissance $i-1 pour enlever le jour défini, voir la déclaration de $altDaysSchedule
-							$tmpVal -= bcpow('2', $ro, 0);
+							try {
+								$tmpVal -= bcpow('2', $ro, 0);
+							} catch (\Exception $e){
+								\Components::Alert('danger', 'Erreur : l\'extension php-bcmath n\'est pas installée ! Veuillez l\'installer en faisant <code>sudo apt install php-bcmath</code>.<br>'.$e->getMessage());
+								return false;
+							}
 						}
 					}
 					// Si le résultat est supérieur à 0, c'est que le nombre ne suit pas les numéros de jours.
