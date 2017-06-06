@@ -333,7 +333,7 @@ class Downloads extends Page{
 		<div class="uk-modal-dialog">
       <button class="uk-modal-close-default" type="button" uk-close></button>
       <div class="uk-modal-header">
-        <h2 class="uk-modal-title"><?php echo $torrent->name; ?></h2>
+        <h2 class="uk-modal-title uk-text-break"><?php echo $torrent->name; ?></h2>
       </div>
       <div class="uk-modal-body">
 	      <ul>

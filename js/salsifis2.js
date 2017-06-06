@@ -174,6 +174,8 @@ if ($.fn.DataTable) {
 			$('#salsifis-table-container').fadeIn();
 		}
 	});
+	// Update table from html : https://stackoverflow.com/a/36530654/1749967
+	// table.rows().invalidate().draw();
 
 	$('.torrentDetailLink').on('click', function(e){
 		e.preventDefault();
