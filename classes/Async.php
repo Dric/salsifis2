@@ -18,6 +18,12 @@ class Async {
 				self::viewDiskUsage();
 			}elseif ($request == 'externalIP'){
 				self::viewExternalIP();
+			} elseif ($request == 'downloads'){
+				$downloads = new Downloads();
+				if ($args == 'getDownloads'){
+					header('Content-Type: application/json');
+					$downloads->getAsyncDownloads();
+				}
 			}
 		}
 		return true;
@@ -51,4 +57,5 @@ class Async {
 		</span></div>
 		<?php
 	}
+
 }

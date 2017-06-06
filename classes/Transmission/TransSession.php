@@ -21,6 +21,7 @@ namespace Transmission;
  * @property      bool        $altModeEnabled     Mode tortue paramétré
  * @property      string      $blockList          Liste de blocages d'adresses IP
  * @property      bool        $blockListEnabled   Activation de la liste de blocage
+ * @property-read int         $blockListSize      Nombre de règles de la liste de blocage
  * @property-read string      $defaultDownloadDir Répertoire de téléchargement par défaut
  */
 class TransSession extends TransmissionRPC{
@@ -132,6 +133,12 @@ class TransSession extends TransmissionRPC{
 	 */
 	protected $blockListEnabled = true;
 
+	/**
+	 * Nombre de règles de la liste de blocage
+	 * @var int
+	 */
+	protected $blockListSize = 0;
+
 
 	/**
 	 * @param string $transmissionURL URL de transmissionRPC
@@ -154,6 +161,7 @@ class TransSession extends TransmissionRPC{
 		$this->defaultDownloadDir = $settings->download_dir;
 		$this->blockList          = $settings->blocklist_url;
 		$this->blockListEnabled   = (isset($settings->blocklist_enabled)) ? (bool)$settings->blocklist_enabled : false;
+		$this->blockListSize      = (isset($settings->blocklist_size)) ? (int)$settings->blocklist_size : 0;
 		//echo \Get::varDump($this);
 	}
 
@@ -231,6 +239,7 @@ class TransSession extends TransmissionRPC{
 			case 'defaultDownloadDir':
 			case 'blockList':
 			case 'blockListEnabled':
+			case 'blockListSize':
 				return $this->$prop;
 			case 'dlSpeed':
 			case 'upSpeed':

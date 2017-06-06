@@ -45,8 +45,8 @@ class Downloads extends Page{
 	protected $transSession = null;
 
 	public function __construct(){
-		// On établit la liaison avec le service RPC de Transmission
-		$this->getTransSession();
+		// On établit la liaison avec le service RPC de Transmission et on récupère les téléchargements
+		$this->getTorrents();
 	}
 
 	/**
@@ -226,7 +226,7 @@ class Downloads extends Page{
 	 * Affiche la liste des torrents filtrés
 	 */
 	protected function listTorrents(){
-		$torrents = \Sanitize::sortObjectList($this->getTorrents(), 'name');
+		$torrents = \Sanitize::sortObjectList($this->torrents, 'name');
 		if (!empty($torrents)){
 			?>
 			<h2><?php echo count($torrents); ?> téléchargements affichés</h2>
@@ -262,6 +262,11 @@ class Downloads extends Page{
 		//var_dump($torrents);
 	}
 
+	/**
+	 * Affiche un torrent
+	 *
+	 * @param Torrent $torrent Torrent à afficher
+	 */
 	protected function displayTorrent(Torrent $torrent){
 		?>
 		<tr id="torrent_<?php echo $torrent->id; ?>">
@@ -269,7 +274,7 @@ class Downloads extends Page{
 			<td class="uk-table-shrink uk-text-nowrap uk-visible@m" data-order="<?php echo $torrent->statusInt; ?>"><span title="<?php echo $torrent->status; ?>" uk-tooltip="pos: bottom" class="fa fa-<?php echo $torrent->statusIcon; ?>"></span></td>
 			<td class="uk-table-shrink uk-text-nowrap uk-visible@m">
 				<?php
-				if (Settings::DATA_PARTITION . DIRECTORY_SEPARATOR . $torrent->downloadDir == $this->transSession->defaultDownloadDir){
+				if (Settings::DATA_PARTITION . DIRECTORY_SEPARATOR . $torrent->downloadDir == $this->transSession->defaultDownloadDir) {
 					echo '<span title="' . $torrent->downloadDir . '" class="uk-text-warning" uk-tooltip="pos: bottom">Non classé</span>';
 				} else {
 					echo $torrent->downloadDir;
@@ -277,8 +282,10 @@ class Downloads extends Page{
 				?>
 			</td>
 			<td class="uk-table-shrink uk-text-nowrap uk-visible@l" data-order="<?php echo $torrent->uploadRatio; ?>">
-				<abbr title="<?php if ($this->transSession->isRatioLimited) { echo $torrent->ratioPercentDone . '% de la limite de ratio atteinte - '; } ?><?php echo $torrent->uploadedEver; ?> envoyés" uk-tooltip="pos: bottom">
-					<?php	echo ($this->transSession->isRatioLimited) ? '<span class="uk-text-' . (($torrent->ratioPercentDone >= 100) ? 'success' : 'default' ) . '">' . $torrent->uploadRatio . '</span>' : $torrent->uploadRatio ; ?>
+				<abbr title="<?php if ($this->transSession->isRatioLimited) {
+					echo $torrent->ratioPercentDone . '% de la limite de ratio atteinte - ';
+				} ?><?php echo $torrent->uploadedEver; ?> envoyés" uk-tooltip="pos: bottom">
+					<?php echo ($this->transSession->isRatioLimited) ? '<span class="uk-text-' . (($torrent->ratioPercentDone >= 100) ? 'success' : 'default') . '">' . $torrent->uploadRatio . '</span>' : $torrent->uploadRatio; ?>
 				</abbr>
 			</td>
 			<td class="uk-table-shrink uk-text-nowrap uk-visible@l" data-order="<?php echo $torrent->totalSizeInt; ?>">
@@ -288,9 +295,9 @@ class Downloads extends Page{
 				} else {
 					// En cours de téléchargement
 					?>
-					<progress class="uk-progress uk-border-rounded uk-box-shadow-medium" title="Téléchargement : <?php echo $torrent->leftUntilDone .'/'. $torrent->totalSize; ?>" value="<?php echo $torrent->leftUntilDone; ?>" max="<?php echo $torrent->totalSize; ?>" uk-tooltip></progress>
+					<progress class="uk-progress uk-border-rounded uk-box-shadow-medium" title="Téléchargement : <?php echo $torrent->leftUntilDone . '/' . $torrent->totalSize; ?>" value="<?php echo $torrent->leftUntilDone; ?>" max="<?php echo $torrent->totalSize; ?>" uk-tooltip></progress>
 					<?php
-					}
+				}
 				?>
 			</td>
 		</tr>
@@ -384,7 +391,7 @@ class Downloads extends Page{
 									</div>
 								<div class="uk-margin">
 									<label uk-tooltip="pos: bottom" title="Activer la liste de blocage"><input name="blockListEnabled" class="uk-checkbox" type="checkbox" <?php if ($this->transSession->blockListEnabled) { echo 'checked'; }?>></label>
-									<label class="uk-form-label">Liste de blocage  <?php Components::iconHelp('La liste de blocage permet d\'empêcher que des petits voyeurs surveillent vos activités de téléchargement. Ainsi, la plupart des sociétés de surveillance du piratage mais aussi des organismes de gouvernements sont bloqués, ainsi que des adresses de domaines malveillants.<br>Cette liste est automatiquement mise à jour.<br><br>Il est fortement conseillé de laisser la liste de blocage <samp>activée</samp>.'); ?></label>
+									<label class="uk-form-label">Liste de blocage  <?php Components::iconHelp('La liste de blocage permet d\'empêcher que des petits voyeurs surveillent vos activités de téléchargement. Ainsi, la plupart des sociétés de surveillance du piratage mais aussi des organismes de gouvernements sont bloqués, ainsi que des adresses de domaines malveillants.<br>Cette liste est automatiquement mise à jour.<br><br>Il est fortement conseillé de laisser la liste de blocage <samp>activée</samp>.'); ?> (<?php echo $this->transSession->blockListSize; ?> règles chargées)</label>
 									<input name="blockList" class="uk-input" type="text" placeholder="http://list.iblocklist.com/?list=ydxerpxkpcfqjaybcssw&fileformat=p2p&archiveformat=gz"  value="<?php echo $this->transSession->blockList; ?>" <?php if (!$this->transSession->blockListEnabled) { echo 'disabled'; } ?>>
 								</div>
 
@@ -474,6 +481,10 @@ class Downloads extends Page{
 		<?php
 	}
 
+	public function getAsyncDownloads(){
+		echo json_encode($this->torrents);
+	}
+
 	protected function runAction(){
 		if (isset($_REQUEST['action'])){
 			switch ($_REQUEST['action']){
@@ -492,4 +503,6 @@ class Downloads extends Page{
 		}
 		return false;
 	}
+
+
 }
