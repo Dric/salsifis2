@@ -291,7 +291,7 @@ class Downloads extends Page{
 	protected function displayTorrent(Torrent $torrent){
 		?>
 		<tr id="torrent_<?php echo $torrent->id; ?>">
-			<td class="uk-table-expand uk-table-link uk-text-truncate"><a href="#torrentDetail" class="torrentDetailLink" data-id="<?php echo $torrent->id; ?>"><?php echo $torrent->sanitizedName; ?></a></td>
+			<td class="uk-table-expand uk-table-link uk-text-truncate"><a href="#torrentDetail" class="torrentDetailLink uk-link-reset" data-id="<?php echo $torrent->id; ?>"><?php echo $torrent->sanitizedName; ?></a></td>
 			<td class="uk-table-shrink uk-text-nowrap uk-visible@m" data-search="<?php echo $torrent->status; ?>" data-order="<?php echo $torrent->statusInt; ?>"><span title="<?php echo $torrent->status; ?>" uk-tooltip="pos: bottom" class="fa fa-<?php echo $torrent->statusIcon; ?>"></span></td>
 			<td class="uk-table-shrink uk-text-nowrap uk-visible@m">
 				<?php
@@ -339,23 +339,23 @@ class Downloads extends Page{
 	      <ul>
 	        <li>
 	        <?php
-	         echo 'Début : ' . $torrent->addedDate . ', fin ';
-	         echo ($torrent->isFinished) ? ' : '. $torrent->doneDate : 'estimée dans <span id="torrent_estimated_end_'. $torrent->id. '">' . $torrent->eta . '</span>';
+	         echo 'Début : <code>' . $torrent->addedDate . '</code>, fin';
+	         echo ($torrent->isFinished) ? ' : <code>'. $torrent->doneDate . '</code>' : ' estimée dans <code><span id="torrent_estimated_end_'. $torrent->id. '">' . $torrent->eta . '</span></code>';
 	        ?>
 					</li>
 					<?php if ($torrent->isFinished){ ?>
-					<li>Ratio d'envoi/réception : <span id="torrent-ratio_<?php echo $torrent->id; ?>"><?php echo $torrent->uploadRatio.' ('.$torrent->uploadedEver.' envoyés'. (($this->transSession->isRatioLimited) ? ', ' . $torrent->ratioPercentDone.'% du ratio atteint)' : ''); ?></span></li>
-					<li>Taille : <?php echo $torrent->totalSize; ?></li>
+					<li>Ratio d'envoi/réception : <code><span id="torrent-ratio_<?php echo $torrent->id; ?>"><?php echo $torrent->uploadRatio.' ('.$torrent->uploadedEver.' envoyés'. (($this->transSession->isRatioLimited) ? ', ' . $torrent->ratioPercentDone.'% du ratio atteint)' : ''); ?>)</span></code></li>
+					<li>Taille : <code><?php echo $torrent->totalSize; ?></code></li>
 					<?php }else{ ?>
-					<li>Reste à télécharger : <span id="torrent-leftuntildone_<?php echo $torrent->id; ?>"><?php echo $torrent->leftUntilDone.'/'.$torrent->totalSize; ?></span></li>
+					<li>Reste à télécharger : <code><span id="torrent-leftuntildone_<?php echo $torrent->id; ?>"><?php echo $torrent->leftUntilDone.'/'.$torrent->totalSize; ?></span></code></li>
 					<?php } ?>
-					<li>Téléchargé dans : <?php echo $torrent->downloadDir; ?></li>
+					<li>Téléchargé dans : <code><?php echo $torrent->downloadDir; ?></code></li>
 					<?php if (!empty($torrent->comment)){ ?>
 					<li>Commentaire : <?php echo $torrent->comment; ?></li>
 					<?php } ?>
 					<li>
 						<a uk-toggle="target: #collapse_<?php echo $torrent->id; ?>" data-parent="#torrent_<?php echo $torrent->id; ?>" href="#collapse_<?php echo $torrent->id; ?>">Liste des fichiers</a>
-						<ul class="uk-text-small" id="collapse_<?php echo $torrent->id; ?>">
+						<ul class="uk-text-small" id="collapse_<?php echo $torrent->id; ?>" hidden>
 						<?php
 						foreach ($torrent->files as $file){
 							?><li><?php echo $file->name; ?></li><?php

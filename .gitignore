@@ -9,5 +9,4 @@
 # Project-level settings
 /.tgitconfig
 
-classes/Settings.php
-
+/classes/Settings.php

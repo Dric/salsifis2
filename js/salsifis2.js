@@ -175,7 +175,8 @@ if ($.fn.DataTable) {
 		}
 	});
 
-	$('.torrentDetailLink').on('click', function(){
+	$('.torrentDetailLink').on('click', function(e){
+		e.preventDefault();
 		var id = $(this).data('id');
 		$.ajax({
 			method  : "POST",
@@ -185,7 +186,7 @@ if ($.fn.DataTable) {
 			data    : {aSync: true, downloads: 'torrentDetail', torrentId: id}
 		}).done(function (data) {
 			$('#torrentDetail').html(data);
-			UIkit.modal('#torrentDetail');
+			UIkit.modal('#torrentDetail').show();
 		});
 	});
 }
