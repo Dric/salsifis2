@@ -206,15 +206,45 @@ class Sanitize {
 	 */
 	public static function sortObjectList($arrayOrig, $props, $sortOrder = 'ASC')	{
 		$array = $arrayOrig;
-
 		if (!is_array($props)){
 			$props = array($props);
 		}
 		if (!is_array($sortOrder)){
 			$sortOrder = array($sortOrder);
 		}
+
 		usort($array, function($a, $b) use (&$props, &$sortOrder) {
-			foreach ($props as $i => $prop) {
+			for($i = 1; $i < count($props); $i++) {
+				if($a->{$props[$i-1]} == $b->{$props[$i-1]}) {
+					if (is_numeric($a->{$props[$i]})) {
+						if (strtoupper($sortOrder[$i]) == 'ASC') {
+							return $a->{$props[$i]} > $b->{$props[$i]} ? 1 : -1;
+						} else {
+							return $a->{$props[$i]} < $b->{$props[$i]} ? 1 : -1;
+						}
+					} else {
+						if (strtoupper($sortOrder[$i]) == 'ASC') {
+							return strcasecmp($a->{$props[$i]}, $b->{$props[$i]});
+						} else {
+							return strcasecmp($b->{$props[$i]}, $a->{$props[$i]});
+						}
+					}
+				}
+			}
+			if (is_numeric($a->{$props[0]})) {
+				if (strtoupper($sortOrder[0]) == 'ASC') {
+					return $a->{$props[0]} > $b->{$props[0]} ? 1 : -1;
+				} else {
+					return $a->{$props[0]} < $b->{$props[0]} ? 1 : -1;
+				}
+			} else {
+				if (strtoupper($sortOrder[0]) == 'ASC') {
+					return strcasecmp($a->{$props[0]}, $b->{$props[0]});
+				} else {
+					return strcasecmp($b->{$props[0]}, $a->{$props[0]});
+				}
+			}
+			/*foreach ($props as $i => $prop) {
 				if (isset ($sortOrder[$i]) and $sortOrder[$i] == 'DESC'){
 					if (isset($a->$prop)){
 						if (is_numeric($a->$prop) and is_numeric($b->$prop)){
@@ -242,9 +272,26 @@ class Sanitize {
 				}
 
 			}
-			return 0;
+			return 0;*/
 		});
 		return $array;
+	}
+
+	function array_orderby()
+	{
+		$args = func_get_args();
+		$data = array_shift($args);
+		foreach ($args as $n => $field) {
+			if (is_string($field)) {
+				$tmp = array();
+				foreach ($data as $key => $row)
+					$tmp[$key] = $row[$field];
+				$args[$n] = $tmp;
+			}
+		}
+		$args[] = &$data;
+		call_user_func_array('array_multisort', $args);
+		return array_pop($args);
 	}
 
 	/**

@@ -21,8 +21,8 @@ class Async {
 			} elseif ($request == 'downloads'){
 				$downloads = new Downloads();
 				switch ($args){
-					case 'getDownloads':
-						$downloads->getAsyncDownloads();
+					case 'getTorrentsTableRows':
+						$downloads->getTorrentsTableRows();
 						break;
 					case 'torrentDetail':
 						if (isset($_REQUEST['torrentId'])){

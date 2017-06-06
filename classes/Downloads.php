@@ -235,7 +235,7 @@ class Downloads extends Page{
 						<td class="uk-visible@l" data-class-name="uk-table-shrink uk-text-nowrap uk-visible@l">Taille</td>
 					</tr>
 				</thead>
-				<tbody>
+				<tbody id="torrentsTableBody">
 			</tbody>
 		</table>
 		<?php
@@ -260,7 +260,7 @@ class Downloads extends Page{
 						<td class="uk-visible@l">Taille</td>
 					</tr>
 					</thead>
-					<tbody>
+					<tbody id="torrentsTableBody">
 					<?php
 					foreach ($torrents as $torrentRPC){
 						$torrent = new Torrent($torrentRPC, $this->transSession->ratioLimit);
@@ -291,9 +291,9 @@ class Downloads extends Page{
 	protected function displayTorrent(Torrent $torrent){
 		?>
 		<tr id="torrent_<?php echo $torrent->id; ?>">
-			<td class="uk-table-expand uk-table-link uk-text-truncate"><a href="#torrentDetail" class="torrentDetailLink uk-link-reset" data-id="<?php echo $torrent->id; ?>"><?php echo $torrent->sanitizedName; ?></a></td>
-			<td class="uk-table-shrink uk-text-nowrap uk-visible@m" data-search="<?php echo $torrent->status; ?>" data-order="<?php echo $torrent->statusInt; ?>"><span title="<?php echo $torrent->status; ?>" uk-tooltip="pos: bottom" class="fa fa-<?php echo $torrent->statusIcon; ?>"></span></td>
-			<td class="uk-table-shrink uk-text-nowrap uk-visible@m">
+			<td class="uk-table-expand uk-table-link uk-text-truncate torrent-name"><a href="#torrentDetail" class="torrentDetailLink uk-link-reset" data-id="<?php echo $torrent->id; ?>"><?php echo $torrent->sanitizedName; ?></a></td>
+			<td id="torrent_<?php echo $torrent->id; ?>_status" class="uk-table-shrink uk-text-nowrap uk-visible@m torrent-status" data-search="<?php echo $torrent->status; ?>" data-order="<?php echo $torrent->statusInt; ?>"><span title="<?php echo $torrent->status; ?>" uk-tooltip="pos: bottom" class="fa fa-<?php echo $torrent->statusIcon; ?>"></span></td>
+			<td id="torrent_<?php echo $torrent->id; ?>_downloadDir" class="uk-table-shrink uk-text-nowrap uk-visible@m torrent-downloadDir" data-order="<?php echo $torrent->rawDownloadDir; ?>">
 				<?php
 				if (Settings::DATA_PARTITION . DIRECTORY_SEPARATOR . $torrent->downloadDir == $this->transSession->defaultDownloadDir) {
 					echo '<span title="' . $torrent->downloadDir . '" class="uk-text-warning" uk-tooltip="pos: bottom">Non classé</span>';
@@ -302,21 +302,21 @@ class Downloads extends Page{
 				}
 				?>
 			</td>
-			<td class="uk-table-shrink uk-text-nowrap uk-visible@l" data-order="<?php echo $torrent->uploadRatio; ?>">
+			<td id="torrent_<?php echo $torrent->id; ?>_uploadRatio" class="uk-table-shrink uk-text-nowrap uk-visible@l torrent-uploadRatio" data-order="<?php echo $torrent->uploadRatio; ?>">
 				<abbr title="<?php if ($this->transSession->isRatioLimited) {
 					echo $torrent->ratioPercentDone . '% de la limite de ratio atteinte - ';
 				} ?><?php echo $torrent->uploadedEver; ?> envoyés" uk-tooltip="pos: bottom">
 					<?php echo ($this->transSession->isRatioLimited) ? '<span class="uk-text-' . (($torrent->ratioPercentDone >= 100) ? 'success' : 'default') . '">' . $torrent->uploadRatio . '</span>' : $torrent->uploadRatio; ?>
 				</abbr>
 			</td>
-			<td class="uk-table-shrink uk-text-nowrap uk-visible@l" data-order="<?php echo $torrent->totalSizeInt; ?>">
+			<td id="torrent_<?php echo $torrent->id; ?>_totalSize" class="uk-table-shrink uk-text-nowrap uk-visible@l torrent-totalSize" data-order="<?php echo $torrent->totalSizeInt; ?>">
 				<?php
 				if ($torrent->isFinished) {
 					echo $torrent->totalSize;
 				} else {
 					// En cours de téléchargement
 					?>
-					<progress class="uk-progress uk-border-rounded uk-box-shadow-medium" title="Téléchargement : <?php echo $torrent->leftUntilDone . '/' . $torrent->totalSize; ?>" value="<?php echo $torrent->leftUntilDone; ?>" max="<?php echo $torrent->totalSize; ?>" uk-tooltip></progress>
+					<progress class="uk-progress uk-border-rounded uk-box-shadow-medium" title="<?php echo $torrent->leftUntilDone . ' restant/' . $torrent->totalSize.' total<br><br>Fin estimée dans '.$torrent->eta; ?>" value="<?php echo $torrent->percentDone; ?>" max="100" uk-tooltip></progress>
 					<?php
 				}
 				?>
@@ -379,17 +379,27 @@ class Downloads extends Page{
 		<?php
 	}
 
-	public function getAsyncDownloads(){
-		$torrents = array();
-		foreach ($this->torrents as $torrent) {
+	public function getTorrentsTableRows(){
+		if (isset($_REQUEST['order'])){
+			$order = explode(',', $_REQUEST['order']);
+			$columns = array(
+					'name',
+					'statusInt',
+					'downloadDir',
+					'uploadRatio',
+					'totalSizeInt'
+			);
+			$orderColumns = array($columns[$order[0]], 'name');
+			$orderASC = array(strtoupper($order[1]), 'ASC');
+			$torrents = Sanitize::sortObjectList($this->torrents, $orderColumns, $orderASC);
 
+		} else {
+			$torrents = $this->torrents;
 		}
-		echo json_encode(array(
-			'draw'            => 1,
-			'recordsTotal'    => count($torrents),
-			'recordsFiltered' => count($torrents),
-			'data'            => $torrents
-		));
+		//echo Get::varDump($this->torrents);
+		foreach ($torrents as $torrent){
+			$this->displayTorrent($torrent);
+		}
 	}
 
 	/**

@@ -160,7 +160,7 @@ if ($.fn.DataTable) {
 		}
 	});
 
-	$('#torrentBrowser').DataTable({
+	var torrentTable = $('#torrentBrowser').DataTable({
 		paging: false,
 		language: dataTablesLanguage,
 		autoWidth: false,
@@ -191,5 +191,21 @@ if ($.fn.DataTable) {
 			UIkit.modal('#torrentDetail').show();
 		});
 	});
+	//torrentTable.order([2, 'asc']).draw();
+
+	/*$(function() {
+		function refreshTorrents(){
+			var order = torrentTable.order();
+			$('#torrentsTableBody').load('index.php?page=downloads&aSync&downloads=getTorrentsTableRows&order=' + order);
+
+				torrentTable = torrentTable.rows().invalidate().draw();
+				//torrentTable.order(order).draw();
+				UIkit.update(event = 'update');
+		}
+		setInterval(refreshTorrents, 10000 );
+	});*/
+
+
+
 }
 
