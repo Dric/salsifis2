@@ -20,9 +20,17 @@ class Async {
 				self::viewExternalIP();
 			} elseif ($request == 'downloads'){
 				$downloads = new Downloads();
-				if ($args == 'getDownloads'){
-					header('Content-Type: application/json');
-					$downloads->getAsyncDownloads();
+				switch ($args){
+					case 'getDownloads':
+						$downloads->getAsyncDownloads();
+						break;
+					case 'torrentDetail':
+						if (isset($_REQUEST['torrentId'])){
+							return $downloads->torrentDetail((int)$_REQUEST['torrentId']);
+						} else {
+							return false;
+						}
+						break;
 				}
 			}
 		}

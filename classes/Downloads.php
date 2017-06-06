@@ -222,6 +222,25 @@ class Downloads extends Page{
 		return false;
 	}
 
+	protected function aSyncTable(){
+		?>
+		<div class="table-responsive uk-box-shadow-medium uk-overlay-default uk-padding-small" id="salsifis-table-container">
+			<table id="torrentBrowser" class="uk-table uk-table-divider uk-table-small uk-table-justify" data-order="[[ 1, 'asc' ]]">
+				<thead>
+					<tr>
+						<td data-class-name="uk-table-expand uk-table-link uk-text-truncate">Nom</td>
+						<td class="uk-visible@m">Statut</td>
+						<td class="uk-visible@m" data-class-name="uk-table-shrink uk-text-nowrap uk-visible@m">Emplacement</td>
+						<td class="uk-visible@l" data-class-name="uk-table-shrink uk-text-nowrap uk-visible@l">Ratio</td>
+						<td class="uk-visible@l" data-class-name="uk-table-shrink uk-text-nowrap uk-visible@l">Taille</td>
+					</tr>
+				</thead>
+				<tbody>
+			</tbody>
+		</table>
+		<?php
+	}
+
 	/**
 	 * Affiche la liste des torrents filtrés
 	 */
@@ -251,6 +270,8 @@ class Downloads extends Page{
 					</tbody>
 				</table>
 			</div>
+			<div id="torrentDetail" uk-modal>
+			</div>
 			<?php
 		}else{
 			?>
@@ -270,8 +291,8 @@ class Downloads extends Page{
 	protected function displayTorrent(Torrent $torrent){
 		?>
 		<tr id="torrent_<?php echo $torrent->id; ?>">
-			<td class="uk-table-expand uk-table-link uk-text-truncate"><?php echo $torrent->sanitizedName; ?></td>
-			<td class="uk-table-shrink uk-text-nowrap uk-visible@m" data-order="<?php echo $torrent->statusInt; ?>"><span title="<?php echo $torrent->status; ?>" uk-tooltip="pos: bottom" class="fa fa-<?php echo $torrent->statusIcon; ?>"></span></td>
+			<td class="uk-table-expand uk-table-link uk-text-truncate"><a href="#torrentDetail" class="torrentDetailLink" data-id="<?php echo $torrent->id; ?>"><?php echo $torrent->sanitizedName; ?></a></td>
+			<td class="uk-table-shrink uk-text-nowrap uk-visible@m" data-search="<?php echo $torrent->status; ?>" data-order="<?php echo $torrent->statusInt; ?>"><span title="<?php echo $torrent->status; ?>" uk-tooltip="pos: bottom" class="fa fa-<?php echo $torrent->statusIcon; ?>"></span></td>
 			<td class="uk-table-shrink uk-text-nowrap uk-visible@m">
 				<?php
 				if (Settings::DATA_PARTITION . DIRECTORY_SEPARATOR . $torrent->downloadDir == $this->transSession->defaultDownloadDir) {
@@ -302,6 +323,73 @@ class Downloads extends Page{
 			</td>
 		</tr>
 		<?php
+	}
+
+	public function torrentDetail($id){
+		/** @var Torrent $torrent */
+		$torrent = $this->torrents[$id];
+		// 'id', 'name', 'addedDate', 'status', 'doneDate', 'totalSize', 'downloadDir', 'uploadedEver', 'isFinished', 'leftUntilDone', 'percentDone', 'files', 'eta', 'uploadRatio', 'comment', 'seedRatioLimit'
+		?>
+		<div class="uk-modal-dialog">
+      <button class="uk-modal-close-default" type="button" uk-close></button>
+      <div class="uk-modal-header">
+        <h2 class="uk-modal-title"><?php echo $torrent->name; ?></h2>
+      </div>
+      <div class="uk-modal-body">
+	      <ul>
+	        <li>
+	        <?php
+	         echo 'Début : ' . $torrent->addedDate . ', fin ';
+	         echo ($torrent->isFinished) ? ' : '. $torrent->doneDate : 'estimée dans <span id="torrent_estimated_end_'. $torrent->id. '">' . $torrent->eta . '</span>';
+	        ?>
+					</li>
+					<?php if ($torrent->isFinished){ ?>
+					<li>Ratio d'envoi/réception : <span id="torrent-ratio_<?php echo $torrent->id; ?>"><?php echo $torrent->uploadRatio.' ('.$torrent->uploadedEver.' envoyés'. (($this->transSession->isRatioLimited) ? ', ' . $torrent->ratioPercentDone.'% du ratio atteint)' : ''); ?></span></li>
+					<li>Taille : <?php echo $torrent->totalSize; ?></li>
+					<?php }else{ ?>
+					<li>Reste à télécharger : <span id="torrent-leftuntildone_<?php echo $torrent->id; ?>"><?php echo $torrent->leftUntilDone.'/'.$torrent->totalSize; ?></span></li>
+					<?php } ?>
+					<li>Téléchargé dans : <?php echo $torrent->downloadDir; ?></li>
+					<?php if (!empty($torrent->comment)){ ?>
+					<li>Commentaire : <?php echo $torrent->comment; ?></li>
+					<?php } ?>
+					<li>
+						<a uk-toggle="target: #collapse_<?php echo $torrent->id; ?>" data-parent="#torrent_<?php echo $torrent->id; ?>" href="#collapse_<?php echo $torrent->id; ?>">Liste des fichiers</a>
+						<ul class="uk-text-small" id="collapse_<?php echo $torrent->id; ?>">
+						<?php
+						foreach ($torrent->files as $file){
+							?><li><?php echo $file->name; ?></li><?php
+						}
+						?>
+						</ul>
+					</li>
+					<?php if (!empty($torrent->nfo)){ ?>
+					<li>
+						<a uk-toggle="target: #collapse_nfo_<?php echo $torrent->id; ?>"  data-parent="#torrent_<?php echo $torrent->id; ?>" href="#collapse_nfo_<?php echo $torrent->id; ?>">Informations sur le fichier principal</a>
+						<div class="collapse" id="collapse_nfo_<?php echo $torrent->id; ?>" hidden><pre><?php echo $torrent->nfo; ?></pre></div>
+					</li>
+					<?php } ?>
+				</ul>
+			</div>
+      <div class="uk-modal-footer">
+				<button class="uk-button uk-button-default uk-modal-close" type="button">Annuler</button>
+        <button class="uk-button uk-button-primary" type="button">Save</button>
+			</div>
+    </div>
+		<?php
+	}
+
+	public function getAsyncDownloads(){
+		$torrents = array();
+		foreach ($this->torrents as $torrent) {
+
+		}
+		echo json_encode(array(
+			'draw'            => 1,
+			'recordsTotal'    => count($torrents),
+			'recordsFiltered' => count($torrents),
+			'data'            => $torrents
+		));
 	}
 
 	/**
@@ -481,9 +569,6 @@ class Downloads extends Page{
 		<?php
 	}
 
-	public function getAsyncDownloads(){
-		echo json_encode($this->torrents);
-	}
 
 	protected function runAction(){
 		if (isset($_REQUEST['action'])){

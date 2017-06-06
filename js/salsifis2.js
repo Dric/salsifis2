@@ -164,11 +164,29 @@ if ($.fn.DataTable) {
 		paging: false,
 		language: dataTablesLanguage,
 		autoWidth: false,
+		rowId: 'id',
 		"initComplete": function(settings, json) {
-			console.log('Terminé !');
-
+			/*var api = this.api();
+			api.$('td').click( function () {
+				var search = (this.data('search'))? this.data('search') : this.innerHTML;
+				api.search( search ).draw();
+			} );*/
 			$('#salsifis-table-container').fadeIn();
 		}
+	});
+
+	$('.torrentDetailLink').on('click', function(){
+		var id = $(this).data('id');
+		$.ajax({
+			method  : "POST",
+			url     : "index.php",
+			dataType: "html",
+			timeout : 2000,
+			data    : {aSync: true, downloads: 'torrentDetail', torrentId: id}
+		}).done(function (data) {
+			$('#torrentDetail').html(data);
+			UIkit.modal('#torrentDetail');
+		});
 	});
 }
 
