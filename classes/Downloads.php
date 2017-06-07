@@ -372,25 +372,25 @@ class Downloads extends Page{
 				</ul>
 			</div>
       <div class="uk-modal-footer">
-	      <form class="uk-form-horizontal" action="?page=downloads" method="post">
+	      <form class="uk-form-horizontal uk-" action="?page=downloads" method="post">
 	        <input type="hidden" name="torrentId" value="<?php echo $torrent->id; ?>">
-	        <button class="uk-button uk-button-default uk-modal-close" type="button">Annuler</button>
-	        <div class="uk-button-group">
+	        <!-- <button class="uk-button uk-button-default uk-modal-close" type="button">Annuler</button> -->
+	        <div class="uk-button-group uk-margin-small-bottom">
 		        <div uk-form-custom="target: > * > span:first">
 	            <select <?php if (!$torrent->isFinished) { echo 'disabled'; }?> name="moveTo">
 	                <option value="">Déplacer vers...</option>
 	                <?php
 	                foreach (Settings::DOWNLOAD_DIRS as $dlDir => $label){
-	                  ?><option value="<?php echo $dlDir; ?>"><?php echo $label; ?></option><?php
+	                  ?><option value="<?php echo $dlDir; ?>" <?php if ($torrent->rawDownloadDir == $dlDir) {echo 'selected';} ?>><?php echo $label; ?></option><?php
 	                }
 	                ?>
 	            </select>
-	            <button tabindex="-1">
+	            <button class="uk-button uk-button-default"  type="button" tabindex="-1">
 	                <span></span>
 	                <span class="fa fa-chevron-down"></span>
 	            </button>
 	          </div>
-	          <button name="moveTorrent" formmethod="post" <?php if (!$torrent->isFinished) { echo 'disabled'; }?> class="uk-button uk-button-default" type="submit" >Déplacer</button>
+	          <button name="action" value="moveTorrent" formmethod="post" <?php if (!$torrent->isFinished) { echo 'disabled'; }?> class="uk-button uk-button-default" type="submit" >Déplacer</button>
           </div>
 	        <button name="deleteTorrent" class="uk-button uk-button-danger" type="submit">Supprimer</button>
 				</form>
@@ -427,7 +427,10 @@ class Downloads extends Page{
 	 */
 	public function main() {
 		if ($this->transSession){
-			$ret = $this->runAction();
+			if ($this->runAction()) {
+				// On empêche de resoumettre les formulaires en cas de rafraîchissement de page (https://stackoverflow.com/a/722567/1749967)
+				header('Location: ?page=downloads');
+			}
 			//echo Get::varDump($this->transSession);
 			$this->serverSettings();
 			if($this->transSession->altSpeedEnabled){
