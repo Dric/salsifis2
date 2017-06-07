@@ -376,7 +376,7 @@ class Downloads extends Page{
 	        <input type="hidden" name="torrentId" value="<?php echo $torrent->id; ?>">
 	        <button class="uk-button uk-button-default uk-modal-close" type="button">Annuler</button>
 	        <div uk-form-custom="target: > * > span:first">
-            <select <?php if (!$torrent->isFinished) { echo 'disabled'; ?> name="moveTo">
+            <select <?php if (!$torrent->isFinished) { echo 'disabled'; }?> name="moveTo">
                 <option value="">Déplacer vers...</option>
                 <?php
                 foreach (Settings::DOWNLOAD_DIRS as $dlDir => $label){
@@ -384,7 +384,7 @@ class Downloads extends Page{
                 }
                 ?>
             </select>
-            <button name="moveTorrent" formmethod="post" <?php if (!$torrent->isFinished) { echo 'disabled'; ?> class="uk-button uk-button-default" type="submit" tabindex="-1">
+            <button name="moveTorrent" formmethod="post" <?php if (!$torrent->isFinished) { echo 'disabled'; }?> class="uk-button uk-button-default" type="submit" tabindex="-1">
                 <span></span>
                 <span class="fa fa-chevron-down"></span>
             </button>
