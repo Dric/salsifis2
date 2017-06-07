@@ -350,19 +350,21 @@ class Downloads extends Page{
 					<li>Reste à télécharger : <code><span id="torrent-leftuntildone_<?php echo $torrent->id; ?>"><?php echo $torrent->leftUntilDone.'/'.$torrent->totalSize; ?></span></code></li>
 					<?php } ?>
 					<li>
-						<form class="uk-form-horizontal uk-text-right" action="?page=downloads" method="post">
+						<form class="uk-form-horizontal" action="?page=downloads" method="post">
 							<input type="hidden" name="torrentId" value="<?php echo $torrent->id; ?>">
-							Téléchargé dans :
-							<select <?php if (!$torrent->isFinished) { echo 'disabled'; }?> name="moveTo">
-		            <?php if (!isset(Settings::DOWNLOAD_DIRS[$torrent->rawDownloadDir])) {
-		              echo '<option value="">Non classé</option>';
-		            }
-		            foreach (Settings::DOWNLOAD_DIRS as $dlDir => $label){
-		              ?><option value="<?php echo $dlDir; ?>" <?php if ($torrent->rawDownloadDir == $dlDir) {echo 'selected';} ?>><?php echo $label; ?></option><?php
-		            }
-		            ?>
-		          </select>
-		          <button name="action" value="moveTorrent" formmethod="post" <?php if (!$torrent->isFinished) { echo 'disabled'; }?> class="uk-button uk-button-small uk-button-default" type="submit" >Déplacer</button>
+							<label class="uk-form-label" for="salsifis-torrent-path">Téléchargé dans :</label>
+			        <div class="uk-form-controls">
+								<select class="uk-select uk-form-small" id="salsifis-torrent-path" <?php if (!$torrent->isFinished) { echo 'disabled'; }?> name="moveTo">
+			            <?php if (!isset(Settings::DOWNLOAD_DIRS[$torrent->rawDownloadDir])) {
+			              echo '<option value="">Non classé</option>';
+			            }
+			            foreach (Settings::DOWNLOAD_DIRS as $dlDir => $label){
+			              ?><option value="<?php echo $dlDir; ?>" <?php if ($torrent->rawDownloadDir == $dlDir) {echo 'selected';} ?>><?php echo $label; ?></option><?php
+			            }
+			            ?>
+			          </select>
+		            <button name="action" value="moveTorrent" formmethod="post" <?php if (!$torrent->isFinished) { echo 'disabled'; }?> class="uk-button uk-button-small uk-button-default" type="submit" >Déplacer</button>
+              </div>
 	          </form>
 					</li>
 					<?php if (!empty($torrent->comment)){ ?>
