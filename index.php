@@ -11,6 +11,7 @@
 
 $salsifisVersion = '2.0beta';
 
+session_start();
 
 /**
  * Auto-Loading des classes
@@ -120,6 +121,14 @@ if (Settings::USE_AUTH and !Auth::isLoggedIn()) {
 		<div class="uk-visible@l uk-padding">&nbsp;</div>
 		<div class="uk-section uk-padding-remove-top">
 			<div class="uk-container uk-container-small">
+				<?php
+				if (isset($_SESSION['alerts']) and !empty($_SESSION['alerts'])){
+					foreach ($_SESSION['alerts'] as $alert){
+						Components::Alert($alert['type'], $alert['message']);
+					}
+					unset($_SESSION['alerts']);
+				}
+				?>
 				<?php $page->main(); ?>
 			</div>
 		</div>

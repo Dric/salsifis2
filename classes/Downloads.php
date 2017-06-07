@@ -100,20 +100,20 @@ class Downloads extends Page{
 	 */
 	protected function moveTorrent(){
 		if(!isset($_REQUEST['moveTo'])){
-			Components::Alert('danger', 'Le répertoire de destination est manquant !');
+			$_SESSION['alert'][] = array('type' => 'danger', 'message' => 'Le répertoire de destination est manquant !');
 			return false;
 		}
 		if(!isset($_REQUEST['torrentId'])){
-			Components::Alert('danger', 'L\'identifiant du téléchargement est manquant !');
+			$_SESSION['alert'][] = array('type' => 'danger', 'message' => 'L\'identifiant du téléchargement est manquant !');
 			return false;
 		}
 
 		$ret = $this->transSession->move((int)$_REQUEST['torrentId'], Settings::DATA_PARTITION.DIRECTORY_SEPARATOR.$_REQUEST['moveTo']);
 		if ($ret->result == 'success'){
-			Components::Alert('success', 'Le téléchargement a été déplacé !');
+			$_SESSION['alert'][] = array('type' => 'success', 'message' => 'Le téléchargement a été déplacé !');
 			return true;
 		}else{
-			Components::Alert('danger', 'Impossible de déplacer le téléchargement !');
+			$_SESSION['alert'][] = array('type' => 'danger', 'message' => 'Impossible de déplacer le téléchargement !');
 			return false;
 		}
 	}
@@ -124,7 +124,7 @@ class Downloads extends Page{
 	 */
 	protected function delTorrent(){
 		if(!isset($_REQUEST['torrentId'])){
-			Components::Alert('danger', 'L\'identifiant du téléchargement est manquant !');
+			$_SESSION['alert'][] = array('type' => 'danger', 'message' => 'L\'identifiant du téléchargement est manquant !');
 			return false;
 		}
 		if(!isset($_REQUEST['deleteFiles'])) $_REQUEST['deleteFiles'] = true;
@@ -132,10 +132,10 @@ class Downloads extends Page{
 		$ts = $this->getTransSession();
 		$ret = $ts->remove((int)$_REQUEST['torrentId'], $_REQUEST['deleteFiles']);
 		if ($ret->result == 'success'){
-			Components::Alert('success', 'Le téléchargement a été supprimé !');
+			$_SESSION['alert'][] = array('type' => 'success', 'message' => 'Le téléchargement a été supprimé !');
 			return true;
 		}else{
-			Components::Alert('danger', 'Impossible de supprimer le téléchargement !');
+			$_SESSION['alert'][] = array('type' => 'danger', 'message' => 'Impossible de supprimer le téléchargement !');
 			return false;
 		}
 	}
@@ -218,7 +218,7 @@ class Downloads extends Page{
 		if (!$error){
 			return $this->transSession->saveSession();
 		}
-		Components::Alert('danger', 'Erreur : Impossible de sauvegarder les paramètres !');
+		$_SESSION['alert'][] = array('type' => 'danger', 'message' => 'Erreur : Impossible de sauvegarder les paramètres !');
 		return false;
 	}
 
