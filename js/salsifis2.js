@@ -166,11 +166,11 @@ if ($.fn.DataTable) {
 		autoWidth: false,
 		rowId: 'id',
 		"initComplete": function(settings, json) {
-			/*var api = this.api();
-			api.$('td').click( function () {
+			var api = this.api();
+			api.$('.torrent-status').click( function () {
 				var search = (this.data('search'))? this.data('search') : this.innerHTML;
 				api.search( search ).draw();
-			} );*/
+			});
 			$('#salsifis-table-container').fadeIn();
 		}
 	});

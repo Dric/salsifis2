@@ -372,8 +372,25 @@ class Downloads extends Page{
 				</ul>
 			</div>
       <div class="uk-modal-footer">
-				<button class="uk-button uk-button-default uk-modal-close" type="button">Annuler</button>
-        <button class="uk-button uk-button-primary" type="button">Save</button>
+	      <form class="uk-form-horizontal" action="?page=downloads" method="post">
+	        <input type="hidden" name="torrentId" value="<?php echo $torrent->id; ?>">
+	        <button class="uk-button uk-button-default uk-modal-close" type="button">Annuler</button>
+	        <div uk-form-custom="target: > * > span:first">
+            <select <?php if (!$torrent->isFinished) { echo 'disabled'; ?> name="moveTo">
+                <option value="">Déplacer vers...</option>
+                <?php
+                foreach (Settings::DOWNLOAD_DIRS as $dlDir => $label){
+                	?><option value="<?php echo $dlDir; ?>"><?php echo $label; ?></option><?php
+                }
+                ?>
+            </select>
+            <button name="moveTorrent" formmethod="post" <?php if (!$torrent->isFinished) { echo 'disabled'; ?> class="uk-button uk-button-default" type="submit" tabindex="-1">
+                <span></span>
+                <span class="fa fa-chevron-down"></span>
+            </button>
+        </div>
+	        <button name="deleteTorrent" class="uk-button uk-button-danger" type="submit">Supprimer</button>
+				</form>
 			</div>
     </div>
 		<?php
@@ -422,7 +439,7 @@ class Downloads extends Page{
 			?>
 			<p>Il y a un souci de communication avec le service de téléchargement. Vous pouvez passer par l'interface web du service pour administrer vos téléchargements.</p>
 			<div class="uk-text-center">
-				<a class="uk-button uk-button-large uk-button-secondary" href="<?php echo Settings::TRANSMISSION_WEB_URL; ?>" title="Transmission est le composant qui permet de gérer les téléchargements du serveur.<br>Il possède une interface web un peu austère qui apporte plus de fonctionnalités que celle-ci." uk-tooltip="pos: bottom">Interface Web de Transmission</a>
+				<a class="uk-button uk-button-large uk-button-default" href="<?php echo Settings::TRANSMISSION_WEB_URL; ?>" title="Transmission est le composant qui permet de gérer les téléchargements du serveur.<br>Il possède une interface web un peu austère qui apporte plus de fonctionnalités que celle-ci." uk-tooltip="pos: bottom">Interface Web de Transmission</a>
 			</div>
 			<?php
 		}
