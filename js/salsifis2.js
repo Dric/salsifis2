@@ -124,6 +124,21 @@ if (isHomePage) {
 
 	UIkit.use(plugin$10);
 
+	$('.serverSettingsLink').on('click', function(e){
+		e.preventDefault();
+		var id = $(this).data('id');
+		$.ajax({
+			method  : "POST",
+			url     : "index.php",
+			dataType: "html",
+			timeout : 2000,
+			data    : {aSync: true, serverSettings: true}
+		}).done(function (data) {
+			$('#serverSettings').html(data);
+			UIkit.modal('#serverSettings').show();
+		});
+	});
+
 }
 
 if ($.fn.DataTable) {

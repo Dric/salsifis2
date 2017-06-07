@@ -28,6 +28,9 @@ class Page {
 	 * Contenu principal
 	 */
 	public function main(){
+		if (isset($_REQUEST['action']) and $_REQUEST['action'] == 'saveServerSettings'){
+			Admin::saveServerSettings();
+		}
 		?>
 		<div class="uk-child-width-1-3@m uk-grid-small uk-grid-match uk-animation-fade" uk-grid>
 			<a href="?page=downloads" title="Pour savoir où en sont vos téléchargements, pour les classer ou les supprimer, c'est par ici !" class="salsifis-main-menu-link" uk-tooltip="pos: bottom">
@@ -81,6 +84,8 @@ class Page {
 				</div>
 			</div>
 		</div>
+		<div id="serverSettings" uk-modal>
+		</div>
 		<?php
 	}
 
@@ -88,7 +93,11 @@ class Page {
 	 * Menu latéral
 	 */
 	public function menu(){
-
+		?>
+		<ul class="uk-nav uk-nav-default uk-margin-auto-vertical">
+			<li><a class="serverSettingsLink" href="#serverSettings" uk-toggle>Paramètres <?php echo Get::getTitleWithArticle(); ?></a></li>
+		</ul>
+		<?php
 	}
 
 	/**

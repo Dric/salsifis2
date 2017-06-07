@@ -32,6 +32,9 @@ class Async {
 						}
 						break;
 				}
+			}elseif ($request == 'serverSettings'){
+				Admin::displayServerSettings();
+				break;
 			}
 		}
 		return true;

@@ -352,9 +352,9 @@ class Downloads extends Page{
 					<li>
 						<form class="uk-form-horizontal" action="?page=downloads" method="post">
 							<input type="hidden" name="torrentId" value="<?php echo $torrent->id; ?>">
-							<label class="uk-form-label" for="salsifis-torrent-path">Téléchargé dans :</label>
-			        <div class="uk-form-controls">
-								<select class="uk-select uk-form-small" id="salsifis-torrent-path" <?php if (!$torrent->isFinished) { echo 'disabled'; }?> name="moveTo">
+							<label class="uk-float-left" for="salsifis-torrent-path">Téléchargé dans : </label>
+			        <div class="">
+								<select class="uk-select uk-form-width-medium uk-form-small" id="salsifis-torrent-path" <?php if (!$torrent->isFinished) { echo 'disabled'; }?> name="moveTo">
 			            <?php if (!isset(Settings::DOWNLOAD_DIRS[$torrent->rawDownloadDir])) {
 			              echo '<option value="">Non classé</option>';
 			            }

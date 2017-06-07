@@ -127,4 +127,22 @@ class Get {
 		}
 		return $ret;
 	}
+
+	public static function getTitleWithArticle(){
+		$voyelles = array('a', 'e', 'i', 'o', 'u', 'y', 'É', 'Â');
+		if (preg_match('/^les (.*)/i', Settings::TITLE, $match)) {
+			$hasArticle = true;
+			$hasVoyelle = false;
+			$title      = $match[1];
+		}elseif (in_array(strtolower(Settings::TITLE[0]), $voyelles)){
+			$hasArticle = false;
+			$hasVoyelle = true;
+			$title = Settings::TITLE;
+		} else {
+			$hasArticle = false;
+			$hasVoyelle = false;
+			$title = Settings::TITLE;
+		}
+		return (($hasArticle) ? 'des' : (($hasVoyelle) ? 'd\'': 'de')) . ' '. $title;
+	}
 }

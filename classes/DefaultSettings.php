@@ -28,7 +28,7 @@ class DefaultSettings {
 	  'livres'              => 'Livres',
 	  'fichiers'            => 'Fichiers'
 	);
-	/** Utilisation d'un mot de passe pour se connecter */
+	/** Utiliser un mot de passe pour se connecter */
 	const USE_AUTH              = false;
 	/** Mot de passe */
 	const PASSWORD              = null;
