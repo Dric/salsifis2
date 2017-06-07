@@ -100,20 +100,20 @@ class Downloads extends Page{
 	 */
 	protected function moveTorrent(){
 		if(!isset($_REQUEST['moveTo'])){
-			$_SESSION['alert'][] = array('type' => 'danger', 'message' => 'Le répertoire de destination est manquant !');
+			$_SESSION['alerts'][] = array('type' => 'danger', 'message' => 'Le répertoire de destination est manquant !');
 			return false;
 		}
 		if(!isset($_REQUEST['torrentId'])){
-			$_SESSION['alert'][] = array('type' => 'danger', 'message' => 'L\'identifiant du téléchargement est manquant !');
+			$_SESSION['alerts'][] = array('type' => 'danger', 'message' => 'L\'identifiant du téléchargement est manquant !');
 			return false;
 		}
 
 		$ret = $this->transSession->move((int)$_REQUEST['torrentId'], Settings::DATA_PARTITION.DIRECTORY_SEPARATOR.$_REQUEST['moveTo']);
 		if ($ret->result == 'success'){
-			$_SESSION['alert'][] = array('type' => 'success', 'message' => 'Le téléchargement a été déplacé !');
+			$_SESSION['alerts'][] = array('type' => 'success', 'message' => 'Le téléchargement a été déplacé !');
 			return true;
 		}else{
-			$_SESSION['alert'][] = array('type' => 'danger', 'message' => 'Impossible de déplacer le téléchargement !');
+			$_SESSION['alerts'][] = array('type' => 'danger', 'message' => 'Impossible de déplacer le téléchargement !');
 			return false;
 		}
 	}
@@ -124,7 +124,7 @@ class Downloads extends Page{
 	 */
 	protected function delTorrent(){
 		if(!isset($_REQUEST['torrentId'])){
-			$_SESSION['alert'][] = array('type' => 'danger', 'message' => 'L\'identifiant du téléchargement est manquant !');
+			$_SESSION['alerts'][] = array('type' => 'danger', 'message' => 'L\'identifiant du téléchargement est manquant !');
 			return false;
 		}
 		if(!isset($_REQUEST['deleteFiles'])) $_REQUEST['deleteFiles'] = true;
@@ -132,10 +132,10 @@ class Downloads extends Page{
 		$ts = $this->getTransSession();
 		$ret = $ts->remove((int)$_REQUEST['torrentId'], $_REQUEST['deleteFiles']);
 		if ($ret->result == 'success'){
-			$_SESSION['alert'][] = array('type' => 'success', 'message' => 'Le téléchargement a été supprimé !');
+			$_SESSION['alerts'][] = array('type' => 'success', 'message' => 'Le téléchargement a été supprimé !');
 			return true;
 		}else{
-			$_SESSION['alert'][] = array('type' => 'danger', 'message' => 'Impossible de supprimer le téléchargement !');
+			$_SESSION['alerts'][] = array('type' => 'danger', 'message' => 'Impossible de supprimer le téléchargement !');
 			return false;
 		}
 	}
@@ -218,7 +218,7 @@ class Downloads extends Page{
 		if (!$error){
 			return $this->transSession->saveSession();
 		}
-		$_SESSION['alert'][] = array('type' => 'danger', 'message' => 'Erreur : Impossible de sauvegarder les paramètres !');
+		$_SESSION['alerts'][] = array('type' => 'danger', 'message' => 'Erreur : Impossible de sauvegarder les paramètres !');
 		return false;
 	}
 
@@ -349,7 +349,22 @@ class Downloads extends Page{
 					<?php }else{ ?>
 					<li>Reste à télécharger : <code><span id="torrent-leftuntildone_<?php echo $torrent->id; ?>"><?php echo $torrent->leftUntilDone.'/'.$torrent->totalSize; ?></span></code></li>
 					<?php } ?>
-					<li>Téléchargé dans : <code><?php echo $torrent->downloadDir; ?></code></li>
+					<li>
+						<form class="uk-form-horizontal uk-text-right" action="?page=downloads" method="post">
+							<input type="hidden" name="torrentId" value="<?php echo $torrent->id; ?>">
+							Téléchargé dans :
+							<select <?php if (!$torrent->isFinished) { echo 'disabled'; }?> name="moveTo">
+		            <?php if (!isset(Settings::DOWNLOAD_DIRS[$torrent->rawDownloadDir])) {
+		              echo '<option value="">Non classé</option>';
+		            }
+		            foreach (Settings::DOWNLOAD_DIRS as $dlDir => $label){
+		              ?><option value="<?php echo $dlDir; ?>" <?php if ($torrent->rawDownloadDir == $dlDir) {echo 'selected';} ?>><?php echo $label; ?></option><?php
+		            }
+		            ?>
+		          </select>
+		          <button name="action" value="moveTorrent" formmethod="post" <?php if (!$torrent->isFinished) { echo 'disabled'; }?> class="uk-button uk-button-small uk-button-default" type="submit" >Déplacer</button>
+	          </form>
+					</li>
 					<?php if (!empty($torrent->comment)){ ?>
 					<li>Commentaire : <?php echo $torrent->comment; ?></li>
 					<?php } ?>
@@ -372,26 +387,9 @@ class Downloads extends Page{
 				</ul>
 			</div>
       <div class="uk-modal-footer">
-	      <form class="uk-form-horizontal uk-" action="?page=downloads" method="post">
+	      <form class="uk-form-horizontal uk-text-right" action="?page=downloads" method="post">
 	        <input type="hidden" name="torrentId" value="<?php echo $torrent->id; ?>">
-	        <!-- <button class="uk-button uk-button-default uk-modal-close" type="button">Annuler</button> -->
-	        <div class="uk-button-group uk-margin-small-bottom">
-		        <div uk-form-custom="target: > * > span:first">
-	            <select <?php if (!$torrent->isFinished) { echo 'disabled'; }?> name="moveTo">
-	                <option value="">Déplacer vers...</option>
-	                <?php
-	                foreach (Settings::DOWNLOAD_DIRS as $dlDir => $label){
-	                  ?><option value="<?php echo $dlDir; ?>" <?php if ($torrent->rawDownloadDir == $dlDir) {echo 'selected';} ?>><?php echo $label; ?></option><?php
-	                }
-	                ?>
-	            </select>
-	            <button class="uk-button uk-button-default"  type="button" tabindex="-1">
-	                <span></span>
-	                <span class="fa fa-chevron-down"></span>
-	            </button>
-	          </div>
-	          <button name="action" value="moveTorrent" formmethod="post" <?php if (!$torrent->isFinished) { echo 'disabled'; }?> class="uk-button uk-button-default" type="submit" >Déplacer</button>
-          </div>
+	        <button class="uk-button uk-button-default uk-modal-close" type="button">Annuler</button>
 	        <button name="deleteTorrent" class="uk-button uk-button-danger" type="submit">Supprimer</button>
 				</form>
 			</div>
