@@ -7,7 +7,7 @@ use FileSystem\Fs;
  * Time: 13:53
  */
 class Admin {
-	protected static function readSettings() {
+	protected static function readSettings($defaultOnly = false) {
 		$fs = new \FileSystem\Fs('classes/');
 		$settingsFile = $fs->readFile( 'DefaultSettings.php', 'array', true, true);
 		$constants = array();
@@ -52,7 +52,7 @@ class Admin {
 			}
 		}
 		$constantName = null;
-		if ($fs->fileExists('Settings.php')) {
+		if ($fs->fileExists('Settings.php') and !$defaultOnly) {
 			$settingsFile = $fs->readFile( 'Settings.php', 'array', true, true);
 			foreach ($settingsFile as $key => $line){
 				if (stristr(strtolower($line), 'const ')){
@@ -216,7 +216,7 @@ class Admin {
 	}
 
 	public static function saveServerSettings(){
-		$constants = self::readSettings();
+		$constants = self::readSettings(true);
 		foreach ($constants as $constant => $tab){
 			if (isset($_REQUEST[$constant]) and !empty($_REQUEST[$constant])){
 				$request = htmlspecialchars($_REQUEST[$constant]);
@@ -236,7 +236,7 @@ class Admin {
 				$constants[$constant]['value'] = $value;
 			}
 		}
-		echo Get::varDump($constants);
+		//echo Get::varDump($constants);
 		$fs = new Fs('classes');
 		if (!$fs->fileExists('Settings.php')){
 			$content = '<?php
@@ -253,6 +253,7 @@ class Settings extends DefaultSettings {
 			}
 		}
 		$settingsFile = $fs->readFile('Settings.php', 'array', true, true);
+		//echo Get::varDump($settingsFile);
 		$isArray = false;
 		foreach ($settingsFile as $key => $line){
 			if ($isArray){
@@ -261,13 +262,19 @@ class Settings extends DefaultSettings {
 				}
 				unset($settingsFile[$key]);
 			} else {
-				preg_match('/const (.+?) = (.*)/', $line, $matchesLine);
-				$constantName = trim($matchesLine[1], " ");
-
-				if (!is_null($constants[$constantName]['value'])) {
-					list($value, $isArray) = self::varToText($constantName, $constants);
-					preg_replace('/const (.+?) = (.*)/', 'const $1 = ' . $value, $settingsFile[$key]);
-					unset($constants[$constantName]);
+				if (preg_match('/const (.+?) = (.*)/', $line, $matchesLine)) {
+					$constantName = trim($matchesLine[1], " ");
+					if (!is_null($constants[$constantName]['value'])) {
+						list($value, $isArray) = self::varToText($constantName, $constants);
+						$settingsFile[$key] = preg_replace('/const (.+?) = (.*)/', 'const $1 = ' . $value, $settingsFile[$key]);
+						unset($constants[$constantName]);
+					} else {
+						if ($constants[$constantName]['type'] == 'array') {
+							$isArray = true;
+						}
+						unset($settingsFile[$key-1]);
+						unset($settingsFile[$key]);
+					}
 				}
 			}
 		}
@@ -278,12 +285,20 @@ class Settings extends DefaultSettings {
 				if (!is_null($tab['value'])){
 					list($value, $isArray) = self::varToText($constant, $constants);
 					$settingsFile[] = ' /** '.$tab['explain'].' */';
-					$settingsFile[] = '  const ' . $constant . '   => ' . $value;
+					$settingsFile[] = '  const ' . $constant . '   = ' . $value;
 				}
 			}
 			$settingsFile[] = '}';
 		}
-		echo Get::varDump($settingsFile);
+		//echo Get::varDump($settingsFile);
+		$ret = $fs->writeFile('Settings.php', $settingsFile, false, false, true);
+		if ($ret){
+			$fs->setChmod('Settings.php', 777);
+			$_SESSION['alerts'][] = array('type'=>'success','message'=>'Paramètres sauvegardés !');
+		} else {
+			$_SESSION['alerts'][] = array('type'=>'danger','message'=>'Impossible de sauvegarder les paramètres !');
+		}
+		return $ret;
 	}
 
 	protected static function varToText($constantName, $constants){
