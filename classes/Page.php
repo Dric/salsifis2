@@ -30,6 +30,8 @@ class Page {
 	public function main(){
 		if (isset($_REQUEST['action']) and $_REQUEST['action'] == 'saveServerSettings'){
 			Admin::saveServerSettings();
+			// On empêche de resoumettre les formulaires en cas de rafraîchissement de page (https://stackoverflow.com/a/722567/1749967)
+			header('Location: .');
 		}
 		?>
 		<div class="uk-child-width-1-3@m uk-grid-small uk-grid-match uk-animation-fade" uk-grid>

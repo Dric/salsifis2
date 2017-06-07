@@ -1,4 +1,5 @@
 <?php
+use FileSystem\Fs;
 
 /**
  * Creator: Dric
@@ -236,5 +237,79 @@ class Admin {
 			}
 		}
 		echo Get::varDump($constants);
+		$fs = new Fs('classes');
+		if (!$fs->fileExists('Settings.php')){
+			$content = '<?php
+/**
+ * Date: '.date('d/m/Y', time()).'
+ * Time: '.date('H:i', time()).'
+ */
+class Settings extends DefaultSettings {
+}';
+			$ret = $fs->writeFile('Settings.php', $content);
+			if (!$ret) {
+				$_SESSION['alerts'][] = array('type'=>'danger','message'=>'Impossible de créer le fichier <code>Settings.php</code>');
+				return false;
+			}
+		}
+		$settingsFile = $fs->readFile('Settings.php', 'array', true, true);
+		$isArray = false;
+		foreach ($settingsFile as $key => $line){
+			if ($isArray){
+				if (preg_match('/\);/', $line)){
+					$isArray = false;
+				}
+				unset($settingsFile[$key]);
+			} else {
+				preg_match('/const (.+?) = (.*)/', $line, $matchesLine);
+				$constantName = trim($matchesLine[1], " ");
+
+				if (!is_null($constants[$constantName]['value'])) {
+					list($value, $isArray) = self::varToText($constantName, $constants);
+					preg_replace('/const (.+?) = (.*)/', 'const $1 = ' . $value, $settingsFile[$key]);
+					unset($constants[$constantName]);
+				}
+			}
+		}
+		if (!empty($constants)) {
+			// On enlève la dernière accolade du fichier
+			array_pop($settingsFile);
+			foreach ($constants as $constant => $tab) {
+				if (!is_null($tab['value'])){
+					list($value, $isArray) = self::varToText($constant, $constants);
+					$settingsFile[] = ' /** '.$tab['explain'].' */';
+					$settingsFile[] = '  const ' . $constant . '   => ' . $value;
+				}
+			}
+			$settingsFile[] = '}';
+		}
+		echo Get::varDump($settingsFile);
+	}
+
+	protected static function varToText($constantName, $constants){
+		$isArray = false;
+		switch ($constants[$constantName]['type']) {
+			case 'string':
+				$value = '\'' . $constants[$constantName]['value'] . '\';';
+				break;
+			case 'int':
+			case 'float':
+				$value = $constants[$constantName]['value'] . ';';
+				break;
+			case 'bool':
+				$value = ($constants[$constantName]['value']) ? 'true;' : 'false;';
+				break;
+			case 'array':
+				$value = 'array(' . PHP_EOL;
+				foreach ($constants[$constantName]['value'] as $item => $itemVal) {
+					$value = '		' . $item . '   => ' . $itemVal . ',' . PHP_EOL;
+				}
+				$value = substr($value, 0, -2) . PHP_EOL . '  );';
+				$isArray = true;
+				break;
+			default:
+				$value = 'null;';
+		}
+		return array($value, $isArray);
 	}
 }
