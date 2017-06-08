@@ -160,12 +160,12 @@ class Fs {
 				// On crée le point de montage avec les droits `777` pour que tout le monde puisse y accéder, y compris en écriture
 				$ret = exec('mkdir -m 777 '.$this->mountName.' 2>&1', $output);
 				if (!file_exists($this->mountName)){
-					\Components::Alert('danger', 'Impossible de créer le point de montage <code>'.$this->mountName.'</code> pour la raison suivante : <br /><code>'.$ret.'</code>.<br />Assurez-vous que le répertoire /mnt est accessible en écriture à tous les utilisateurs Linux, ou que vous avez les droits de créer un répertoire sur le serveur local.');
+					\Components::setAlert('danger', 'Impossible de créer le point de montage <code>'.$this->mountName.'</code> pour la raison suivante : <br /><code>'.$ret.'</code>.<br />Assurez-vous que le répertoire /mnt est accessible en écriture à tous les utilisateurs Linux, ou que vous avez les droits de créer un répertoire sur le serveur local.');
 					return false;
 				}
 			}
 			if (!\Check::isOnline($this->server)){
-				\Components::Alert('danger', 'Le serveur <code>'.$this->server.'</code> est hors-ligne !');
+				\Components::setAlert('danger', 'Le serveur <code>'.$this->server.'</code> est hors-ligne !');
 				return false;
 			}
 			/* On regarde si le montage est actif. */
@@ -180,7 +180,7 @@ class Fs {
 				// Pour s'authentifier sur les serveurs Windows, on utilise un fichier qui contient les identifiants de connexion aux serveurs Windows.
 				$dfsCredsFile = \Front::getAbsolutePath().DIRECTORY_SEPARATOR.'classes'.DIRECTORY_SEPARATOR.'FileSystem'.DIRECTORY_SEPARATOR.'dfs_creds.conf';
 				if (!file_exists($dfsCredsFile)){
-					\Components::Alert('danger', 'Le fichier <code>'.$dfsCredsFile.'</code> permettant de s\'authentifier auprès des serveurs Windows est introuvable !<br> Veuillez créer ce fichier et saisir dedans ces 3 lignes : <pre><code>username=&lt;nom_user&gt;<br>password=&lt;mot_de_passe&gt;<br>domain=&lt;nom_de_domaine&gt;</code></pre>');
+					\Components::setAlert('danger', 'Le fichier <code>'.$dfsCredsFile.'</code> permettant de s\'authentifier auprès des serveurs Windows est introuvable !<br> Veuillez créer ce fichier et saisir dedans ces 3 lignes : <pre><code>username=&lt;nom_user&gt;<br>password=&lt;mot_de_passe&gt;<br>domain=&lt;nom_de_domaine&gt;</code></pre>');
 					return false;
 				}
 
@@ -189,7 +189,7 @@ class Fs {
 				$cmd = 'sudo timeout -k 5 5 mount -t cifs "'.$winShare.'" '.$this->mountName.' -o soft,uid=www-data,gid=www-data,credentials='.$dfsCredsFile.' 2>&1';
 				$ret = exec($cmd, $retArray, $varRet);
 				if (!empty($ret) or preg_match('/Complété/i', $varRet[0])){
-					\Components::Alert('danger', 'Impossible de monter le partage <code>'.$winShare.'</code>.<br />Assurez-vous que l\'utilisateur Apache a les droits d\'invoquer sudo mount sans mot de passe.<br />'.$ret.'<br />'.$varRet);
+					\Components::setAlert('danger', 'Impossible de monter le partage <code>'.$winShare.'</code>.<br />Assurez-vous que l\'utilisateur Apache a les droits d\'invoquer sudo mount sans mot de passe.<br />'.$ret.'<br />'.$varRet);
 					$ret = exec('rmdir '.$this->mountName.' 2>&1', $output);
 					return false;
 				}
@@ -318,7 +318,7 @@ class Fs {
 		$mountName = (!empty($this->SMBSubFolders)) ? $this->mountName.DIRECTORY_SEPARATOR.$this->SMBSubFolders : $this->mountName;
 		$file = new File($mountName, $fileName, $filters);
 		if (empty($file->name)){
-			\Components::Alert('danger', 'Le fichier <code>'.$fileName.'</code> n\'existe pas !');
+			\Components::setAlert('danger', 'Le fichier <code>'.$fileName.'</code> n\'existe pas !');
 			return false;
 		}
 		return $file;
@@ -356,7 +356,7 @@ class Fs {
 				return false;
 		}
 		if ($file === false){
-			\Components::Alert('danger', 'Impossible de lire le fichier <code>'.$fileName.'</code> !');
+			\Components::setAlert('danger', 'Impossible de lire le fichier <code>'.$fileName.'</code> !');
 			return false;
 		}
 		return $file;
@@ -376,7 +376,7 @@ class Fs {
 		$mountName = (!empty($this->SMBSubFolders)) ? $this->mountName.DIRECTORY_SEPARATOR.$this->SMBSubFolders : $this->mountName;
 		$fileName = $mountName . DIRECTORY_SEPARATOR .$fileName;
 		$ret = exec("touch {$fileName}");
-		if (!empty($ret)) \Components::Alert('danger', 'Impossible de trouver ou de créer le fichier <code>'.$fileName.'</code>.<br>Erreur : <code>'.$ret.'</code>');
+		if (!empty($ret)) \Components::setAlert('danger', 'Impossible de trouver ou de créer le fichier <code>'.$fileName.'</code>.<br>Erreur : <code>'.$ret.'</code>');
 		return (empty($ret)) ? true : false;
 	}
 
@@ -395,7 +395,7 @@ class Fs {
 		if ($backupFile){
 			if (!@copy($mountName . DIRECTORY_SEPARATOR . $fileName, $mountName . DIRECTORY_SEPARATOR . $fileName.'.backup')){
 				$error= error_get_last();
-				\Components::Alert('danger', 'Impossible de faire un backup du fichier <code>'.$fileName.'</code> !<br>'.$error['message']);
+				\Components::setAlert('danger', 'Impossible de faire un backup du fichier <code>'.$fileName.'</code> !<br>'.$error['message']);
 				return false;
 			}
 		}
@@ -410,10 +410,10 @@ class Fs {
 		$fileAppend = ($append) ? FILE_APPEND : null;
 		$ret = file_put_contents($mountName . DIRECTORY_SEPARATOR . $fileName, $content, $fileAppend);
 		if ($ret === false){
-			\Components::Alert('danger', 'Impossible d\'écrire dans le fichier <code>'.$fileName.'</code> !');
+			\Components::setAlert('danger', 'Impossible d\'écrire dans le fichier <code>'.$fileName.'</code> !');
 			return false;
 		}
-		if (!$silent) new Alert('success', 'Les modifications ont été enregistrées dans le fichier <code>'.$fileName.'</code>');
+		if (!$silent) \Components::setAlert('danger', 'Les modifications ont été enregistrées dans le fichier <code>'.$fileName.'</code>');
 		return true;
 	}
 
@@ -433,7 +433,7 @@ class Fs {
 		// Open file
 		$f = @fopen($mountName . DIRECTORY_SEPARATOR . $fileName, "rb");
 		if ($f === false){
-			\Components::Alert('danger', 'Impossible d\'ouvrir le fichier <code>'.$fileName.'</code> !');
+			\Components::setAlert('danger', 'Impossible d\'ouvrir le fichier <code>'.$fileName.'</code> !');
 			return false;
 		}
 
@@ -505,7 +505,7 @@ class Fs {
 		if (empty($ret)){
 			return true;
 		}
-		\Components::Alert('danger', 'Impossible de changer les droits sur le fichier <code>'.$fileName.'</code>');
+		\Components::setAlert('danger', 'Impossible de changer les droits sur le fichier <code>'.$fileName.'</code>');
 		return false;
 	}
 

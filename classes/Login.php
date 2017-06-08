@@ -10,6 +10,9 @@ class Login extends Page{
 	protected $title = 'Connexion';
 
 	public function main() {
+		if (isset($_REQUEST['action']) and $_REQUEST['action'] == 'login'){
+			Auth::tryLogin();
+		}
 		?>
 		<div class="uk-margin-auto uk-width-large uk-text-center">
 			<img class="uk-visible@l uk-box-shadow-medium uk-border-circle uk-padding-small" src="img/favicons/android-icon-72x72.png" alt="<?php echo Settings::TITLE; ?>">

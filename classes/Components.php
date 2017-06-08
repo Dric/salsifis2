@@ -67,6 +67,13 @@ class Components {
 		<?php
 	}
 
+	static public function setAlert($type, $content){
+		$_SESSION['alerts'][] = array(
+				'type' => $type,
+				'message' => $content
+		);
+	}
+
 	/**
 	 * Affichage d'une icône d'aide
 	 *

@@ -41,7 +41,7 @@ class Admin {
 						$constants[$constantName]['type'] = 'bool';
 						$value = ($value == 'true') ? true : false;
 					} else {
-						$constants[$constantName]['type'] = 'null';
+						$constants[$constantName]['type'] = 'string';
 						$value = null;
 					}
 					$constants[$constantName]['defaultValue'] = $value;
@@ -75,7 +75,7 @@ class Admin {
 							$constants[$constantName]['type'] = 'bool';
 							$value = ($value == 'true') ? true : false;
 						} else {
-							$constants[$constantName]['type'] = 'null';
+							$constants[$constantName]['type'] = 'string';
 							$value = null;
 						}
 						$constants[$constantName]['value'] = $value;
@@ -168,7 +168,6 @@ class Admin {
 		foreach ($constants as $constant => $tab) {
 			switch ($tab['type']) {
 				case 'string':
-				case 'null':
 					?>
 					<div class="uk-margin">
 						<label class="uk-form-label"><?php echo $tab['explain']; ?></label>
@@ -255,6 +254,7 @@ class Settings extends DefaultSettings {
 		$settingsFile = $fs->readFile('Settings.php', 'array', true, true);
 		//echo Get::varDump($settingsFile);
 		$isArray = false;
+		$updateDone = false;
 		foreach ($settingsFile as $key => $line){
 			if ($isArray){
 				if (preg_match('/\);/', $line)){
@@ -266,7 +266,7 @@ class Settings extends DefaultSettings {
 					$constantName = trim($matchesLine[1], " ");
 					if (!is_null($constants[$constantName]['value'])) {
 						list($value, $isArray) = self::varToText($constantName, $constants);
-						$settingsFile[$key] = preg_replace('/const (.+?) = (.*)/', 'const $1 = ' . $value, $settingsFile[$key]);
+						$settingsFile[$key] = ' const ' . $constantName . ' = ' . $value;
 						unset($constants[$constantName]);
 					} else {
 						if ($constants[$constantName]['type'] == 'array') {
@@ -274,6 +274,15 @@ class Settings extends DefaultSettings {
 						}
 						unset($settingsFile[$key-1]);
 						unset($settingsFile[$key]);
+					}
+				} elseif (!$updateDone) {
+					if (strstr($line, 'Date: ')) {
+						$settingsFile[$key] = ' * Date: '.date('d/m/Y', time());
+					}
+					if (strstr($line, 'Time: ')) {
+						$settingsFile[$key] = ' * Time: '.date('H:i', time());
+						// L'heure étant sous la date, si on l'a changé on a fini avec la date de mise à jour.
+						$updateDone = true;
 					}
 				}
 			}
@@ -285,7 +294,7 @@ class Settings extends DefaultSettings {
 				if (!is_null($tab['value'])){
 					list($value, $isArray) = self::varToText($constant, $constants);
 					$settingsFile[] = ' /** '.$tab['explain'].' */';
-					$settingsFile[] = '  const ' . $constant . '   = ' . $value;
+					$settingsFile[] = ' const ' . $constant . '   = ' . $value;
 				}
 			}
 			$settingsFile[] = '}';
@@ -305,6 +314,9 @@ class Settings extends DefaultSettings {
 		$isArray = false;
 		switch ($constants[$constantName]['type']) {
 			case 'string':
+				if ($constantName == 'PASSWORD' and $constants[$constantName]['value'] != Settings::PASSWORD) {
+						$constants[$constantName]['value'] = password_hash($constants[$constantName]['value'], PASSWORD_DEFAULT);
+				}
 				$value = '\'' . $constants[$constantName]['value'] . '\';';
 				break;
 			case 'int':

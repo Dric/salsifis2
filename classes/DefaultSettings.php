@@ -30,6 +30,6 @@ class DefaultSettings {
 	);
 	/** Utiliser un mot de passe pour se connecter */
 	const USE_AUTH              = false;
-	/** Mot de passe */
+	/** Mot de passe (chiffré) */
 	const PASSWORD              = null;
 }
