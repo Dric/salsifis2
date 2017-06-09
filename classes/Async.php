@@ -34,7 +34,8 @@ class Async {
 				}
 			}elseif ($request == 'serverSettings'){
 				Admin::displayServerSettings();
-				break;
+			}elseif ($request == 'serverVersion'){
+				Admin::displayServerVersion();
 			}
 		}
 		return true;

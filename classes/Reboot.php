@@ -24,9 +24,11 @@ class Reboot extends Page{
 		$disabled = !$this->checkFiles();
 		if (!$disabled and isset($_REQUEST['action']) and $_REQUEST['action'] == 'reboot'){
 			$this->runReboot();
+		} elseif (!$disabled and isset($_REQUEST['action']) and $_REQUEST['action'] == 'shutdown') {
+			$this->runShutdown();
 		} else {
 			?>
-			<h2>Redémarrage du serveur</h2>
+			<h2>Redémarrage/Arrêt du serveur</h2>
 			<p>
 				Vous pouvez redémarrer le serveur à partir d'ici.<br>
 				Si vous souhaitez seulement l'arrêter, le plus simple est d'appuyer directement sur le bouton d'alimentation du serveur.
@@ -37,15 +39,16 @@ class Reboot extends Page{
 				<?php }else{ ?>
 					Vous devez exécuter quelques manipulations avant que cette fonction soit utilisable.<br><br>Connectez-vous sur la console de votre serveur et effectuez les quelques manpulations suivantes :
 					<ol>
-						<li>Changez le propriétaire des fichiers <code>shutdown_suid</code> et <code>reboot_suid</code> par <code>root</code> : <br><code>sudo chown root:root <?php echo $absolutePath; ?>/scripts/*_suid</code></li>
-						<li>Changez les permissions sur ces fichiers :<br><code>sudo chmod 4755 <?php echo $absolutePath; ?>/scripts/*_suid</code></li>
+						<li>Déplacez les fichiers <code>shutdown_suid</code> et <code>reboot_suid</code> dans <code>/usr/local/bin</code> : <br><code>sudo mv <?php echo $absolutePath; ?>/scripts/*_suid /usr/local/bin</code></li>
+						<li>Changez le propriétaire des fichiers <code>shutdown_suid</code> et <code>reboot_suid</code> par <code>root</code> : <br><code>sudo chown root:root /usr/local/bin/*_suid</code></li>
+						<li>Changez les permissions sur ces fichiers :<br><code>sudo chmod 4755 /usr/local/bin/*_suid</code></li>
 					</ol>
 				<?php } ?>
 			</div>
 			<div class="uk-text-center">
 				<form action="?page=reboot" method="post">
-					<input type="hidden" name="action" value="reboot">
-					<button class="uk-button uk-button-danger uk-button-large" <?php if ($disabled) { echo 'disabled'; } ?> type="submit">Redémarrer</button>
+					<button name="action" value="shutdown" class="uk-button uk-button-danger uk-button-large" <?php if ($disabled) { echo 'disabled'; } ?> type="submit">Éteindre</button>
+					<button name="action" value="reboot" class="uk-button uk-button-danger uk-button-large" <?php if ($disabled) { echo 'disabled'; } ?> type="submit">Redémarrer</button>
 				</form>
 			</div>
 			<?php
@@ -57,41 +60,40 @@ class Reboot extends Page{
 	 * @return bool
 	 */
 	protected function checkFiles(){
-		global $absolutePath;
-		$fs = new Fs($absolutePath.'/scripts/');
-		/*if ($fs->fileExists('shutdown_suid') === false){
+		$fs = new Fs('/usr/local/bin/');
+		if ($fs->fileExists('shutdown_suid') === false){
 			Components::Alert('danger', 'Le fichier permettant l\'arrêt du serveur est introuvable !');
 			return false;
-		}*/
+		}
 		if ($fs->fileExists('reboot_suid') === false){
 			Components::Alert('danger', 'Le fichier permettant le redémarrage du serveur est introuvable !');
 			return false;
 		}
-		/*$shutdownMeta = $fs->getFileMeta('shutdown_suid', array('chmod', 'owner'));
+		$shutdownMeta = $fs->getFileMeta('shutdown_suid', array('chmod', 'owner'));
 		if ($shutdownMeta->advChmod != 4755){
 			Components::Alert('danger', 'Le fichier permettant l\'arrêt du serveur n\'a pas les bonnes permissions : <code>'.$shutdownMeta->advChmod.'</code> au lieu de <code>4755</code> !');
 			return false;
-		}*/
+		}
 		$rebootMeta = $fs->getFileMeta('reboot_suid', array('chmod', 'owner'));
 		if ($rebootMeta->advChmod != 4755){
 			Components::Alert('danger', 'Le fichier permettant le redémarrage du serveur n\'a pas les bonnes permissions : <code>'.$rebootMeta->advChmod.'</code> au lieu de <code>4755</code> !');
 			return false;
 		}
-		/*if ($shutdownMeta->owner != 'root'){
+		if ($shutdownMeta->owner != 'root'){
 			Components::Alert('danger', 'Le fichier permettant l\'arrêt du du serveur n\'a pas le bon propriétaire : <code>'.$shutdownMeta->owner.'</code> au lieu de <code>root</code> !');
 			return false;
-		}*/
+		}
 		if ($rebootMeta->owner != 'root'){
 			Components::Alert('danger', 'Le fichier permettant le redémarrage du serveur n\'a pas le bon propriétaire : <code>'.$rebootMeta->owner.'</code> au lieu de <code>root</code> !');
 			return false;
 		}
 		return true;
 	}
+
 	/**
 	 * Redémarrage du serveur
 	 */
 	protected function runReboot(){
-		global $absolutePath;
 		?>
 		<div class="uk-heading-hero uk-text-center">
 			<h2 class="uk-alert-danger uk-padding uk-box-shadow-medium">Redémarrage en cours !</h2>
@@ -105,7 +107,27 @@ class Reboot extends Page{
 			</div>
 		</div>
 		<?php
-		exec($absolutePath.'/scripts/reboot_suid');
+		exec('/usr/local/bin/reboot_suid');
+		return true;
+	}
+
+	/**
+	 * Arrêt du serveur
+	 */
+	protected function moduleShutdown(){
+		$server = rtrim($_SERVER['HTTP_HOST'], '/');
+		?>
+		<div class="uk-heading-hero uk-text-center">
+			<h2 class="uk-alert-danger uk-padding uk-box-shadow-medium">Le serveur est en cours d'arrêt !</h2>
+		</div>
+		<div class="uk-box-shadow-medium uk-overlay-default uk-padding-small">
+			<p>Votre serveur va s'arrêter. Vous devrez appuyer sur le bouton d'alimentation de la machine pour la redémarrer.</p>
+			<p>Vous pourrez ensuite vous connecter sur l'interface <?php echo Get::getTitleWithArticle(); ?> avec ce lien : </p>
+			<div class="uk-text-center"><h2><strong>http://<?php echo $server; ?></strong></h2></div>
+			<p class="uk-text-center">Vous pouvez fermer cette fenêtre.</p>
+		</div>
+		<?php
+		exec('/usr/local/bin/shutdown_suid');
 		return true;
 	}
 
