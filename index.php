@@ -8,8 +8,9 @@
  * Le code contenu dans ces fichiers n'est pas forcément des plus propres, vous voilà prévenu(e).
  */
 
-
-$salsifisVersion = '2.0beta';
+if (version_compare(phpversion(), '7.0.0', '<')) {
+	die('<h1>Erreur fatale et grossière !</h1><p>Votre version de PHP <code>'.phpversion().'</code> est trop ancienne, '.Settings::TITLE.' nécessite PHP7 minimum !</p>');
+}
 
 session_start();
 
@@ -41,6 +42,9 @@ $absolutePath = dirname(__FILE__);
 // Actions
 if (Settings::USE_AUTH and !Auth::isLoggedIn()) {
 	$page = new Login;
+}elseif(isset($_REQUEST['logoff'])){
+	Auth::deleteCookie();
+	header('location: .');
 }elseif (isset($_REQUEST['aSync'])){
 	Async::getAsyncRequest();
 	exit;
@@ -142,6 +146,15 @@ if (Settings::USE_AUTH and !Auth::isLoggedIn()) {
 				<h3 class="uk-margin-remove-top">Menu</h3>
 				<button class="uk-offcanvas-close" type="button" uk-close></button>
 				<?php $page->menu(); ?>
+				<?php
+				if (Settings::USE_AUTH){
+					?>
+					<ul class="uk-nav uk-nav-default uk-margin-auto-vertical">
+						<li><a class="" href="?logoff">Déconnexion</a></li>
+					</ul>
+					<?php
+				}
+				?>
 			</div>
 		</div>
 		<!-- Fin Menu latéral -->

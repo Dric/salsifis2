@@ -21,9 +21,12 @@ class Login extends Page{
 			<p>Vous devez vous connectez à l'aide d'un mot de passe pour pouvoir accéder à l'interface du serveur <?php echo Settings::TITLE; ?></p>
 			<form action="?action=login" method="post">
 				<input type="hidden" name="action" value="login">
-				<div class="uk-margin uk-padding">
+				<div class="uk-margin uk-padding uk-padding-remove-bottom uk-margin-remove-bottom">
 					<label class="">Mot de passe</label>
-					<input name="loginPwd" class="uk-input uk-form-large" type="password" placeholder="Votre mot de passe très secret">
+					<input name="loginPwd" class="uk-input uk-form-large" type="password" placeholder="Votre mot de passe très secret"><br>
+				</div>
+				<div class="uk-margin uk-padding uk-padding-remove-top uk-margin-remove-top uk-text-right">
+					<label><input name="stayConnected" class="uk-checkbox" type="checkbox" checked> Rester connecté</label>
 				</div>
 				<button class="uk-button uk-button-default uk-button-large" type="submit">Connexion</button>
 			</form>

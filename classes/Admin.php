@@ -8,11 +8,14 @@ use Git\Git;
  * Time: 13:53
  */
 class Admin {
+
+
 	protected static function readSettings($defaultOnly = false) {
 		$fs = new \FileSystem\Fs('classes/');
 		$settingsFile = $fs->readFile( 'DefaultSettings.php', 'array', true, true);
 		$constants = array();
 		$constantName = null;
+		$selectIn = self::selectIn();
 		foreach ($settingsFile as $key => $line){
 			if (stristr(strtolower($line), 'const ')){
 				$keyExplain = $key-1; //Il faut reculer de deux pointeurs car le foreach affecte la valeur de la ligne à $line et avance d'un pointeur'
@@ -23,7 +26,8 @@ class Admin {
 				$constantName = trim($matchesLine[1], " ");
 				$constants[$constantName] = array(
 					'explain'   => $explain,
-				  'value'     => null
+				  'value'     => null,
+				  'selectIn'  => null
 				);
 				if (preg_match('/array\(/i', $matchesLine[2])){
 					$constants[$constantName]['type'] = 'array'; // On a affaire à un tableau
@@ -46,6 +50,9 @@ class Admin {
 						$value = null;
 					}
 					$constants[$constantName]['defaultValue'] = $value;
+				}
+				if (isset($selectIn[$constantName])){
+					$constants[$constantName]['selectIn'] = $selectIn[$constantName];
 				}
 			} elseif (preg_match('/(?:\'|")(.+?)(?:\'|")\s+=> (?:\'|")(.+?)(?:\'|")/i', $line, $matchesLine)) {
 				// On traite les items d'un tableau
@@ -88,6 +95,22 @@ class Admin {
 			}
 		}
 		return $constants;
+	}
+
+	protected static function selectIn(){
+		global $absolutePath;
+		$selectIn    = array();
+		$fs          = new Fs($absolutePath);
+		$bgFiles     = $fs->getFilesInDir('img/backgrounds');
+		$backgrounds = array();
+		/** @var \FileSystem\File $file */
+		foreach ($bgFiles as $file){
+			if (in_array($file->extension, array('png', 'jpg'))){
+				$backgrounds[] = $file->name;
+			}
+		}
+		$selectIn['BG_IMG'] = $backgrounds;
+		return $selectIn;
 	}
 
 	public static function displayServerSettings() {
@@ -166,50 +189,64 @@ class Admin {
 
 	protected static function createFormInputs($constants){
 		foreach ($constants as $constant => $tab) {
-			switch ($tab['type']) {
-				case 'string':
-					?>
-					<div class="uk-margin">
-						<label class="uk-form-label"><?php echo $tab['explain']; ?></label>
-						<input name="<?php echo $constant; ?>" class="uk-input" type="text" value="<?php echo $tab['value']; ?>" placeholder="<?php echo $tab['defaultValue']; ?>">
-					</div>
-					<?php
-					break;
-				case 'int':
-					?>
-					<div class="uk-margin">
-						<label class="uk-form-label"><?php echo $tab['explain']; ?></label>
-						<input name="<?php echo $constant; ?>" class="uk-input" type="number" step="1" min="0" value="<?php echo $tab['value']; ?>" placeholder="<?php echo $tab['defaultValue']; ?>">
-					</div>
-					<?php
-					break;
-				case 'float':
-					?>
-					<div class="uk-margin">
-						<label class="uk-form-label"><?php echo $tab['explain']; ?></label>
-						<input name="<?php echo $constant; ?>" class="uk-input" type="number" step="0.1" min="0" value="<?php echo $tab['value']; ?>" placeholder="<?php echo $tab['defaultValue']; ?>">
-					</div>
-					<?php
-					break;
-				case 'bool':
-					?>
-					<label>
-						<input name="<?php echo $constant; ?>" class="uk-checkbox" type="checkbox" <?php if ($tab['value'] or (empty($tab['value']) and $tab['defaultValue'])) {
-							echo 'checked';
-						} ?>> <?php echo $tab['explain']; ?>
-					</label>
-					<?php
-					break;
-				case 'array':
-					$count = count((empty($tab['value'])) ? $tab['defaultValue'] : $tab['value']);
-					?>
-					<div class="uk-margin">
-						<label class="uk-form-label" for="<?php echo $constant; ?>"><?php echo $tab['explain']; ?></label>
-						<textarea id="<?php echo $constant; ?>" name="<?php echo $constant; ?>" class="uk-textarea" rows="<?php echo $count; ?>"><?php echo (!empty($tab['value'])) ? implode("\n", $tab['value']) : implode("\n", $tab['defaultValue']) ; ?></textarea>
-					</div>
-					<?php
-					break;
-
+			if (!isset($tab['selectIn'])){
+				switch ($tab['type']) {
+					case 'string':
+						?>
+						<div class="uk-margin">
+							<label class="uk-form-label"><?php echo $tab['explain']; ?></label>
+							<input name="<?php echo $constant; ?>" class="uk-input" type="text" value="<?php echo $tab['value']; ?>" placeholder="<?php echo $tab['defaultValue']; ?>">
+						</div>
+						<?php
+						break;
+					case 'int':
+						?>
+						<div class="uk-margin">
+							<label class="uk-form-label"><?php echo $tab['explain']; ?></label>
+							<input name="<?php echo $constant; ?>" class="uk-input" type="number" step="1" min="0" value="<?php echo $tab['value']; ?>" placeholder="<?php echo $tab['defaultValue']; ?>">
+						</div>
+						<?php
+						break;
+					case 'float':
+						?>
+						<div class="uk-margin">
+							<label class="uk-form-label"><?php echo $tab['explain']; ?></label>
+							<input name="<?php echo $constant; ?>" class="uk-input" type="number" step="0.1" min="0" value="<?php echo $tab['value']; ?>" placeholder="<?php echo $tab['defaultValue']; ?>">
+						</div>
+						<?php
+						break;
+					case 'bool':
+						?>
+						<label>
+							<input name="<?php echo $constant; ?>" class="uk-checkbox" type="checkbox" <?php if ($tab['value'] or (empty($tab['value']) and $tab['defaultValue'])) {
+								echo 'checked';
+							} ?>> <?php echo $tab['explain']; ?>
+						</label>
+						<?php
+						break;
+					case 'array':
+						$count = count((empty($tab['value'])) ? $tab['defaultValue'] : $tab['value']);
+						?>
+						<div class="uk-margin">
+							<label class="uk-form-label" for="<?php echo $constant; ?>"><?php echo $tab['explain']; ?></label>
+							<textarea id="<?php echo $constant; ?>" name="<?php echo $constant; ?>" class="uk-textarea" rows="<?php echo $count; ?>"><?php echo (!empty($tab['value'])) ? implode("\n", $tab['value']) : implode("\n", $tab['defaultValue']) ; ?></textarea>
+						</div>
+						<?php
+						break;
+				}
+			} else {
+				?>
+				<div class="uk-margin">
+					<label class="uk-form-label" for="<?php echo $constant; ?>-field"><?php echo $tab['explain']; ?></label>
+					<select class="uk-select" id="<?php echo $constant; ?>-field" name="<?php echo $constant; ?>">
+						<?php
+						foreach ($tab['selectIn'] as $selectValue){
+							?><option value="<?php echo $selectValue; ?>" <?php if (($tab['value'] == $selectValue) or (empty($tab['value']) and $tab['defaultValue'] == $selectValue)) {echo 'selected';} ?>><?php echo $selectValue; ?></option><?php
+						}
+						?>
+					</select>
+				</div>
+				<?php
 			}
 		}
 	}
@@ -234,6 +271,11 @@ class Admin {
 				}
 				$constants[$constant]['value'] = $value;
 			}
+		}
+		// Si l'authentification est activée mais que le mot de passe est vide, on désactive l'authentification
+		if ($constants['USE_AUTH']['value'] === true and is_null($constants['PASSWORD']['value'])){
+			$constants['USE_AUTH']['value'] = null;
+			Components::setAlert('danger', 'L\'authentification a été désactivée car aucun mot de passe n\'a été saisi !');
 		}
 		//echo Get::varDump($constants);
 		$fs = new Fs('classes');

@@ -10,7 +10,7 @@ class DefaultSettings {
 	const TITLE                 = 'Les Salsifis';
 	/** Mode debug */
 	const DEBUG                 = false;
-	/** Image de fond */
+	/** Fond d'écran */
 	const BG_IMG                = "bg.jpg";
 	/** Répertoire des données */
 	const DATA_PARTITION        = '/media/data';
