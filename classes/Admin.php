@@ -1,5 +1,6 @@
 <?php
 use FileSystem\Fs;
+use Git\Git;
 
 /**
  * Creator: Dric
@@ -156,8 +157,7 @@ class Admin {
 				</div>
 				<div class="uk-modal-footer uk-text-right">
 					<button class="uk-button uk-button-default uk-modal-close" type="button">Annuler</button>
-					<input type="hidden" name="action" value="saveServerSettings">
-					<button class="uk-button uk-button-primary" type="submit">Sauvegarder</button>
+					<button name="action" value="saveServerSettings" class="uk-button uk-button-primary" type="submit">Sauvegarder</button>
 				</div>
 			</form>
 		</div>
@@ -338,5 +338,45 @@ class Settings extends DefaultSettings {
 				$value = 'null;';
 		}
 		return array($value, $isArray);
+	}
+
+	protected static function getSalsifisVersion(){
+		global $absolutePath;
+		$coreGitRepo = Git::open($absolutePath);
+		$coreLastCommit = $coreGitRepo->getLastCommit();
+		$coreOriginUrl = $coreGitRepo->getOrigin();
+		preg_match('/http(?:s|):\/\/(.+?)\/(?:.*)\/(.+?)(?:\.git|)$/i', $coreOriginUrl, $coreMatches);
+		return (object)array(
+				'lastCommit'      => $coreLastCommit->hash,
+		    'lastCommitURL'   => $coreLastCommit->url,
+		    'lastCommitDate'  => Sanitize::date($coreLastCommit->date, 'dateTime'),
+		    'origin'          => $coreMatches[1],
+				'originURL'       => $coreOriginUrl,
+		    'repo'            => $coreMatches[2],
+		    'repoURL'         => $coreOriginUrl
+		);
+	}
+
+	public static function displayServerVersion(){
+		$version = self::getSalsifisVersion();
+		?>
+		<div class="uk-modal-dialog">
+			<button class="uk-modal-close-default" type="button" uk-close></button>
+			<div class="uk-modal-header">
+				<h2 class="uk-modal-title">Version <?php echo Get::getTitleWithArticle(); ?></h2>
+			</div>
+				<div class="uk-modal-body">
+					<p>Salsifis² est une interface web pour gérer un petit serveur de media sous Linux.</p>
+					<ul>
+						<li>Version : <a href="<?php echo $version->lastCommitURL; ?>"><?php echo $version->lastCommit; ?></a> du <?php echo $version->lastCommitDate; ?></li>
+						<li>Origine : <a href="<?php echo $version->originURL; ?>"><?php echo $version->origin; ?></a></li>
+						<li>Nom du dépôt : <a href="<?php echo $version->repoURL ?>"><?php echo $version->repoURL; ?></a></li>
+					</ul>
+				</div>
+				<div class="uk-modal-footer uk-text-right">
+					<button class="uk-button uk-button-default uk-modal-close" type="button">Quitter</button>
+				</div>
+		</div>
+		<?php
 	}
 }

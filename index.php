@@ -132,12 +132,13 @@ if (Settings::USE_AUTH and !Auth::isLoggedIn()) {
 				<?php $page->main(); ?>
 			</div>
 		</div>
+		<div id="serverVersion" uk-modal></div>
 		<!-- Fin contenu principal -->
 
 		<!-- Menu latéral -->
 		<div id="menu" uk-offcanvas="overlay: true">
 			<div class="uk-offcanvas-bar">
-				<div style="position:fixed;top:10px;left:10px;" class="salsifis-version uk-text-meta uk-text-small">Salsifis<code>²</code> <?php echo $salsifisVersion; ?></div>
+				<div style="position:fixed;top:10px;left:10px;" class="salsifis-version uk-text-meta uk-text-small"><a href="#serverVersion" class="uk-link-reset serverVersionLink" uk-toggle>Salsifis<code>²</code></a></div>
 				<h3 class="uk-margin-remove-top">Menu</h3>
 				<button class="uk-offcanvas-close" type="button" uk-close></button>
 				<?php $page->menu(); ?>

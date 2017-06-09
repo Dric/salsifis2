@@ -141,6 +141,21 @@ if (isHomePage) {
 
 }
 
+$('.serverVersionLink').on('click', function(e){
+	e.preventDefault();
+	var id = $(this).data('id');
+	$.ajax({
+		method  : "POST",
+		url     : "index.php",
+		dataType: "html",
+		timeout : 2000,
+		data    : {aSync: true, serverVersion: true}
+	}).done(function (data) {
+		$('#serverVersion').html(data);
+		UIkit.modal('#serverVersion').show();
+	});
+});
+
 if ($.fn.DataTable) {
 
 	var dataTablesLanguage = {
