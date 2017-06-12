@@ -464,7 +464,7 @@ class Downloads extends Page{
 			if ($this->transSession){
 				?>
 				<li><a href="#modal-settings" uk-toggle>Paramètres de téléchargement</a></li>
-				<li><a href="#changeTracker" class="changeTrackerLink">Modifier les trackers</a> <?php Components::iconWarning('Attention : la modification des trackers n\'est pas sans risques !'); ?></li>
+				<li><a href="#changeTracker" class="changeTrackerLink">Modifier les trackers <?php Components::iconWarning('Attention : la modification des trackers n\'est pas sans risques !'); ?></a></li>
 				<li><a href="<?php echo $this->buildArgsURL(array('action' => 'changeAltMode')); ?>"><?php echo ($this->transSession->altSpeedEnabled) ? 'Désactiver' : 'Activer' ; ?> le mode tortue</a></li>
 				<?php
 			}
@@ -481,32 +481,30 @@ class Downloads extends Page{
 			}
 		}
 		?>
-		<div id="modal-settings" uk-modal="center: true">
-			<div class="uk-modal-dialog">
-				<button class="uk-modal-close-default" type="button" uk-close></button>
-				<div class="uk-modal-header">
-					<h2 class="uk-modal-title">Tracker des téléchargements</h2>
-				</div>
-				<form method="post" action="<?php echo $this->url; ?>">
-				<div class="uk-modal-body">
-					<div class="uk-alert uk-alert-warning">
-						Si vous ne savez pas ce que vous faites, abstenez-vous !<br>
-						La modification d'un tracker peut entraîner des dysfonctionnements.
-					</div>
-					<h3>Trackers détectés</h3>
-					<ul>
-					<?php
-					foreach ($trackers as $tracker => $torrents){
-						echo '<li>'.$tracker.'</li>';
-					}
-          ?>
-					</ul>
-				</div>
-				<div class="uk-modal-footer uk-text-right">
-					<button class="uk-button uk-button-default uk-modal-close" type="button">Annuler</button>
-				</div>
-				</form>
+		<div class="uk-modal-dialog">
+			<button class="uk-modal-close-default" type="button" uk-close></button>
+			<div class="uk-modal-header">
+				<h2 class="uk-modal-title">Tracker des téléchargements</h2>
 			</div>
+			<form method="post" action="<?php echo $this->url; ?>">
+			<div class="uk-modal-body">
+				<div class="uk-alert uk-alert-warning">
+					Si vous ne savez pas ce que vous faites, abstenez-vous !<br>
+					La modification d'un tracker peut entraîner des dysfonctionnements.
+				</div>
+				<h3>Trackers détectés</h3>
+				<ul>
+				<?php
+				foreach ($trackers as $tracker => $torrents){
+					echo '<li>'.$tracker.'</li>';
+				}
+        ?>
+				</ul>
+			</div>
+			<div class="uk-modal-footer uk-text-right">
+				<button class="uk-button uk-button-default uk-modal-close" type="button">Annuler</button>
+			</div>
+			</form>
 		</div>
 		<?php
 	}
