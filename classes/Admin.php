@@ -9,7 +9,13 @@ use Git\Git;
  */
 class Admin {
 
-
+	/**
+	 * Lit le fichier de paramétrage du serveur
+	 *
+	 * @param bool $defaultOnly
+	 *
+	 * @return array
+	 */
 	protected static function readSettings($defaultOnly = false) {
 		$fs = new \FileSystem\Fs('classes/');
 		$settingsFile = $fs->readFile( 'DefaultSettings.php', 'array', true, true);
@@ -97,6 +103,11 @@ class Admin {
 		return $constants;
 	}
 
+	/**
+	 * Crée un ensemble de listes de choix pour le paramétrage du serveur
+	 *
+	 * @return array
+	 */
 	protected static function selectIn(){
 		global $absolutePath;
 		$selectIn    = array();
@@ -113,6 +124,9 @@ class Admin {
 		return $selectIn;
 	}
 
+	/**
+	 * Affiche les paramètres du serveur
+	 */
 	public static function displayServerSettings() {
 		$constants = self::readSettings();
 		$related = array(
@@ -187,6 +201,10 @@ class Admin {
 		<?php
 	}
 
+	/**
+	 * Crée des champs de formulaire à partir des constantes d'une classe de paramétrage
+	 * @param $constants
+	 */
 	protected static function createFormInputs($constants){
 		foreach ($constants as $constant => $tab) {
 			if (!isset($tab['selectIn'])){
@@ -251,6 +269,11 @@ class Admin {
 		}
 	}
 
+	/**
+	 * Sauvegarde les paramètres du serveur dans un fichier de config php
+	 *
+	 * @return bool
+	 */
 	public static function saveServerSettings(){
 		$constants = self::readSettings(true);
 		foreach ($constants as $constant => $tab){
@@ -352,6 +375,14 @@ class Settings extends DefaultSettings {
 		return $ret;
 	}
 
+	/**
+	 * Retourne des variables translatées en déclaration dans un fichier de config
+	 *
+	 * @param $constantName
+	 * @param $constants
+	 *
+	 * @return array
+	 */
 	protected static function varToText($constantName, $constants){
 		$isArray = false;
 		switch ($constants[$constantName]['type']) {
@@ -382,23 +413,34 @@ class Settings extends DefaultSettings {
 		return array($value, $isArray);
 	}
 
+	/**
+	 * Récupère les informations sur le commit en place ainsi que sur d'éventuelles mises à jour
+	 * @return object
+	 */
 	protected static function getSalsifisVersion(){
 		global $absolutePath;
-		$coreGitRepo = Git::open($absolutePath);
-		$coreLastCommit = $coreGitRepo->getLastCommit();
-		$coreOriginUrl = $coreGitRepo->getOrigin();
-		preg_match('/http(?:s|):\/\/(.+?)\/(?:.*)\/(.+?)(?:\.git|)$/i', $coreOriginUrl, $coreMatches);
+		$gitRepo = Git::open($absolutePath);
+		$lastCommit = $gitRepo->getLastCommit();
+		$originUrl = $gitRepo->getOrigin();
+		$gitRepo->fetch();
+		$logs = mb_substr($gitRepo->logFileRevisionRange('master', 'origin/master', '+@@+%H+-+%h+-+%at+-+%B'), 4);
+
+		preg_match('/http(?:s|):\/\/(.+?)\/(?:.*)\/(.+?)(?:\.git|)$/i', $originUrl, $matches);
 		return (object)array(
-				'lastCommit'      => $coreLastCommit->hash,
-		    'lastCommitURL'   => $coreLastCommit->url,
-		    'lastCommitDate'  => Sanitize::date($coreLastCommit->date, 'dateTime'),
-		    'origin'          => $coreMatches[1],
-				'originURL'       => $coreOriginUrl,
-		    'repo'            => $coreMatches[2],
-		    'repoURL'         => $coreOriginUrl
+				'lastCommit'      => $lastCommit->hash,
+		    'lastCommitURL'   => $lastCommit->url,
+		    'lastCommitDate'  => Sanitize::date($lastCommit->date, 'dateTime'),
+		    'origin'          => $matches[1],
+				'originURL'       => $originUrl,
+		    'repo'            => $matches[2],
+		    'repoURL'         => $originUrl,
+		    'updates'         => explode('+@@+', $logs)
 		);
 	}
 
+	/**
+	 * Affiche le modal qui décrit la version du serveur
+	 */
 	public static function displayServerVersion(){
 		$version = self::getSalsifisVersion();
 		?>
@@ -414,6 +456,18 @@ class Settings extends DefaultSettings {
 						<li>Origine : <a href="<?php echo $version->originURL; ?>"><?php echo $version->origin; ?></a></li>
 						<li>Nom du dépôt : <a href="<?php echo $version->repoURL ?>"><?php echo $version->repoURL; ?></a></li>
 					</ul>
+					<?php
+					if (!empty($version->updates) and !empty($version->updates[0])){
+						$alert = 'Une mise à jour '.Get::getTitleWithArticle().' est disponible !';
+						$alert .= '<ul>';
+						foreach ($version->updates as $updateRaw) {
+							list($updateFullHash, $updateShortHash, $updateTimestamp, $updateBody) = explode('+-+', $updateRaw);
+							$alert .= '<li>'.Sanitize::date($updateTimestamp, 'dateTime').' - <a href="'.$version->getOrigin() . '/commit/' . $updateFullHash.'">'.$updateShortHash.'</a> : '.$updateBody.'</li>';
+						}
+						$alert .= '</ul>';
+						Components::Alert('primary', $alert);
+					}
+					?>
 				</div>
 				<div class="uk-modal-footer uk-text-right">
 					<button class="uk-button uk-button-default uk-modal-close" type="button">Quitter</button>
