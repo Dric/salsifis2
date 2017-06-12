@@ -464,6 +464,7 @@ class Downloads extends Page{
 			if ($this->transSession){
 				?>
 				<li><a href="#modal-settings" uk-toggle>Paramètres de téléchargement</a></li>
+				<li><a href="#changeTracker" class="changeTrackerLink">Modifier les trackers</a> <?php Components::iconWarning('Attention : la modification des trackers n\'est pas sans risques !'); ?></li>
 				<li><a href="<?php echo $this->buildArgsURL(array('action' => 'changeAltMode')); ?>"><?php echo ($this->transSession->altSpeedEnabled) ? 'Désactiver' : 'Activer' ; ?> le mode tortue</a></li>
 				<?php
 			}

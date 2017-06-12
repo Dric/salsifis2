@@ -92,4 +92,23 @@ class Components {
 		<span class="fa fa-question-circle help-icon" title="<?php echo $text; ?>" uk-tooltip="pos: <?php echo $tooltipPosition; ?>"></span>
 		<?php
 	}
+
+	/**
+	 * Affichage d'une icône d'alerte
+	 *
+	 * Le contenu de l'alerte est affiché dans une infobulle
+	 *
+	 * @param string $text
+	 * @param string $tooltipPosition
+	 *  Ce paramètre peut prendre les valeurs suivantes
+	 *  - bottom
+	 *  - top
+	 *  - left
+	 *  - right
+	 */
+	public static function iconWarning($text, $tooltipPosition = 'bottom'){
+		?>
+		<span class="fa fa-warning warning-icon" title="<?php echo $text; ?>" uk-tooltip="pos: <?php echo $tooltipPosition; ?>"></span>
+		<?php
+	}
 }
