@@ -72,7 +72,7 @@ class Downloads extends Page{
 			$transSession = $this->getTransSession();
 			if (!empty($transSession)){
 				// Voir https://trac.transmissionbt.com/browser/trunk/extras/rpc-spec.txt
-				$torrents = $transSession->get(array(), array('id', 'name', 'addedDate', 'status', 'doneDate', 'totalSize', 'downloadDir', 'uploadedEver', 'isFinished', 'leftUntilDone', 'percentDone', 'files', 'eta', 'uploadRatio', 'comment', 'seedRatioLimit'))->arguments->torrents;
+				$torrents = $transSession->get(array(), array('id', 'name', 'addedDate', 'status', 'doneDate', 'totalSize', 'downloadDir', 'uploadedEver', 'isFinished', 'leftUntilDone', 'percentDone', 'files', 'eta', 'uploadRatio', 'comment', 'seedRatioLimit', 'trackers'))->arguments->torrents;
 				foreach ($torrents as $torrent){
 					// On remplace le répertoire actuel de téléchargement par un chemin relatif, pour pouvoir plus facilement gérer celui-ci par la suite.
 					$torrent->downloadDir = str_replace(Settings::DATA_PARTITION.DIRECTORY_SEPARATOR, '', $torrent->downloadDir);
@@ -271,6 +271,7 @@ class Downloads extends Page{
 				</table>
 			</div>
 			<div id="torrentDetail" uk-modal>
+			<div id="changeTracker" uk-modal>
 			</div>
 			<?php
 		}else{
@@ -471,134 +472,168 @@ class Downloads extends Page{
 		<?php
 	}
 
+	public function changeTracker(){
+		$trackers = array();
+		foreach ($this->torrents as $id => $torrent){
+			foreach ($torrent->trackers as $tracker){
+				$trackers[$tracker][] = $id;
+			}
+		}
+		?>
+		<div id="modal-settings" uk-modal="center: true">
+			<div class="uk-modal-dialog">
+				<button class="uk-modal-close-default" type="button" uk-close></button>
+				<div class="uk-modal-header">
+					<h2 class="uk-modal-title">Tracker des téléchargements</h2>
+				</div>
+				<form method="post" action="<?php echo $this->url; ?>">
+				<div class="uk-modal-body">
+					<div class="uk-alert uk-alert-warning">
+						Si vous ne savez pas ce que vous faites, abstenez-vous !<br>
+						La modification d'un tracker peut entraîner des dysfonctionnements.
+					</div>
+					<h3>Trackers détectés</h3>
+					<ul>
+					<?php
+					foreach ($trackers as $tracker => $torrents){
+						echo '<li>'.$tracker.'</li>';
+					}
+          ?>
+					</ul>
+				</div>
+				<div class="uk-modal-footer uk-text-right">
+					<button class="uk-button uk-button-default uk-modal-close" type="button">Annuler</button>
+				</div>
+				</form>
+			</div>
+		</div>
+		<?php
+	}
+
 	protected function serverSettings(){
 		?>
-		<a class="uk-button uk-button-default" href="#modal-settings" uk-toggle>Paramètres</a>
-
-			<div id="modal-settings" uk-modal="center: true">
-				<div class="uk-modal-dialog">
-					<button class="uk-modal-close-default" type="button" uk-close></button>
-					<div class="uk-modal-header">
-						<h2 class="uk-modal-title">Paramètres de téléchargement</h2>
-					</div>
-					<form method="post" action="<?php echo $this->url; ?>">
-					<div class="uk-modal-body">
-						<ul uk-tab="animation: uk-animation-fade">
-							<li class="uk-active"><a href="#">Général</a></li>
-							<li><a href="#">Mode tortue</a></li>
-						</ul>
-						<ul class="uk-switcher uk-margin">
-							<li>
-									<fieldset class="uk-fieldset">
-										<a uk-toggle="target: #salsifis-help-vitesse; animation: uk-animation-fade"><span class="fa fa-question-circle"></span> Aide</a>
-										<div id="salsifis-help-vitesse" class="uk-text-small uk-card uk-box-shadow-medium uk-card-body" hidden>
-											Pour déterminer quelles sont les vitesses de téléchargement et partage que vous devez utiliser, le mieux est de vous rendre sur <a target="_blank" href="http://beta.speedtest.net/fr">SpeedTest</a> et d'effectuer un test.<br>
-											Il faut ensuite prendre 80% de ces valeurs pour obtenir des vitesses qui ne saturent pas votre bande passante.<br>
-											Exemple : pour un débit en téléchargement de 6Mo/s, prenez <code>6 x 0.80 = 4,8 Mo/s</code>, ce qui fait <abbr uk-tooltip="pos: bottom" title="Il faut en fait multiplier le nombre par 1024, mais contentez-vous de multiplier par 1000 vos Mo pour obtenir des ko.">environ</abbr> <code>4800 ko/s</code>.
-										</div>
-										<div class="uk-margin">
-											<label class="uk-form-label">Vitesse de téléchargement (Ko/s) <?php Components::iconHelp('Bande passante maximum allouée aux téléchargements, en ko/s. Cette bande passante ne doit pas excéder 80% de votre bande passante descendante ADSL ou Fibre.'); ?></label>
-											<input name="dlSpeed" class="uk-input" type="number" placeholder="800" value="<?php echo $this->transSession->getProp('dlSpeed', true); ?>" step="10" min="10">
-										</div>
-										<div class="uk-margin">
-											<label class="uk-form-label">Vitesse de partage (Ko/s) <?php Components::iconHelp('Bande passante maximum allouée au partage (sens montant), en ko/s. Cette bande passante ne doit pas excéder 80% de votre bande passante montante ADSL ou Fibre.'); ?></label>
-											<input name="upSpeed" class="uk-input" type="number" placeholder="100" value="<?php echo $this->transSession->getProp('upSpeed', true); ?>" step="10" min="10">
-										</div>
-									</fieldset>
-									<div class="uk-margin">
-										<label uk-tooltip="pos: bottom" title="Activer la limite de ratio"><input name="isRatioLimited" class="uk-checkbox" type="checkbox" <?php if ($this->transSession->isRatioLimited) { echo 'checked'; }?>></label>
-										<label class="uk-form-label">Limite de ratio de téléchargement/partage <?php Components::iconHelp('Ratio maximum pour un fichier entre les données partagées (upload) et les données téléchargées. Certains sites de téléchargement demandent un ratio minimum, mettez <code>1,5</code> ou plus pour être tranquille.<br><br>Afin de ne pas occuper votre bande passante pour rien vous pouvez définir un ratio maximum, mais vous risquez de ne pas optimiser vos partages les plus populaires.'); ?></label>
-										<input name="ratioLimit" class="uk-input" type="number" placeholder="2" value="<?php echo $this->transSession->ratioLimit; ?>" step="0.1" min="0">
-									</div>
-								<div class="uk-margin">
-									<label uk-tooltip="pos: bottom" title="Activer la liste de blocage"><input name="blockListEnabled" class="uk-checkbox" type="checkbox" <?php if ($this->transSession->blockListEnabled) { echo 'checked'; }?>></label>
-									<label class="uk-form-label">Liste de blocage  <?php Components::iconHelp('La liste de blocage permet d\'empêcher que des petits voyeurs surveillent vos activités de téléchargement. Ainsi, la plupart des sociétés de surveillance du piratage mais aussi des organismes de gouvernements sont bloqués, ainsi que des adresses de domaines malveillants.<br>Cette liste est automatiquement mise à jour.<br><br>Il est fortement conseillé de laisser la liste de blocage <samp>activée</samp>.'); ?> (<?php echo $this->transSession->blockListSize; ?> règles chargées)</label>
-									<input name="blockList" class="uk-input" type="text" placeholder="http://list.iblocklist.com/?list=ydxerpxkpcfqjaybcssw&fileformat=p2p&archiveformat=gz"  value="<?php echo $this->transSession->blockList; ?>" <?php if (!$this->transSession->blockListEnabled) { echo 'disabled'; } ?>>
-								</div>
-
-							</li>
-							<li>
-								<fieldset class="uk-fieldset">
-									<a uk-toggle="target: #salsifis-help-tortue; animation: uk-animation-fade"><span class="fa fa-question-circle"></span> Aide</a>
-									<div id="salsifis-help-tortue" class="uk-text-small uk-card uk-box-shadow-medium uk-card-body" hidden>
-										Le mode tortue vous permet de réduire les débits de partage et téléchargement pendant la journée, afin d'avoir de la bande passante disponible pour utiliser Internet.<br>
-										Si vous laissez <?php echo Settings::TITLE; ?> télécharger à plein puissance, tout ce que vous ferez sur Internet à côté sera fortement ralenti. En activant le mode tortue pendant la journée, vous bridez votre serveur de téléchargements.<br>
-										Je vous suggère d'utiliser entre 10 et 30% de votre bande passante en mode tortue. Pour un débit de 6Mo/s en téléchargement, ça fera 1,8Mo/s, soit <abbr uk-tooltip="pos: bottom" title="Il faut en fait multiplier le nombre par 1024, mais contentez-vous de multiplier par 1000 vos Mo pour obtenir des ko.">environ</abbr> <code>1800 ko/s</code>.
-									</div>
-									<div class="uk-margin">
-										<label class="uk-form-label">Vitesse de téléchargement en mode tortue (Ko/s) <?php Components::iconHelp('Bande passante maximum allouée aux téléchargements lorsque le serveur est en mode tortue, en ko/s. Cette bande passante ne devrait pas excéder 30% de votre bande passante descendante ADSL ou Fibre, afin de ne pas pénaliser la navigation Internet ou la télévision.'); ?></label>
-										<input name="altDlSpeed" class="uk-input" type="number" placeholder="200" value="<?php echo $this->transSession->getProp('altDlSpeed', true); ?>" step="10" min="10">
-									</div>
-									<div class="uk-margin">
-										<label class="uk-form-label">Vitesse de partage en mode tortue (Ko/s) <?php Components::iconHelp('Bande passante maximum allouée au partage (sens montant) lorsque le serveur est en mode tortue, en ko/s. Cette bande passante ne devrait pas excéder 30% de votre bande passante montante ADSL ou Fibre, afin de ne pas pénaliser la navigation Internet ou la télévision.'); ?></label>
-										<input name="altUpSpeed" class="uk-input" type="number" placeholder="50" value="<?php echo $this->transSession->getProp('altUpSpeed', true); ?>" step="10" min="10">
-									</div>
-								</fieldset>
-								<fieldset class="uk-fieldset">
-									<div class="uk-margin">
-										<label class="uk-form-label">Planifier le mode tortue <?php Components::iconHelp('La planification du mode tortue peut se faire pendant certains jours et pendant une plage horaire définie.<br>Il est impossible de définir des horaires différentes en fonction des jours.'); ?></label><br>
-									<?php
-									/*
-									* Dimanche					= 1			(binary: 0000001)
-									* Lundi						= 2			(binary: 0000010)
-									* Mardi						= 4			(binary: 0000100)
-									* Mercredi					= 8			(binary: 0001000)
-									* Jeudi						= 16		(binary: 0010000)
-									* Vendredi					= 32		(binary: 0100000)
-									* Samedi						= 64		(binary: 1000000)
-									* Jours ouvrés			= 62		(binary: 0111110)
-									* Weekend					= 65		(binary: 1000001)
-									* Toute la semaine	= 127		(binary: 1111111)
-									* Aucun						= 0			(binary: 0000000)
-									*/
-									$days = array(
-									2   => 'Lundi',
-									4   => 'Mardi',
-									8   => 'Mercredi',
-									16  => 'Jeudi',
-									32  => 'Vendredi',
-									64  => 'Samedi',
-									1   => 'Dimanche',
-									62  => 'Jours ouvrés',
-									65  => 'Week-end',
-									127 => 'Toute la semaine'
-									);
-									foreach ($days as $i => $day) {
-										?>
-										<label>
-											<input name="altDaysSchedule[]" class="uk-checkbox" type="checkbox" <?php if (in_array($i, $this->transSession->altDaysSchedule)) { echo 'checked'; }?> value="<?php echo $i; ?>"> <?php echo $day; ?>
-										</label>
-										<br>
-										<?php
-									}
-									?>
-									</div>
-									<div class="uk-margin uk-child-width-1-2" uk-grid>
-										<div>
-											<label class="uk-form-label">De <?php Components::iconHelp('Le mode tortue se déclenchera à cette heure chaque jour que vous aurez indiqué. Il est conseillé de le déclencher un peu avant que vous n\'ayez besoin de naviguer sur Internet, tôt le matin par exemple.'); ?></label>
-											<input name="altBegin" class="uk-input" type="time" placeholder="07:30" value="<?php echo $this->transSession->altBegin; ?>">
-										</div>
-										<div>
-											<label class="uk-form-label">à <?php Components::iconHelp('Le mode tortue sera arrêté à cette heure chaque jour que vous aurez indiqué. Il est conseillé de le déclencher tard le soir lorsque vous n\'avez plus besoin de naviguer sur Internet, afin que les téléchargements puissent occuper un maximum de bande passante .'); ?></label>
-											<input name="altEnd" class="uk-input" type="time" placeholder="23:30" value="<?php echo $this->transSession->altEnd; ?>">
-										</div>
-									</div>
-								</fieldset>
-								<label><input name="altModeEnabled" class="uk-checkbox" type="checkbox" <?php if ($this->transSession->altModeEnabled) { echo 'checked'; }?>> Activer le mode tortue aux horaires spécifiés <?php Components::iconHelp('Quand le mode tortue est actif, la bande passante utilisée pour les téléchargements est réduite. Cela vous permet en journée de naviguer sur Internet sans ralentissements.'); ?></label>
-							</li>
-						</ul>
-
-					</div>
-					<div class="uk-modal-footer uk-text-right">
-						<button class="uk-button uk-button-default uk-modal-close" type="button">Annuler</button>
-						<input type="hidden" name="action" value="saveSettings">
-						<button class="uk-button uk-button-primary" type="submit">Sauvegarder</button>
-					</div>
-					</form>
+		<div id="modal-settings" uk-modal="center: true">
+			<div class="uk-modal-dialog">
+				<button class="uk-modal-close-default" type="button" uk-close></button>
+				<div class="uk-modal-header">
+					<h2 class="uk-modal-title">Paramètres de téléchargement</h2>
 				</div>
+				<form method="post" action="<?php echo $this->url; ?>">
+				<div class="uk-modal-body">
+					<ul uk-tab="animation: uk-animation-fade">
+						<li class="uk-active"><a href="#">Général</a></li>
+						<li><a href="#">Mode tortue</a></li>
+					</ul>
+					<ul class="uk-switcher uk-margin">
+						<li>
+								<fieldset class="uk-fieldset">
+									<a uk-toggle="target: #salsifis-help-vitesse; animation: uk-animation-fade"><span class="fa fa-question-circle"></span> Aide</a>
+									<div id="salsifis-help-vitesse" class="uk-text-small uk-card uk-box-shadow-medium uk-card-body" hidden>
+										Pour déterminer quelles sont les vitesses de téléchargement et partage que vous devez utiliser, le mieux est de vous rendre sur <a target="_blank" href="http://beta.speedtest.net/fr">SpeedTest</a> et d'effectuer un test.<br>
+										Il faut ensuite prendre 80% de ces valeurs pour obtenir des vitesses qui ne saturent pas votre bande passante.<br>
+										Exemple : pour un débit en téléchargement de 6Mo/s, prenez <code>6 x 0.80 = 4,8 Mo/s</code>, ce qui fait <abbr uk-tooltip="pos: bottom" title="Il faut en fait multiplier le nombre par 1024, mais contentez-vous de multiplier par 1000 vos Mo pour obtenir des ko.">environ</abbr> <code>4800 ko/s</code>.
+									</div>
+									<div class="uk-margin">
+										<label class="uk-form-label">Vitesse de téléchargement (Ko/s) <?php Components::iconHelp('Bande passante maximum allouée aux téléchargements, en ko/s. Cette bande passante ne doit pas excéder 80% de votre bande passante descendante ADSL ou Fibre.'); ?></label>
+										<input name="dlSpeed" class="uk-input" type="number" placeholder="800" value="<?php echo $this->transSession->getProp('dlSpeed', true); ?>" step="10" min="10">
+									</div>
+									<div class="uk-margin">
+										<label class="uk-form-label">Vitesse de partage (Ko/s) <?php Components::iconHelp('Bande passante maximum allouée au partage (sens montant), en ko/s. Cette bande passante ne doit pas excéder 80% de votre bande passante montante ADSL ou Fibre.'); ?></label>
+										<input name="upSpeed" class="uk-input" type="number" placeholder="100" value="<?php echo $this->transSession->getProp('upSpeed', true); ?>" step="10" min="10">
+									</div>
+								</fieldset>
+								<div class="uk-margin">
+									<label uk-tooltip="pos: bottom" title="Activer la limite de ratio"><input name="isRatioLimited" class="uk-checkbox" type="checkbox" <?php if ($this->transSession->isRatioLimited) { echo 'checked'; }?>></label>
+									<label class="uk-form-label">Limite de ratio de téléchargement/partage <?php Components::iconHelp('Ratio maximum pour un fichier entre les données partagées (upload) et les données téléchargées. Certains sites de téléchargement demandent un ratio minimum, mettez <code>1,5</code> ou plus pour être tranquille.<br><br>Afin de ne pas occuper votre bande passante pour rien vous pouvez définir un ratio maximum, mais vous risquez de ne pas optimiser vos partages les plus populaires.'); ?></label>
+									<input name="ratioLimit" class="uk-input" type="number" placeholder="2" value="<?php echo $this->transSession->ratioLimit; ?>" step="0.1" min="0">
+								</div>
+							<div class="uk-margin">
+								<label uk-tooltip="pos: bottom" title="Activer la liste de blocage"><input name="blockListEnabled" class="uk-checkbox" type="checkbox" <?php if ($this->transSession->blockListEnabled) { echo 'checked'; }?>></label>
+								<label class="uk-form-label">Liste de blocage  <?php Components::iconHelp('La liste de blocage permet d\'empêcher que des petits voyeurs surveillent vos activités de téléchargement. Ainsi, la plupart des sociétés de surveillance du piratage mais aussi des organismes de gouvernements sont bloqués, ainsi que des adresses de domaines malveillants.<br>Cette liste est automatiquement mise à jour.<br><br>Il est fortement conseillé de laisser la liste de blocage <samp>activée</samp>.'); ?> (<?php echo $this->transSession->blockListSize; ?> règles chargées)</label>
+								<input name="blockList" class="uk-input" type="text" placeholder="http://list.iblocklist.com/?list=ydxerpxkpcfqjaybcssw&fileformat=p2p&archiveformat=gz"  value="<?php echo $this->transSession->blockList; ?>" <?php if (!$this->transSession->blockListEnabled) { echo 'disabled'; } ?>>
+							</div>
+
+						</li>
+						<li>
+							<fieldset class="uk-fieldset">
+								<a uk-toggle="target: #salsifis-help-tortue; animation: uk-animation-fade"><span class="fa fa-question-circle"></span> Aide</a>
+								<div id="salsifis-help-tortue" class="uk-text-small uk-card uk-box-shadow-medium uk-card-body" hidden>
+									Le mode tortue vous permet de réduire les débits de partage et téléchargement pendant la journée, afin d'avoir de la bande passante disponible pour utiliser Internet.<br>
+									Si vous laissez <?php echo Settings::TITLE; ?> télécharger à plein puissance, tout ce que vous ferez sur Internet à côté sera fortement ralenti. En activant le mode tortue pendant la journée, vous bridez votre serveur de téléchargements.<br>
+									Je vous suggère d'utiliser entre 10 et 30% de votre bande passante en mode tortue. Pour un débit de 6Mo/s en téléchargement, ça fera 1,8Mo/s, soit <abbr uk-tooltip="pos: bottom" title="Il faut en fait multiplier le nombre par 1024, mais contentez-vous de multiplier par 1000 vos Mo pour obtenir des ko.">environ</abbr> <code>1800 ko/s</code>.
+								</div>
+								<div class="uk-margin">
+									<label class="uk-form-label">Vitesse de téléchargement en mode tortue (Ko/s) <?php Components::iconHelp('Bande passante maximum allouée aux téléchargements lorsque le serveur est en mode tortue, en ko/s. Cette bande passante ne devrait pas excéder 30% de votre bande passante descendante ADSL ou Fibre, afin de ne pas pénaliser la navigation Internet ou la télévision.'); ?></label>
+									<input name="altDlSpeed" class="uk-input" type="number" placeholder="200" value="<?php echo $this->transSession->getProp('altDlSpeed', true); ?>" step="10" min="10">
+								</div>
+								<div class="uk-margin">
+									<label class="uk-form-label">Vitesse de partage en mode tortue (Ko/s) <?php Components::iconHelp('Bande passante maximum allouée au partage (sens montant) lorsque le serveur est en mode tortue, en ko/s. Cette bande passante ne devrait pas excéder 30% de votre bande passante montante ADSL ou Fibre, afin de ne pas pénaliser la navigation Internet ou la télévision.'); ?></label>
+									<input name="altUpSpeed" class="uk-input" type="number" placeholder="50" value="<?php echo $this->transSession->getProp('altUpSpeed', true); ?>" step="10" min="10">
+								</div>
+							</fieldset>
+							<fieldset class="uk-fieldset">
+								<div class="uk-margin">
+									<label class="uk-form-label">Planifier le mode tortue <?php Components::iconHelp('La planification du mode tortue peut se faire pendant certains jours et pendant une plage horaire définie.<br>Il est impossible de définir des horaires différentes en fonction des jours.'); ?></label><br>
+								<?php
+								/*
+								* Dimanche					= 1			(binary: 0000001)
+								* Lundi						= 2			(binary: 0000010)
+								* Mardi						= 4			(binary: 0000100)
+								* Mercredi					= 8			(binary: 0001000)
+								* Jeudi						= 16		(binary: 0010000)
+								* Vendredi					= 32		(binary: 0100000)
+								* Samedi						= 64		(binary: 1000000)
+								* Jours ouvrés			= 62		(binary: 0111110)
+								* Weekend					= 65		(binary: 1000001)
+								* Toute la semaine	= 127		(binary: 1111111)
+								* Aucun						= 0			(binary: 0000000)
+								*/
+								$days = array(
+								2   => 'Lundi',
+								4   => 'Mardi',
+								8   => 'Mercredi',
+								16  => 'Jeudi',
+								32  => 'Vendredi',
+								64  => 'Samedi',
+								1   => 'Dimanche',
+								62  => 'Jours ouvrés',
+								65  => 'Week-end',
+								127 => 'Toute la semaine'
+								);
+								foreach ($days as $i => $day) {
+									?>
+									<label>
+										<input name="altDaysSchedule[]" class="uk-checkbox" type="checkbox" <?php if (in_array($i, $this->transSession->altDaysSchedule)) { echo 'checked'; }?> value="<?php echo $i; ?>"> <?php echo $day; ?>
+									</label>
+									<br>
+									<?php
+								}
+								?>
+								</div>
+								<div class="uk-margin uk-child-width-1-2" uk-grid>
+									<div>
+										<label class="uk-form-label">De <?php Components::iconHelp('Le mode tortue se déclenchera à cette heure chaque jour que vous aurez indiqué. Il est conseillé de le déclencher un peu avant que vous n\'ayez besoin de naviguer sur Internet, tôt le matin par exemple.'); ?></label>
+										<input name="altBegin" class="uk-input" type="time" placeholder="07:30" value="<?php echo $this->transSession->altBegin; ?>">
+									</div>
+									<div>
+										<label class="uk-form-label">à <?php Components::iconHelp('Le mode tortue sera arrêté à cette heure chaque jour que vous aurez indiqué. Il est conseillé de le déclencher tard le soir lorsque vous n\'avez plus besoin de naviguer sur Internet, afin que les téléchargements puissent occuper un maximum de bande passante .'); ?></label>
+										<input name="altEnd" class="uk-input" type="time" placeholder="23:30" value="<?php echo $this->transSession->altEnd; ?>">
+									</div>
+								</div>
+							</fieldset>
+							<label><input name="altModeEnabled" class="uk-checkbox" type="checkbox" <?php if ($this->transSession->altModeEnabled) { echo 'checked'; }?>> Activer le mode tortue aux horaires spécifiés <?php Components::iconHelp('Quand le mode tortue est actif, la bande passante utilisée pour les téléchargements est réduite. Cela vous permet en journée de naviguer sur Internet sans ralentissements.'); ?></label>
+						</li>
+					</ul>
+
+				</div>
+				<div class="uk-modal-footer uk-text-right">
+					<button class="uk-button uk-button-default uk-modal-close" type="button">Annuler</button>
+					<input type="hidden" name="action" value="saveSettings">
+					<button class="uk-button uk-button-primary" type="submit">Sauvegarder</button>
+				</div>
+				</form>
 			</div>
-
-
+		</div>
 		<?php
 	}
 

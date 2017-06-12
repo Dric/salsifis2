@@ -38,6 +38,7 @@ use Settings;
  * @property-read string    $comment            Commentaire du torrent
  * @property-read string    $img                Image du torrent
  * @property-read string    $nfo                Fichier NFO descriptif du téléchargement
+ * @property-read string[]  $trackers           Liste des trackers du torrent
  */
 Class Torrent{
 	
@@ -192,6 +193,12 @@ Class Torrent{
 	protected $nfo = '';
 
 	/**
+	 * Liste des trackers du torrent
+	 * @var string[]
+	 */
+	protected $trackers = array();
+
+	/**
 	 * Construction de la classe
 	 *
 	 * @param object $RPCTorrent Objet de torrent renvoyé par la classe RPCTransmission
@@ -296,6 +303,7 @@ Class Torrent{
 			case 'name':
 			case 'nfo':
 			case 'img':
+			case 'trackers':
 				return $this->$prop;
 			case 'sanitizedName':
 				return $this->sanitizeTorrentName();

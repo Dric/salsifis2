@@ -65,6 +65,14 @@ class Auth {
 			self::doLogin($stayConnected, $from);
 		}
 		Components::Alert('danger', 'Mot de passe incorrect !');
+		if (!isset($_SESSION['loginAttempts'][$_SERVER['REMOTE_ADDR']])) {
+			$_SESSION['loginAttempts'][$_SERVER['REMOTE_ADDR']] = 0;
+		}
+		$_SESSION['loginAttempts'][$_SERVER['REMOTE_ADDR']]++;
+		// Au bout de 5 essais, le temps pour afficher la mire de connexion va doubler (30 secondes pour afficher la mire après 5 essais ratés).
+		if (isset($_SESSION['loginAttempts'][$_SERVER['REMOTE_ADDR']]) and $_SESSION['loginAttempts'][$_SERVER['REMOTE_ADDR']] > 5) {
+			sleep(pow(2, $_SESSION['loginAttempts'][$_SERVER['REMOTE_ADDR']]-1));
+		}
 		return false;
 	}
 
@@ -76,6 +84,7 @@ class Auth {
 	 */
 	static function doLogin($stayConnected = false, $from = null){
 		$cookieExpiration = ($stayConnected) ? (time()+15552000) : 0;
+		unset($_SESSION['loginAttempts'][$_SERVER['REMOTE_ADDR']]);
 		if (self::setCookie($cookieExpiration)) {
 			if (!empty($from)){
 				$args = Get::urlParamsToArray($from);

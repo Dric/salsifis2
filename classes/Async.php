@@ -31,6 +31,9 @@ class Async {
 							return false;
 						}
 						break;
+					case 'changeTracker':
+						$downloads->changeTracker();
+						break;
 				}
 			}elseif ($request == 'serverSettings'){
 				Admin::displayServerSettings();

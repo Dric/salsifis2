@@ -114,7 +114,7 @@ if (Settings::USE_AUTH and !Auth::isLoggedIn()) {
 			<h1 class="uk-heading-hero uk-heading-line uk-text-center">
 				<span>
 					<a href="." title="Accueil" class="uk-link-reset"><?php echo Settings::TITLE; ?></a><br>
-					<span class="uk-text-lead uk-align-right"><?php echo $page->subTitle(); ?></span>
+					<span class="uk-text-lead uk-align-right salsifis-sub-title"><?php echo $page->subTitle(); ?></span>
 				</span>
 			</h1>
 		</header>

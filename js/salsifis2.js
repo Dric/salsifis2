@@ -221,6 +221,21 @@ if ($.fn.DataTable) {
 			UIkit.modal('#torrentDetail').show();
 		});
 	});
+
+	$('.changeTrackerLink').on('click', function(e){
+		e.preventDefault();
+		var id = $(this).data('id');
+		$.ajax({
+			method  : "POST",
+			url     : "index.php",
+			dataType: "html",
+			timeout : 2000,
+			data    : {aSync: true, downloads: 'changeTracker'}
+		}).done(function (data) {
+			$('#changeTracker').html(data);
+			UIkit.modal('#changeTracker').show();
+		});
+	});
 	//torrentTable.order([2, 'asc']).draw();
 
 	/*$(function() {
