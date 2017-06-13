@@ -158,7 +158,7 @@ class Files extends Page{
 							if (!\Check::isUtf8($fileContent)){
 								$fileContent = mb_convert_encoding($fileContent, "UTF-8", "ASCII, ISO-8859-1, Windows-1252");
 							}
-							?><pre class="uk-box-shadow-medium uk-overlay-default uk-padding-small"><code><?php echo htmlentities($fileContent, ENT_NOQUOTES|ENT_SUBSTITUTE); ?></code></pre><?php
+							?><pre class="uk-box-shadow-medium uk-overlay-default uk-padding-small"><code class="no-background"><?php echo htmlentities($fileContent, ENT_NOQUOTES|ENT_SUBSTITUTE); ?></code></pre><?php
 							break;
 						default:
 							?><div class="alert alert-info">Vous ne pouvez pas visualiser ce type de contenu.</div><?php

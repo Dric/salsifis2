@@ -13,7 +13,6 @@
 
 namespace Git;
 use Exception;
-use Logs\Alert;
 
 /**
  * Git Repository Interface Class
@@ -222,7 +221,7 @@ class GitRepo {
 		}
 		$status = trim(proc_close($resource));
 		$ret = array($stderr, $stdout);
-		if ($status) new Alert('error', 'Erreur Git : <code>'.$ret[0] . '</code>' . PHP_EOL . '<code>'.$ret[1].'</code>');
+		if ($status) \Components::Alert('danger', 'Erreur Git : <code>'.$ret[0] . '</code>' . PHP_EOL . '<code>'.$ret[1].'</code>');
 		return $ret[0] . $ret[1];
 	}
 	/**

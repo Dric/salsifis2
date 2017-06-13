@@ -490,7 +490,7 @@ class Downloads extends Page{
 			<div class="uk-modal-body">
 				<div class="uk-alert uk-alert-warning">
 					Si vous ne savez pas ce que vous faites, abstenez-vous !<br>
-					La modification d'un tracker peut entraîner des dysfonctionnements.
+					Les trackers permettent souvent de compatibiliser votre ratio.
 				</div>
 				<h3>Trackers détectés</h3>
 				<ul>
