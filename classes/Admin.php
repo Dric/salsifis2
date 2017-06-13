@@ -462,7 +462,7 @@ class Settings extends DefaultSettings {
 						$alert .= '<ul>';
 						foreach ($version->updates as $updateRaw) {
 							list($updateFullHash, $updateShortHash, $updateTimestamp, $updateBody) = explode('+-+', $updateRaw);
-							$alert .= '<li>'.Sanitize::date($updateTimestamp, 'dateTime').' - <a href="'.$version->getOrigin() . '/commit/' . $updateFullHash.'">'.$updateShortHash.'</a> : '.$updateBody.'</li>';
+							$alert .= '<li>'.Sanitize::date($updateTimestamp, 'dateTime').' - <a href="'.$version->originURL . '/commit/' . $updateFullHash.'">'.$updateShortHash.'</a> : '.$updateBody.'</li>';
 						}
 						$alert .= '</ul>';
 						Components::Alert('primary', $alert);
