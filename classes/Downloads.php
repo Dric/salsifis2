@@ -504,8 +504,12 @@ class Downloads extends Page{
 			<form method="post" action="<?php echo $this->url; ?>">
 			<div class="uk-modal-body">
 				<div class="uk-alert uk-alert-warning">
-					Si vous ne savez pas ce que vous faites, abstenez-vous !<br>
-					Les trackers permettent souvent de compatibiliser votre ratio, ils utilisent pour cela un identifiant dans l'url du tracker.<br>
+					Si vous ne savez pas ce que vous faites, abstenez-vous !
+				</div>
+				<a uk-toggle="target: #salsifis-help-trackers; animation: uk-animation-fade"><span class="fa fa-question-circle"></span> Aide</a>
+				<div id="salsifis-help-trackers" class="uk-text-small uk-card uk-box-shadow-medium uk-card-body" hidden>
+					Un tracker permet de trouver d'autres machines qui partagent les fichiers que vous téléchargez.<br>
+					Les trackers permettent souvent de compatibiliser votre ratio, ils utilisent pour cela un identifiant dans leur url.<br>
 					Le serveur détecte automatiquement ces identifiants et vous les signale, parce que c'est un serveur serviable.
 				</div>
 				<h3 class="uk-text-muted">Trackers détectés</h3>
@@ -514,10 +518,13 @@ class Downloads extends Page{
 					?>
 					<div class="uk-margin">
 						<label class="uk-form-label">Tracker de <span class="uk-text-primary"><?php echo $tracker->domain; ?></span> (<?php echo $tracker->count; ?> téléchargements)</label>
-						<input name="tracker_<?php echo htmlentities($trackerURL); ?>" class="uk-input" type="text" placeholder="<?php echo $trackerURL; ?>" value="<?php echo $trackerURL; ?>">
+						<div class="uk-button-group">
+							<input name="tracker_<?php echo htmlentities($trackerURL); ?>" class="uk-input" type="text" placeholder="<?php echo $trackerURL; ?>" value="<?php echo $trackerURL; ?>">
+							<button class="uk-button uk-button-default">Modifier</button>
+						</div>
 						<?php
 						if (!empty($tracker->userHash)) {
-							?><br><span class="uk-text-small">L'url de ce tracker comporte un identifiant : <code><?php echo $tracker->userHash; ?></code></span><?php
+							?><span class="uk-text-small">L'url de ce tracker comporte un identifiant : <code><?php echo $tracker->userHash; ?></code></span><?php
 						}
 						?>
 					</div>
