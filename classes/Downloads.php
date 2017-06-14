@@ -477,9 +477,24 @@ class Downloads extends Page{
 		$trackers = array();
 		foreach ($this->torrents as $id => $torrent){
 			foreach ($torrent->trackers as $tracker){
-				$trackers[$tracker->announce][] = $id;
+				if (preg_match('/^(https|http|udp):\/\/(.+?)(:.+?|)\/(.+?|)(?:\/|)(announce(?:.+?|))$/i', $tracker->announce, $matches)) {
+					$keys = array(
+							'url',
+							'protocol',
+							'domain',
+							'port',
+							'userHash',
+							'announce'
+					);
+					$trackers[$tracker->announce] = (object)array_combine($keys, $matches);
+					if (!isset($trackers[$tracker->announce]->count)){
+						$trackers[$tracker->announce]->count = 0;
+					}
+					$trackers[$tracker->announce]->count++;
+				}
 			}
 		}
+		echo Get::varDump($trackers);
 		// http://tracker.t411.al/f3bd62479bebf1cf5c6661c50ecdb212/announce
 		?>
 		<div class="uk-modal-dialog">
@@ -493,33 +508,24 @@ class Downloads extends Page{
 					Si vous ne savez pas ce que vous faites, abstenez-vous !<br>
 					Les trackers permettent souvent de compatibiliser votre ratio.
 				</div>
-				<h3>Trackers détectés</h3>
-				<ul>
+				<h3 class="uk-text-muted">Trackers détectés</h3>
 				<?php
-				foreach ($trackers as $tracker => $torrents){
-					if (preg_match('/^(https|http|udp):\/\/(.+?)(:.+?|)\/(.+?|)(?:\/|)(announce(?:.+?|))$/i', $tracker, $matches)) {
-						list ($url, $protocol, $domain, $port, $userHash, $announce) = $matches;
-						?>
-						<li>
-							<?php echo $tracker; ?>
-							<ul>
-								<li>Protocole : <code><?php echo $protocol; ?></code></li>
-								<li>Domaine : <code><?php echo $domain; ?></code></li>
-								<?php if (!empty($port)) { ?>
-								<li>Port : <code><?php echo $port; ?></code></li>
-								<?php } ?>
-								<?php if (!empty($userHash)) { ?>
-								<li>Identifiant : <code><?php echo $userHash; ?></code></li>
-								<?php } ?>
-							</ul>
-						</li>
+				foreach ($trackers as $trackerURL => $tracker){
+					?>
+					<div class="uk-margin">
+						<label class="uk-form-label uk-text-small">
+						Tracker (<?php echo $tracker->count; ?> téléchargements)&nbsp;
 						<?php
-					} else {
-						echo '<li>'.$tracker.'</li>';
-					}
+						if (!empty($tracker->userHash)) {
+							Components::iconWarning('L\'url de ce tracker comporte un identifiant : <code>'.$tracker->userHash.'</code>');
+						}
+						?>
+						</label>
+						<input name="tracker_<?php echo htmlentities($trackerURL); ?>" class="uk-input" type="string" placeholder="<?php echo $trackerURL; ?>" value="<?php echo $trackerURL; ?>">
+					</div>
+					<?php
 				}
         ?>
-				</ul>
 			</div>
 			<div class="uk-modal-footer uk-text-right">
 				<button class="uk-button uk-button-default uk-modal-close" type="button">Annuler</button>
