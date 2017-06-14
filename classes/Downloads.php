@@ -430,7 +430,7 @@ class Downloads extends Page{
 		if ($this->transSession){
 			if ($this->runAction()) {
 				// On empêche de resoumettre les formulaires en cas de rafraîchissement de page (https://stackoverflow.com/a/722567/1749967)
-				header('Location: ?page=downloads');
+				//header('Location: ?page=downloads');
 			}
 			//echo Get::varDump($this->transSession);
 			$this->serverSettings();
@@ -519,7 +519,7 @@ class Downloads extends Page{
 						<div class="uk-margin">
 							<label class="uk-form-label">Tracker de <span class="uk-text-primary"><?php echo $tracker->domain; ?></span> (<?php echo $tracker->count; ?> téléchargements)</label>
 							<div class="uk-button-group uk-width-1-1">
-								<input name="tracker_<?php echo htmlentities($trackerURL); ?>" class="uk-input" type="text" placeholder="<?php echo $trackerURL; ?>" value="<?php echo $trackerURL; ?>">
+								<input name="newTracker" class="uk-input" type="text" placeholder="<?php echo $trackerURL; ?>" value="<?php echo $trackerURL; ?>">
 								<button class="uk-button uk-button-default salsifis-input-button" name="action" type="submit" value="changeTracker">Modifier</button>
 							</div>
 							<input type="hidden" name="tracker" value="<?php echo htmlentities($trackerURL); ?>">
@@ -546,19 +546,26 @@ class Downloads extends Page{
 			$_SESSION['alerts'][] = array('type' => 'danger', 'message' => 'Le tracker est manquant !');
 			return false;
 		}
-		if(!isset($_REQUEST['tracker_'.$_REQUEST['tracker']])){
+		if(!isset($_REQUEST['newTracker'])){
 			$_SESSION['alerts'][] = array('type' => 'danger', 'message' => 'La nouvelle URL du tracker est manquante !');
 			return false;
 		}
 
 		$oldTracker = html_entity_decode($_REQUEST['tracker']);
-		$newTracker = $_REQUEST['tracker_'.$_REQUEST['tracker']];
+		$newTracker = $_REQUEST['newTracker'];
 		echo Get::varDump($oldTracker);
 		echo Get::varDump($newTracker);
 		if($oldTracker == $newTracker){
 			$_SESSION['alerts'][] = array('type' => 'warning', 'message' => 'La nouvelle url est identique à l\'ancienne !');
-		}elseif(!filter_var($newTracker, FILTER_VALIDATE_URL)){
+			return false;
+		}
+		if(!filter_var($oldTracker, FILTER_VALIDATE_URL)){
+			$_SESSION['alerts'][] = array('type' => 'danger', 'message' => 'L\'ancienne url n\'est pas valide !');
+			return false;
+		}
+		if(!filter_var($newTracker, FILTER_VALIDATE_URL)){
 			$_SESSION['alerts'][] = array('type' => 'danger', 'message' => 'La nouvelle url n\'est pas valide !');
+			return false;
 		}
 
 		/*$ret = $this->transSession->move((int)$_REQUEST['torrentId'], Settings::DATA_PARTITION.DIRECTORY_SEPARATOR.$_REQUEST['moveTo']);
