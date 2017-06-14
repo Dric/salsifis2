@@ -473,7 +473,7 @@ class Downloads extends Page{
 		<?php
 	}
 
-	public function changeTracker(){
+	public function trackersList(){
 		$trackers = array();
 		$trackersCount = array();
 		foreach ($this->torrents as $id => $torrent){
@@ -501,7 +501,6 @@ class Downloads extends Page{
 			<div class="uk-modal-header">
 				<h2 class="uk-modal-title">Tracker des téléchargements</h2>
 			</div>
-			<form method="post" action="<?php echo $this->url; ?>">
 			<div class="uk-modal-body">
 				<div class="uk-alert uk-alert-warning">
 					Si vous ne savez pas ce que vous faites, abstenez-vous !
@@ -512,22 +511,25 @@ class Downloads extends Page{
 					Les trackers permettent souvent de compatibiliser votre ratio, ils utilisent pour cela un identifiant dans leur url.<br>
 					Le serveur détecte automatiquement ces identifiants et vous les signale, parce que c'est un serveur serviable.
 				</div>
-				<h3 class="uk-text-muted">Trackers détectés</h3>
+				<h3 class="uk-text-muted">Trackers utilisés</h3>
 				<?php
 				foreach ($trackers as $trackerURL => $tracker){
 					?>
-					<div class="uk-margin">
-						<label class="uk-form-label">Tracker de <span class="uk-text-primary"><?php echo $tracker->domain; ?></span> (<?php echo $tracker->count; ?> téléchargements)</label>
-						<div class="uk-button-group">
-							<input name="tracker_<?php echo htmlentities($trackerURL); ?>" class="uk-input" type="text" placeholder="<?php echo $trackerURL; ?>" value="<?php echo $trackerURL; ?>">
-							<button class="uk-button uk-button-default">Modifier</button>
+					<form method="post" action="<?php echo $this->url; ?>">
+						<div class="uk-margin">
+							<label class="uk-form-label">Tracker de <span class="uk-text-primary"><?php echo $tracker->domain; ?></span> (<?php echo $tracker->count; ?> téléchargements)</label>
+							<div class="uk-button-group uk-width-1-1">
+								<input name="tracker_<?php echo htmlentities($trackerURL); ?>" class="uk-input" type="text" placeholder="<?php echo $trackerURL; ?>" value="<?php echo $trackerURL; ?>">
+								<button class="uk-button uk-button-default salsifis-input-button" name="action" type="submit" value="changeTracker">Modifier</button>
+							</div>
+							<input type="hidden" name="tracker" value="<?php echo htmlentities($trackerURL); ?>">
+							<?php
+							if (!empty($tracker->userHash)) {
+								?><span class="uk-text-small">L'url de ce tracker comporte un identifiant : <code><?php echo $tracker->userHash; ?></code></span><?php
+							}
+							?>
 						</div>
-						<?php
-						if (!empty($tracker->userHash)) {
-							?><span class="uk-text-small">L'url de ce tracker comporte un identifiant : <code><?php echo $tracker->userHash; ?></code></span><?php
-						}
-						?>
-					</div>
+					</form>
 					<?php
 				}
         ?>
@@ -535,9 +537,38 @@ class Downloads extends Page{
 			<div class="uk-modal-footer uk-text-right">
 				<button class="uk-button uk-button-default uk-modal-close" type="button">Annuler</button>
 			</div>
-			</form>
 		</div>
 		<?php
+	}
+
+	protected function changeTracker(){
+		if(!isset($_REQUEST['tracker'])){
+			$_SESSION['alerts'][] = array('type' => 'danger', 'message' => 'Le tracker est manquant !');
+			return false;
+		}
+		if(!isset($_REQUEST['tracker_'.$_REQUEST['tracker']])){
+			$_SESSION['alerts'][] = array('type' => 'danger', 'message' => 'La nouvelle URL du tracker est manquante !');
+			return false;
+		}
+
+		$oldTracker = html_entity_decode($_REQUEST['tracker']);
+		$newTracker = $_REQUEST['tracker_'.$_REQUEST['tracker']];
+		echo Get::varDump($oldTracker);
+		echo Get::varDump($newTracker);
+		if($oldTracker == $newTracker){
+			$_SESSION['alerts'][] = array('type' => 'warning', 'message' => 'La nouvelle url est identique à l\'ancienne !');
+		}elseif(!filter_var($newTracker, FILTER_VALIDATE_URL)){
+			$_SESSION['alerts'][] = array('type' => 'danger', 'message' => 'La nouvelle url n\'est pas valide !');
+		}
+
+		/*$ret = $this->transSession->move((int)$_REQUEST['torrentId'], Settings::DATA_PARTITION.DIRECTORY_SEPARATOR.$_REQUEST['moveTo']);
+		if ($ret->result == 'success'){
+			$_SESSION['alerts'][] = array('type' => 'success', 'message' => 'Le téléchargement a été déplacé !');
+			return true;
+		}else{
+			$_SESSION['alerts'][] = array('type' => 'danger', 'message' => 'Impossible de déplacer le téléchargement !');
+			return false;
+		}*/
 	}
 
 	protected function serverSettings(){
@@ -673,15 +704,14 @@ class Downloads extends Page{
 			switch ($_REQUEST['action']){
 				case 'changeAltMode':
 					return $this->changeAltMode();
-					break;
 				case 'moveTorrent':
 					return $this->moveTorrent();
-					break;
 				case 'delTorrent':
 					return $this->delTorrent();
-					break;
 				case 'saveSettings':
 					return $this->saveServerSettings();
+				case 'changeTracker':
+					return $this->changeTracker();
 			}
 		}
 		return false;

@@ -230,7 +230,7 @@ if ($.fn.DataTable) {
 			url     : "index.php",
 			dataType: "html",
 			timeout : 2000,
-			data    : {aSync: true, downloads: 'changeTracker'}
+			data    : {aSync: true, downloads: 'trackersList'}
 		}).done(function (data) {
 			$('#changeTracker').html(data);
 			UIkit.modal('#changeTracker').show();

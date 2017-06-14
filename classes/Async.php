@@ -31,8 +31,8 @@ class Async {
 							return false;
 						}
 						break;
-					case 'changeTracker':
-						$downloads->changeTracker();
+					case 'trackersList':
+						$downloads->trackersList();
 						break;
 				}
 			}elseif ($request == 'serverSettings'){
