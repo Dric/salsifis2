@@ -475,13 +475,12 @@ class Downloads extends Page{
 
 	public function changeTracker(){
 		$trackers = array();
-		echo Get::varDump($this->torrents);
 		foreach ($this->torrents as $id => $torrent){
 			foreach ($torrent->trackers as $tracker){
-				$trackers[$tracker][] = $id;
+				$trackers[$tracker->announce][] = $id;
 			}
 		}
-		echo Get::varDump($trackers);
+		// http://tracker.t411.al/f3bd62479bebf1cf5c6661c50ecdb212/announce
 		?>
 		<div class="uk-modal-dialog">
 			<button class="uk-modal-close-default" type="button" uk-close></button>
@@ -498,7 +497,26 @@ class Downloads extends Page{
 				<ul>
 				<?php
 				foreach ($trackers as $tracker => $torrents){
-					echo '<li>'.$tracker.'</li>';
+					if (preg_match('/^(https|http|udp):\/\/(.+?)(:.+?|)\/(.+?|)(?:\/|)(announce(?:.+?|))$/i', $tracker, $matches)) {
+						list ($url, $protocol, $domain, $port, $userHash, $announce) = $matches;
+						?>
+						<li>
+							<?php echo $tracker; ?>
+							<ul>
+								<li>Protocole : <code><?php echo $protocol; ?></code></li>
+								<li>Domaine : <code><?php echo $domain; ?></code></li>
+								<?php if (!empty($port)) { ?>
+								<li>Port : <code><?php echo $port; ?></code></li>
+								<?php } ?>
+								<?php if (!empty($userHash)) { ?>
+								<li>Identifiant : <code><?php echo $userHash; ?></code></li>
+								<?php } ?>
+							</ul>
+						</li>
+						<?php
+					} else {
+						echo '<li>'.$tracker.'</li>';
+					}
 				}
         ?>
 				</ul>
