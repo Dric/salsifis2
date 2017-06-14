@@ -241,7 +241,6 @@ Class Torrent{
 			$this->img = (!empty($torrentImg['source'])) ? urlencode($torrentImg['source']) : '';
 			$this->nfo = (!empty($fileDesc['source'])) ? $fileDesc['source'] : '';
 		}
-		//echo '<pre><code>';var_dump($this);echo '</code></pre>';
 	}
 	
 	/**
@@ -328,121 +327,6 @@ Class Torrent{
 		}
 	}
 
-	/**
-	 * Affiche les information d'un torrent
-	 *
-	 * @param int  $moduleId Id du module Transmission (pour les permissions des formulaires)
-	 *
-	 * @param bool $altColor Colorer le fond
-	 *
-	 * @return void
-	 */
-	public function display($moduleId = 0, $altColor = false){
-		?>
-		<noscript>
-			<style type="text/css">
-				.collapse{
-					display: block;
-				}
-			</style>
-		</noscript>
-		<div class="panel torrent-wrap <?php if ($altColor) echo 'alt-bg-background'; ?>" id="torrent_<?php echo $this->id; ?>">
-			<div class="panel-heading torrents">
-				<h4><a data-toggle="collapse" data-parent="#torrent_<?php echo $this->id; ?>" href="#collapse_details_<?php echo $this->id; ?>"><?php echo $this->sanitizeTorrentName(); ?></a> <span class="label <?php echo $this->get('statusIcons'); ?>"><?php echo $this->get('status'); ?></span> <span class="label label-primary"><?php echo (isset($this->downloadDirs[$this->get('downloadDir')])) ? $this->downloadDirs[$this->get('downloadDir')] : $this->get('downloadDir'); ?></span></h4>
-				<?php
-				?>
-				<div id="torrent-progress-bar-title_<?php echo $this->id; ?>" class="progress tooltip-bottom progress-torrents" title="Terminé à <?php echo $this->get('percentDone'); ?>%">
-					<?php
-					if ($this->get('percentDone') == 100){
-						if ($this->get('ratioPercentDone') == 100){
-							$barColor = 'default';
-						}else{
-							$barColor = 'warning';
-						}
-					?>
-					<div id="torrent-progress-bar-seed_<?php echo $this->id; ?>" class="progress-bar progress-bar-<?php echo $barColor; ?>" role="progressbar" aria-valuenow="<?php echo $this->get('ratioPercentDone'); ?>" aria-valuemin="0" aria-valuemax="100" style="width: <?php echo $this->get('ratioPercentDone'); ?>%;">
-						<span><?php echo $this->get('ratioPercentDone'); ?>%</span>
-					</div>
-					<?php }else{ ?>
-					<div id="torrent-progress-bar-dl_<?php echo $this->id; ?>" class="progress-bar progress-bar-primary" role="progressbar" aria-valuenow="<?php echo $this->get('percentDone'); ?>" aria-valuemin="0" aria-valuemax="100" style="width: <?php echo $this->get('percentDone'); ?>%;">
-						<span><?php echo $this->get('percentDone'); ?>%</span>
-					</div>
-					<?php } ?>
-				</div>
-			</div>
-			<div class="panel-body torrents collapse" id="collapse_details_<?php echo $this->id; ?>">
-
-				<ul class="">
-					<li>Nom réel : <i><?php echo $this->name; ?></i></li>
-					<li>Début : <?php echo $this->get('addedDate'); ?>, fin <?php echo ($this->get('isFinished'))?': '.$this->get('doneDate'):'estimée dans <span id="torrent_estimated_end_'.$this->id.'">'.$this->get('eta').'</span>'; ?></li>
-					<?php if ($this->get('isFinished')){ ?>
-					<li>Ratio d'envoi/réception : <span id="torrent-ratio_<?php echo $this->id; ?>"><?php echo $this->get('uploadRatio').' ('.$this->get('uploadedEver').' envoyés, '.$this->get('ratioPercentDone').'% du ratio atteint)'; ?></span></li>
-					<li>Taille : <?php echo $this->get('totalSize'); ?></li>
-					<?php }else{ ?>
-					<li>Reste à télécharger : <span id="torrent-leftuntildone_<?php echo $this->id; ?>"><?php echo $this->get('leftUntilDone').'/'.$this->get('totalSize'); ?></span></li>
-					<?php } ?>
-					<li>Téléchargé dans : <?php echo $this->get('downloadDir'); ?></li>
-					<?php if (!empty($this->comment)){ ?>
-					<li>Commentaire : <?php echo $this->get('comment'); ?></li>
-					<?php } ?>
-					<li>
-						<a data-toggle="collapse" data-parent="#torrent_<?php echo $this->id; ?>" href="#collapse_<?php echo $this->id; ?>">Liste des fichiers</a>
-						<ul class="collapse small" id="collapse_<?php echo $this->id; ?>">
-						<?php
-						foreach ($this->files as $file){
-							?><li><?php echo $file->name; ?></li><?php
-						}
-						?>
-						</ul>
-					</li>
-					<?php if (!empty($this->nfo)){ ?>
-					<li>
-						<a data-toggle="collapse" data-parent="#torrent_<?php echo $this->id; ?>" href="#collapse_nfo_<?php echo $this->id; ?>">Informations sur le fichier principal</a>
-						<ul class="collapse" id="collapse_nfo_<?php echo $this->id; ?>"><pre><?php echo $this->nfo; ?></pre></ul>
-					</li>
-					<?php } ?>
-				</ul>
-				<div class="">
-					<!-- Actions sur les téléchargements -->
-					<?php
-					$disableNotFinishedTorrent = (!in_array($this->status, array(3, 4)) and ACL::canModify('module', $moduleId)) ? '' : 'disabled';
-					$disableAll = (ACL::canModify('module', $moduleId)) ? '' : 'disabled';
-					?>
-					<form method="post" name="form_torrentActions_<?php echo $this->id; ?>" class="form-inline">
-						<div class="input-group">
-							<span class="input-group-btn">
-	              Déplacer vers
-	            </span>
-							<select class="form-control" id="field_select_moveTo_<?php echo $this->id; ?>" name="field_select_moveTo" <?php echo $disableNotFinishedTorrent; ?>>
-								<option></option>
-								<?php
-								foreach ($this->downloadDirs as $label => $downloadDir){
-									?>
-									<option value="<?php echo $downloadDir; ?>" <?php if ($downloadDir == $this->get('downloadDir')) echo 'selected'; ?>><?php echo $label; ?></option>
-								<?php
-								}
-								?>
-							</select>
-							<span class="input-group-btn">
-	              <button type="submit" class="btn btn-default" id="action" name="action" value="moveTorrent" <?php echo $disableNotFinishedTorrent; ?>>Déplacer</button>
-	            </span>
-						</div>
-						<!--<button type="submit" class="btn btn-default btn-xs" id="action" name="action" value="moveTorrent" <?php echo $disableNotFinishedTorrent; ?>>Déplacer</button>-->
-						<button type="submit" class="btn btn-default btn-sm" id="action" name="action" value="delTorrent" <?php echo $disableAll; ?>>Supprimer</button>
-						<div class="form-group">
-							<input class="form-control checkboxSwitch" id="field_bool_deleteFiles_checkbox_<?php echo $this->id; ?>" name="field_bool_deleteFiles_checkbox" value="1" checked="" <?php echo $disableNotFinishedTorrent; ?> data-on-text="Tout" data-off-text="Torrent" data-on-color="primary" data-off-color="default" type="checkbox">
-							<input name="field_bool_deleteFiles_hidden" value="0" type="hidden">
-						</div>
-						<input type="hidden" name="field_hidden_torrentId" value="<?php echo $this->id; ?>">
-						<input type="hidden" name="field_hidden_token" value="<?php echo PostedData::setToken('form_torrentActions_'.$this->id); ?>">
-						<input type="hidden" name="field_hidden_formName" value="form_torrentActions_<?php echo $this->id; ?>">
-					</form>
-					<br>
-				</div>
-			</div>
-		</div>
-		<?php
-	}
 
 	/**
 	 * Nettoie le nom d'un téléchargement

@@ -393,5 +393,19 @@ class TransSession extends TransmissionRPC{
 			return implode(', ', $daysArr);
 		}
 	}
+
+	/**
+	 * Modifie des torrents
+	 *
+	 * @param int|int[]|Torrent[] $torrents
+	 * @param array $arguments
+	 *
+	 * @return bool
+	 */
+	public function editTorrents($torrents, $arguments){
+		$torrentsId = (is_a($torrents[0], 'Torrent')) ? array_keys($torrents) : $torrents;
+		$ret = $this->set($torrentsId, $arguments);
+		return (!empty($ret)) ? true : false;
+	}
 }
 ?>

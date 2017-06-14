@@ -476,6 +476,7 @@ class Downloads extends Page{
 	public function trackersList(){
 		$trackers = array();
 		$trackersCount = array();
+		echo Get::varDump($this->torrents);
 		foreach ($this->torrents as $id => $torrent){
 			foreach ($torrent->trackers as $tracker){
 				$trackersCount[$tracker->announce]++;
@@ -556,19 +557,19 @@ class Downloads extends Page{
 		echo Get::varDump($oldTracker);
 		echo Get::varDump($newTracker);
 		if($oldTracker == $newTracker){
-			$_SESSION['alerts'][] = array('type' => 'warning', 'message' => 'La nouvelle url est identique à l\'ancienne !');
+			$_SESSION['alerts'][] = array('type' => 'warning', 'message' => 'La nouvelle url du tracker est identique à l\'ancienne !');
 			return false;
 		}
 		if(!filter_var($oldTracker, FILTER_VALIDATE_URL)){
-			$_SESSION['alerts'][] = array('type' => 'danger', 'message' => 'L\'ancienne url n\'est pas valide !');
+			$_SESSION['alerts'][] = array('type' => 'danger', 'message' => 'L\'ancienne url du tracker n\'est pas valide !');
 			return false;
 		}
 		if(!filter_var($newTracker, FILTER_VALIDATE_URL)){
-			$_SESSION['alerts'][] = array('type' => 'danger', 'message' => 'La nouvelle url n\'est pas valide !');
+			$_SESSION['alerts'][] = array('type' => 'danger', 'message' => 'La nouvelle url du tracker n\'est pas valide !');
 			return false;
 		}
 
-		/*$ret = $this->transSession->move((int)$_REQUEST['torrentId'], Settings::DATA_PARTITION.DIRECTORY_SEPARATOR.$_REQUEST['moveTo']);
+		/*$ret = $this->transSession->set($this->torrents, array('replaceTrackers'));
 		if ($ret->result == 'success'){
 			$_SESSION['alerts'][] = array('type' => 'success', 'message' => 'Le téléchargement a été déplacé !');
 			return true;
