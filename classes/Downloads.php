@@ -477,6 +477,10 @@ class Downloads extends Page{
 		$trackers = array();
 		foreach ($this->torrents as $id => $torrent){
 			foreach ($torrent->trackers as $tracker){
+				if (!isset($trackers[$tracker->announce]->count)){
+						$trackers[$tracker->announce]->count = 0;
+					}
+				$trackerCount = $trackers[$tracker->announce]->count;
 				if (preg_match('/^(https|http|udp):\/\/(.+?)(:.+?|)\/(.+?|)(?:\/|)(announce(?:.+?|))$/i', $tracker->announce, $matches)) {
 					$keys = array(
 							'url',
@@ -487,10 +491,7 @@ class Downloads extends Page{
 							'announce'
 					);
 					$trackers[$tracker->announce] = (object)array_combine($keys, $matches);
-					if (!isset($trackers[$tracker->announce]->count)){
-						$trackers[$tracker->announce]->count = 0;
-					}
-					$trackers[$tracker->announce]->count++;
+					$trackers[$tracker->announce]->count = $trackerCount++;
 				}
 			}
 		}
@@ -513,15 +514,13 @@ class Downloads extends Page{
 				foreach ($trackers as $trackerURL => $tracker){
 					?>
 					<div class="uk-margin">
-						<label class="uk-form-label uk-text-small">
-						Tracker (<?php echo $tracker->count; ?> téléchargements)&nbsp;
+						<label class="uk-form-label">Tracker de <?php echo $tracker->domain; ?> (<?php echo $tracker->count; ?> téléchargements)</label>
+						<input name="tracker_<?php echo htmlentities($trackerURL); ?>" class="uk-input" type="text" placeholder="<?php echo $trackerURL; ?>" value="<?php echo $trackerURL; ?>">
 						<?php
 						if (!empty($tracker->userHash)) {
-							Components::iconWarning('L\'url de ce tracker comporte un identifiant : <code>'.$tracker->userHash.'</code>');
+							?><br><span class="uk-text-small">L'url de ce tracker comporte un identifiant : <code><?php echo $tracker->userHash; ?></code></span><?php
 						}
 						?>
-						</label>
-						<input name="tracker_<?php echo htmlentities($trackerURL); ?>" class="uk-input" type="string" placeholder="<?php echo $trackerURL; ?>" value="<?php echo $trackerURL; ?>">
 					</div>
 					<?php
 				}
