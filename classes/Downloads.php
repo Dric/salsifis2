@@ -222,24 +222,6 @@ class Downloads extends Page{
 		return false;
 	}
 
-	protected function aSyncTable(){
-		?>
-		<div class="table-responsive uk-box-shadow-medium uk-overlay-default uk-padding-small" id="salsifis-table-container">
-			<table id="torrentBrowser" class="uk-table uk-table-divider uk-table-small uk-table-justify" data-order="[[ 1, 'asc' ]]">
-				<thead>
-					<tr>
-						<td data-class-name="uk-table-expand uk-table-link uk-text-truncate">Nom</td>
-						<td class="uk-visible@m">Statut</td>
-						<td class="uk-visible@m" data-class-name="uk-table-shrink uk-text-nowrap uk-visible@m">Emplacement</td>
-						<td class="uk-visible@l" data-class-name="uk-table-shrink uk-text-nowrap uk-visible@l">Ratio</td>
-						<td class="uk-visible@l" data-class-name="uk-table-shrink uk-text-nowrap uk-visible@l">Taille</td>
-					</tr>
-				</thead>
-				<tbody id="torrentsTableBody">
-			</tbody>
-		</table>
-		<?php
-	}
 
 	/**
 	 * Affiche la liste des torrents filtrés
@@ -329,7 +311,6 @@ class Downloads extends Page{
 	public function torrentDetail($id){
 		/** @var Torrent $torrent */
 		$torrent = $this->torrents[$id];
-		// 'id', 'name', 'addedDate', 'status', 'doneDate', 'totalSize', 'downloadDir', 'uploadedEver', 'isFinished', 'leftUntilDone', 'percentDone', 'files', 'eta', 'uploadRatio', 'comment', 'seedRatioLimit'
 		?>
 		<div class="uk-modal-dialog">
       <button class="uk-modal-close-default" type="button" uk-close></button>
@@ -376,7 +357,14 @@ class Downloads extends Page{
 						<ul class="uk-text-small" id="collapse_<?php echo $torrent->id; ?>" hidden>
 						<?php
 						foreach ($torrent->files as $file){
-							?><li><?php echo $file->name; ?></li><?php
+							?>
+							<li>
+								<?php
+									echo $file->name.' - ';
+									echo ($torrent->isFinished) ? Sanitize::readableFileSize($file->length) : Sanitize::readableFileSize($file->bytesCompleted).'/'.Sanitize::readableFileSize($file->length);
+								?>
+							</li>
+							<?php
 						}
 						?>
 						</ul>
@@ -476,9 +464,10 @@ class Downloads extends Page{
 	public function trackersList(){
 		$trackers = array();
 		$trackersCount = array();
+		$torrentsId = array();
 		echo Get::varDump($this->torrents);
 		foreach ($this->torrents as $id => $torrent){
-			foreach ($torrent->trackers as $tracker){
+			foreach ($torrent->trackers as $trackerId => $tracker){
 				$trackersCount[$tracker->announce]++;
 				if (preg_match('/^(https|http|udp):\/\/(.+?)(:.+?|)\/(.+?|)(?:\/|)(announce(?:.+?|))$/i', $tracker->announce, $matches)) {
 					$keys = array(
@@ -524,6 +513,7 @@ class Downloads extends Page{
 								<button class="uk-button uk-button-default salsifis-input-button" name="action" type="submit" value="changeTracker">Modifier</button>
 							</div>
 							<input type="hidden" name="tracker" value="<?php echo htmlentities($trackerURL); ?>">
+							<input type="hidden" name="torrentsIDs" value="">
 							<?php
 							if (!empty($tracker->userHash)) {
 								?><span class="uk-text-small">L'url de ce tracker comporte un identifiant : <code><?php echo $tracker->userHash; ?></code></span><?php
@@ -568,9 +558,24 @@ class Downloads extends Page{
 			$_SESSION['alerts'][] = array('type' => 'danger', 'message' => 'La nouvelle url du tracker n\'est pas valide !');
 			return false;
 		}
-
-		/*$ret = $this->transSession->set($this->torrents, array('replaceTrackers'));
-		if ($ret->result == 'success'){
+		$trackersId = array();
+		$torrentsToEdit = array();
+		foreach ($this->torrents as $torrentId => $torrent){
+			foreach ($torrent->trackers as $trackerId => $tracker){
+				if ($tracker->announce == $oldTracker){
+					$trackersId[$trackerId][$trackerId] = $newTracker;
+					$torrentsToEdit[$trackerId] = $torrentId;
+				}
+			}
+		}
+		echo Get::varDump($trackersId);
+		echo Get::varDump($torrentsToEdit);
+		$ret = array();
+		for ($i = 0; $i <= count($torrentsToEdit);$i++){
+			$ret[$i] = $this->transSession->set($torrentsToEdit[$i], array('trackerReplace' => $trackersId[$i]));
+		}
+		echo Get::varDump($ret);
+		/*if ($ret->result == 'success'){
 			$_SESSION['alerts'][] = array('type' => 'success', 'message' => 'Le téléchargement a été déplacé !');
 			return true;
 		}else{
