@@ -475,11 +475,13 @@ class Downloads extends Page{
 
 	public function changeTracker(){
 		$trackers = array();
+		echo Get::varDump($this->torrents);
 		foreach ($this->torrents as $id => $torrent){
 			foreach ($torrent->trackers as $tracker){
 				$trackers[$tracker][] = $id;
 			}
 		}
+		echo Get::varDump($trackers);
 		?>
 		<div class="uk-modal-dialog">
 			<button class="uk-modal-close-default" type="button" uk-close></button>

@@ -148,7 +148,7 @@ $('.serverVersionLink').on('click', function(e){
 		method  : "POST",
 		url     : "index.php",
 		dataType: "html",
-		timeout : 2000,
+		timeout : 5000,
 		data    : {aSync: true, serverVersion: true}
 	}).done(function (data) {
 		$('#serverVersion').html(data);

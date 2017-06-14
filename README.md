@@ -8,7 +8,7 @@ Les interactions sont limitées à :
 - un explorateur de fichiers
 - une interface d'arrêt/redémarrage du serveur
 
-L'arrêt/redémarrage du serveur nécessite un accès à la console du serveur pour la mise en place de deux fichiers exécutables.
+La mise en place de l'arrêt/redémarrage du serveur nécessite un accès à la console du serveur pour la mise en place de deux fichiers exécutables.
 
 ### Captures d'écran
 
@@ -24,6 +24,13 @@ L'arrêt/redémarrage du serveur nécessite un accès à la console du serveur p
 - jQuery
 - DataTables
 - Font-Awesome
+
+## Pré-requis
+
+- PHP 7.0 minimum
+- Extension `bcmath` (Si vous ne l'avez pas, installez-là avec `sudo apt install php-bcmath` sous Ubuntu/Debian)
+
+Testé sous Ubuntu, avec Apache et Lighttpd
 
 ## Installation
 

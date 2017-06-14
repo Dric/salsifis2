@@ -2,6 +2,8 @@
 /**
  * Salsifis²
  *
+ * https://github.com/Dric/salsifis2
+ *
  * Interface web pour serveur de téléchargements et diffusion multimedia.
  *
  * Essuyez vos pieds avant d'entrer.
@@ -9,7 +11,7 @@
  */
 
 if (version_compare(phpversion(), '7.0.0', '<')) {
-	die('<h1>Erreur fatale et grossière !</h1><p>Votre version de PHP <code>'.phpversion().'</code> est trop ancienne, '.Settings::TITLE.' nécessite PHP7 minimum !</p>');
+	die('<h1>Erreur fatale et grossière !</h1><p>Votre version de PHP <code>'.phpversion().'</code> est trop ancienne, '.Settings::TITLE.' nécessite PHP 7 minimum !</p>');
 }
 
 session_start();
