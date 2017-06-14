@@ -475,12 +475,10 @@ class Downloads extends Page{
 
 	public function changeTracker(){
 		$trackers = array();
+		$trackersCount = array();
 		foreach ($this->torrents as $id => $torrent){
 			foreach ($torrent->trackers as $tracker){
-				if (!isset($trackers[$tracker->announce]->count)){
-						$trackers[$tracker->announce]->count = 0;
-					}
-				$trackerCount = $trackers[$tracker->announce]->count;
+				$trackersCount[$tracker->announce]++;
 				if (preg_match('/^(https|http|udp):\/\/(.+?)(:.+?|)\/(.+?|)(?:\/|)(announce(?:.+?|))$/i', $tracker->announce, $matches)) {
 					$keys = array(
 							'url',
@@ -491,11 +489,11 @@ class Downloads extends Page{
 							'announce'
 					);
 					$trackers[$tracker->announce] = (object)array_combine($keys, $matches);
-					$trackers[$tracker->announce]->count = $trackerCount++;
+					$trackers[$tracker->announce]->count = $trackersCount[$tracker->announce];
 				}
 			}
 		}
-		echo Get::varDump($trackers);
+		//echo Get::varDump($trackers);
 		// http://tracker.t411.al/f3bd62479bebf1cf5c6661c50ecdb212/announce
 		?>
 		<div class="uk-modal-dialog">
@@ -507,14 +505,15 @@ class Downloads extends Page{
 			<div class="uk-modal-body">
 				<div class="uk-alert uk-alert-warning">
 					Si vous ne savez pas ce que vous faites, abstenez-vous !<br>
-					Les trackers permettent souvent de compatibiliser votre ratio.
+					Les trackers permettent souvent de compatibiliser votre ratio, ils utilisent pour cela un identifiant dans l'url du tracker.<br>
+					Le serveur détecte automatiquement ces identifiants et vous les signale, parce que c'est un serveur serviable.
 				</div>
 				<h3 class="uk-text-muted">Trackers détectés</h3>
 				<?php
 				foreach ($trackers as $trackerURL => $tracker){
 					?>
 					<div class="uk-margin">
-						<label class="uk-form-label">Tracker de <?php echo $tracker->domain; ?> (<?php echo $tracker->count; ?> téléchargements)</label>
+						<label class="uk-form-label">Tracker de <span class="uk-text-primary"><?php echo $tracker->domain; ?></span> (<?php echo $tracker->count; ?> téléchargements)</label>
 						<input name="tracker_<?php echo htmlentities($trackerURL); ?>" class="uk-input" type="text" placeholder="<?php echo $trackerURL; ?>" value="<?php echo $trackerURL; ?>">
 						<?php
 						if (!empty($tracker->userHash)) {
