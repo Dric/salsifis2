@@ -72,7 +72,7 @@ class Downloads extends Page{
 			$transSession = $this->getTransSession();
 			if (!empty($transSession)){
 				// Voir https://trac.transmissionbt.com/browser/trunk/extras/rpc-spec.txt
-				$torrents = $transSession->get(array(), array('id', 'name', 'addedDate', 'status', 'doneDate', 'totalSize', 'downloadDir', 'uploadedEver', 'isFinished', 'leftUntilDone', 'percentDone', 'files', 'eta', 'uploadRatio', 'comment', 'seedRatioLimit', 'trackers'))->arguments->torrents;
+				$torrents = $transSession->get(array(), array('id', 'name', 'addedDate', 'status', 'doneDate', 'totalSize', 'downloadDir', 'uploadedEver', 'isFinished', 'leftUntilDone', 'percentDone', 'files', 'eta', 'uploadRatio', 'comment', 'seedRatioLimit', 'trackers', 'trackerStat'))->arguments->torrents;
 				foreach ($torrents as $torrent){
 					// On remplace le répertoire actuel de téléchargement par un chemin relatif, pour pouvoir plus facilement gérer celui-ci par la suite.
 					$torrent->downloadDir = str_replace(Settings::DATA_PARTITION.DIRECTORY_SEPARATOR, '', $torrent->downloadDir);

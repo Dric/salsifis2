@@ -194,9 +194,15 @@ Class Torrent{
 
 	/**
 	 * Liste des trackers du torrent
-	 * @var string[]
+	 * @var array
 	 */
 	protected $trackers = array();
+
+	/**
+	 * Stats des trackers
+	 * @var array
+	 */
+	protected $trackerStats = array();
 
 	/**
 	 * Construction de la classe
@@ -303,6 +309,7 @@ Class Torrent{
 			case 'nfo':
 			case 'img':
 			case 'trackers':
+			case 'trackerStats':
 				return $this->$prop;
 			case 'sanitizedName':
 				return $this->sanitizeTorrentName();
