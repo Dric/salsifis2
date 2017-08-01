@@ -465,7 +465,7 @@ class Downloads extends Page{
 		$trackers = array();
 		$trackersCount = array();
 		$torrentsId = array();
-		echo Get::varDump($this->torrents);
+		//echo Get::varDump($this->torrents);
 		foreach ($this->torrents as $id => $torrent){
 			foreach ($torrent->trackers as $trackerId => $tracker){
 				$trackersCount[$tracker->announce]++;
@@ -543,9 +543,7 @@ class Downloads extends Page{
 		}
 
 		$oldTracker = html_entity_decode($_REQUEST['tracker']);
-		$newTracker = $_REQUEST['newTracker'];
-		echo Get::varDump($oldTracker);
-		echo Get::varDump($newTracker);
+		$newTracker = html_entity_decode($_REQUEST['newTracker']);
 		if($oldTracker == $newTracker){
 			$_SESSION['alerts'][] = array('type' => 'warning', 'message' => 'La nouvelle url du tracker est identique à l\'ancienne !');
 			return false;
@@ -568,20 +566,17 @@ class Downloads extends Page{
 				}
 			}
 		}
-		echo Get::varDump($trackersId);
-		echo Get::varDump($torrentsToEdit);
 		$ret = array();
 		for ($i = 0; $i <= count($torrentsToEdit);$i++){
 			$ret[$i] = $this->transSession->set($torrentsToEdit[$i], array('trackerReplace' => $trackersId[$i]));
 		}
-		echo Get::varDump($ret);
-		/*if ($ret->result == 'success'){
+		if ($ret->result == 'success'){
 			$_SESSION['alerts'][] = array('type' => 'success', 'message' => 'Le téléchargement a été déplacé !');
 			return true;
 		}else{
 			$_SESSION['alerts'][] = array('type' => 'danger', 'message' => 'Impossible de déplacer le téléchargement !');
 			return false;
-		}*/
+		}
 	}
 
 	protected function serverSettings(){
