@@ -173,6 +173,7 @@ if (Settings::USE_AUTH and !Auth::isLoggedIn()) {
 	?>
 	<script type="text/javascript">
 		var isHomePage = <?php echo (!isset($_REQUEST['page'])) ? 'true' : 'false' ; ?>;
+		var displayExternalIP = <?php echo (Settings::DISPLAY_EXTERNAL_IP) ? 'true' : 'false' ; ?>;
 	</script>
 	<script src="js/salsifis2.js"></script>
 	<?php

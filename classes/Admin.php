@@ -136,7 +136,8 @@ class Admin {
 			),
 		  'adv'   => array(
 			  'DEBUG',
-			  'DATA_PARTITION'
+			  'DATA_PARTITION',
+			  'DISPLAY_EXTERNAL_IP'
 		  ),
 		  'trans' => array(
 			  'TRANSMISSION_WEB_URL',
