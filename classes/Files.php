@@ -192,14 +192,23 @@ class Files extends Page{
 				$folder = Settings::DATA_PARTITION;
 			}
 		}
+		$finfo = finfo_open(FILEINFO_MIME_TYPE);
+		$mime = finfo_file($finfo, $file);
+		if($mime){
+			header("Content-type: $mime");
+		}else{
+			header("Content-type: application/octet-stream");
+		}
 		header('Content-Disposition: attachment; filename="' . basename($file) . '"');
+		header("X-Sendfile: " . $file);
 		header("Content-Length: " . filesize($file));
-		header("Content-Type: application/octet-stream;");
+
+		/*header("Content-Type: application/octet-stream;");
 		header("Cache-Control: no-cache, must-revalidate");
-		header("Expires: Mon, 26 Jul 1997 05:00:00 GMT");
-		ob_clean();
+		header("Expires: Mon, 26 Jul 1997 05:00:00 GMT");*/
+		/*ob_clean();
 		flush();
-		readfile($file);
+		readfile($file);*/
 		exit;
 	}
 

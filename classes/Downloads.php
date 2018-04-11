@@ -418,7 +418,7 @@ class Downloads extends Page{
 		if ($this->transSession){
 			if ($this->runAction()) {
 				// On empêche de resoumettre les formulaires en cas de rafraîchissement de page (https://stackoverflow.com/a/722567/1749967)
-				//header('Location: ?page=downloads');
+				header('Location: ?page=downloads');
 			}
 			//echo Get::varDump($this->transSession);
 			$this->serverSettings();
@@ -571,10 +571,10 @@ class Downloads extends Page{
 			$ret[$i] = $this->transSession->set($torrentsToEdit[$i], array('trackerReplace' => $trackersId[$i]));
 		}
 		if ($ret->result == 'success'){
-			$_SESSION['alerts'][] = array('type' => 'success', 'message' => 'Le téléchargement a été déplacé !');
+			$_SESSION['alerts'][] = array('type' => 'success', 'message' => 'Le tracker a été modifié !');
 			return true;
 		}else{
-			$_SESSION['alerts'][] = array('type' => 'danger', 'message' => 'Impossible de déplacer le téléchargement !');
+			$_SESSION['alerts'][] = array('type' => 'danger', 'message' => 'Impossible de modifier le tracker !');
 			return false;
 		}
 	}
