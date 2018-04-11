@@ -381,7 +381,13 @@ class Downloads extends Page{
 	      <form class="uk-form-horizontal uk-text-right" action="?page=downloads" method="post">
 	        <input type="hidden" name="torrentId" value="<?php echo $torrent->id; ?>">
 	        <button class="uk-button uk-button-default uk-modal-close" type="button">Annuler</button>
-	        <button name="deleteTorrent" class="uk-button uk-button-danger" type="submit">Supprimer</button>
+	        <button name="deleteTorrent" class="uk-button uk-button-danger" type="button">Supprimer</button>
+	        <div uk-dropdown>
+	          <ul class="uk-nav uk-dropdown-nav">
+	            <li class="uk-active"><a href="<?php echo $this->buildArgsURL(array('torrentId' => $torrent->id, 'action' => 'delTorrent', 'deleteFiles' => true)); ?>">Supprimer le téléchargement ainsi que les fichiers</a></li>
+              <li><a href="<?php echo $this->buildArgsURL(array('torrentId' => $torrent->id, 'action' => 'delTorrent', 'deleteFiles' => false)); ?>">Supprimer le téléchargement sans toucher aux fichiers</a></li>
+						</ul>
+					</div>
 				</form>
 			</div>
     </div>
