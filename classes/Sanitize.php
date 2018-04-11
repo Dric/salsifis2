@@ -204,75 +204,80 @@ class Sanitize {
 	 *
 	 * @return array Tableau trié
 	 */
-	public static function sortObjectList($arrayOrig, $props, $sortOrder = 'ASC')	{
+	public static function sortObjectList($arrayOrig, $props, $sortOrder = 'ASC') {
 		$array = $arrayOrig;
-		if (!is_array($props)){
+		if (!is_array($props)) {
 			$props = array($props);
 		}
-		if (!is_array($sortOrder)){
+		if (!is_array($sortOrder)) {
 			$sortOrder = array($sortOrder);
 		}
 
-		usort($array, function($a, $b) use (&$props, &$sortOrder) {
-			for($i = 1; $i < count($props); $i++) {
-				if($a->{$props[$i-1]} == $b->{$props[$i-1]}) {
-					if (is_numeric($a->{$props[$i]})) {
-						if (strtoupper($sortOrder[$i]) == 'ASC') {
-							return $a->{$props[$i]} > $b->{$props[$i]} ? 1 : -1;
+		usort($array, function ($a, $b) use (&$props, &$sortOrder) {
+			for ($i = 1; $i < count($props); $i++) {
+				if (isset($a->{$props[$i]})) {
+					if ($a->{$props[$i - 1]} == $b->{$props[$i - 1]}) {
+						if (is_numeric($a->{$props[$i]})) {
+							if (strtoupper($sortOrder[$i]) == 'ASC') {
+								return $a->{$props[$i]} > $b->{$props[$i]} ? 1 : -1;
+							} else {
+								return $a->{$props[$i]} < $b->{$props[$i]} ? 1 : -1;
+							}
 						} else {
-							return $a->{$props[$i]} < $b->{$props[$i]} ? 1 : -1;
+							if (strtoupper($sortOrder[$i]) == 'ASC') {
+								return strcasecmp($a->{$props[$i]}, $b->{$props[$i]});
+							} else {
+								return strcasecmp($b->{$props[$i]}, $a->{$props[$i]});
+							}
 						}
-					} else {
-						if (strtoupper($sortOrder[$i]) == 'ASC') {
-							return strcasecmp($a->{$props[$i]}, $b->{$props[$i]});
+					}
+				} else {
+					if ($a->{'get'.ucfirst($props[$i - 1])} == $b->{'get'.ucfirst($props[$i - 1])}) {
+						if (is_numeric($a->{'get'.ucfirst($props[$i])})) {
+							if (strtoupper($sortOrder[$i]) == 'ASC') {
+								return $a->{'get'.ucfirst($props[$i])} > $b->{'get'.ucfirst($props[$i])} ? 1 : -1;
+							} else {
+								return $a->{'get'.ucfirst($props[$i])} < $b->{'get'.ucfirst($props[$i])} ? 1 : -1;
+							}
 						} else {
-							return strcasecmp($b->{$props[$i]}, $a->{$props[$i]});
+							if (strtoupper($sortOrder[$i]) == 'ASC') {
+								return strcasecmp($a->{'get'.ucfirst($props[$i])}, $b->{'get'.ucfirst($props[$i])});
+							} else {
+								return strcasecmp($b->{'get'.ucfirst($props[$i])}, $a->{'get'.ucfirst($props[$i])});
+							}
 						}
 					}
 				}
 			}
-			if (is_numeric($a->{$props[0]})) {
-				if (strtoupper($sortOrder[0]) == 'ASC') {
-					return $a->{$props[0]} > $b->{$props[0]} ? 1 : -1;
+			if (isset($a->{$props[0]})) {
+				if (is_numeric($a->{$props[0]})) {
+					if (strtoupper($sortOrder[0]) == 'ASC') {
+						return $a->{$props[0]} > $b->{$props[0]} ? 1 : -1;
+					} else {
+						return $a->{$props[0]} < $b->{$props[0]} ? 1 : -1;
+					}
 				} else {
-					return $a->{$props[0]} < $b->{$props[0]} ? 1 : -1;
+					if (strtoupper($sortOrder[0]) == 'ASC') {
+						return strcasecmp($a->{$props[0]}, $b->{$props[0]});
+					} else {
+						return strcasecmp($b->{$props[0]}, $a->{$props[0]});
+					}
 				}
 			} else {
-				if (strtoupper($sortOrder[0]) == 'ASC') {
-					return strcasecmp($a->{$props[0]}, $b->{$props[0]});
+				if (is_numeric($a->{'get'.ucfirst($props[0])}())) {
+					if (strtoupper($sortOrder[0]) == 'ASC') {
+						return $a->{'get'.ucfirst($props[0])}() > $b->{'get'.ucfirst($props[0])}() ? 1 : -1;
+					} else {
+						return $a->{'get'.ucfirst($props[0])}() < $b->{'get'.ucfirst($props[0])}() ? 1 : -1;
+					}
 				} else {
-					return strcasecmp($b->{$props[0]}, $a->{$props[0]});
-				}
-			}
-			/*foreach ($props as $i => $prop) {
-				if (isset ($sortOrder[$i]) and $sortOrder[$i] == 'DESC'){
-					if (isset($a->$prop)){
-						if (is_numeric($a->$prop) and is_numeric($b->$prop)){
-							return $b->$prop - $a->$prop;
-						}
-						return strcasecmp($b->$prop, $a->$prop);
-					}else{
-						if (is_numeric($a->{'get'.ucfirst($prop)}()) and is_numeric($b->{'get'.ucfirst($prop)}())){
-							return $b->{'get'.ucfirst($prop)}() - $a->{'get'.ucfirst($prop)}();
-						}
-						return strcasecmp($b->{'get'.ucfirst($prop)}(), $a->{'get'.ucfirst($prop)}());
-					}
-				}else{
-					if (isset($a->$prop)){
-						if (is_numeric($a->$prop) and is_numeric($b->$prop)){
-							return $a->$prop - $b->$prop;
-						}
-						return strcasecmp($a->$prop, $b->$prop);
-					}else{
-						if (is_numeric($a->{'get'.ucfirst($prop)}()) and is_numeric($b->{'get'.ucfirst($prop)}())){
-							return $a->{'get'.ucfirst($prop)}() - $b->{'get'.ucfirst($prop)}();
-						}
-						return strcasecmp($a->{'get'.ucfirst($prop)}(), $b->{'get'.ucfirst($prop)}());
+					if (strtoupper($sortOrder[0]) == 'ASC') {
+						return strcasecmp($a->{'get'.ucfirst($props[0])}(), $b->{'get'.ucfirst($props[0])}());
+					} else {
+						return strcasecmp($b->{'get'.ucfirst($props[0])}(), $a->{'get'.ucfirst($props[0])}());
 					}
 				}
-
 			}
-			return 0;*/
 		});
 		return $array;
 	}
