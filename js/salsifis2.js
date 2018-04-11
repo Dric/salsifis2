@@ -13,15 +13,17 @@ if (isHomePage) {
 		$('#diskUsage').hide().html(data).fadeIn();
 	});
 
-	$.ajax({
-		method  : "POST",
-		url     : "index.php",
-		dataType: "html",
-		timeout : 2000,
-		data    : {aSync: true, externalIP: true}
-	}).done(function (data) {
-		$('#externalIP').hide().html(data).fadeIn();
-	});
+	if (displayExternalIP) {
+		$.ajax({
+			method  : "POST",
+			url     : "index.php",
+			dataType: "html",
+			timeout : 2000,
+			data    : {aSync: true, externalIP: true}
+		}).done(function (data) {
+			$('#externalIP').hide().html(data).fadeIn();
+		});
+	}
 
 
 	function plugin$10(UIkit) {

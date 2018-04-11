@@ -57,8 +57,10 @@ class Page {
 
 		<div class="uk-section" id="diskUsage">
 		</div>
+		<?php if (Settings::DISPLAY_EXTERNAL_IP) { ?>
 		<div class="uk-section" id="externalIP">
 		</div>
+		<?php } ?>
 		<div class="uk-section">
 			<div class="uk-text-center">
 				Démarré depuis

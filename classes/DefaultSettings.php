@@ -32,4 +32,6 @@ class DefaultSettings {
 	const USE_AUTH              = false;
 	/** Mot de passe (chiffré) */
 	const PASSWORD              = null;
+	/** Afficher l'adresse IP externe */
+	const DISPLAY_EXTERNAL_IP = false;
 }
