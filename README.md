@@ -97,3 +97,22 @@ Dans un terminal, saisissez :
 
     cd /var/www/html
     git pull
+    
+## Environnement de dev
+
+### Compilateur Less
+
+Lancer la console de node.js :
+
+    npm install less@2.7.1 -g
+    npm install less-plugin-clean-css -g
+
+Dans PHPStorm, aller dans `File/settings/Tools/File Watchers`
+Ajouter un item `Less` avec les paramètres suivants :
+
+- `File type` : `Less`
+- `Scope` : `Salsifis2`
+- `Program` : `C:/Program Files/Nodejs/Node.exe`
+- `Arguments` : ` --clean-css="--s1 --advanced" $Filename$`
+- `Output paths to refresh` : `$FileParentDir$\$FileNameWithoutExtension$.css`
+- `Working Directory`: `$FileDir$`

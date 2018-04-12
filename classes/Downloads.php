@@ -382,14 +382,16 @@ class Downloads extends Page{
 	        <input type="hidden" name="torrentId" value="<?php echo $torrent->id; ?>">
 	        <button class="uk-button uk-button-default uk-modal-close" type="button">Annuler</button>
 	        <button name="deleteTorrent" class="uk-button uk-button-danger" type="button">Supprimer</button>
-	        <div uk-dropdown class="uk-text-left uk-dark">
+	        <div uk-dropdown class="uk-text-left">
 	          <ul class="uk-nav uk-dropdown-nav">
-	            <li class="uk-active"><a href="<?php echo $this->buildArgsURL(array('torrentId' => $torrent->id, 'action' => 'delTorrent', 'deleteFiles' => true)); ?>">Supprimer le téléchargement ainsi que les fichiers</a></li>
-              <li><a href="<?php echo $this->buildArgsURL(array('torrentId' => $torrent->id, 'action' => 'delTorrent', 'deleteFiles' => false)); ?>">Supprimer le téléchargement sans toucher aux fichiers</a></li>
+	            <li class="uk-active"><a href="<?php echo $this->buildArgsURL(array('torrentId' => $torrent->id, 'action' => 'delTorrent', 'deleteFiles' => true)); ?>">Supprimer tout</a> <span title="Supprimer le téléchargement ainsi que les fichiers qui ont été téléchargés" class="fa fa-question-circle help-icon"></span></li>
+              <li class="uk-nav-divider"></li>
+              <li><a href="<?php echo $this->buildArgsURL(array('torrentId' => $torrent->id, 'action' => 'delTorrent', 'deleteFiles' => false)); ?>">Supprimer seulement le téléchargement</a> <span title="Supprimer le téléchargement sans supprimer les fichiers téléchargés. Ceci est utile pour ne plus partager les fichiers mais en les gardant pour soi comme une(e) sale petit(e) égoïste" class="fa fa-question-circle help-icon"></span></span></li>
 						</ul>
 					</div>
 				</form>
 			</div>
+
     </div>
 		<?php
 	}
@@ -458,7 +460,7 @@ class Downloads extends Page{
 			if ($this->transSession){
 				?>
 				<li><a href="#modal-settings" uk-toggle>Paramètres de téléchargement</a></li>
-				<li><a href="#changeTracker" class="changeTrackerLink">Modifier les trackers <?php Components::iconWarning('Attention : la modification des trackers n\'est pas sans risques !'); ?></a></li>
+				<li><a href="#changeTracker" class="changeTrackerLink" uk-toggle>Modifier les trackers <?php Components::iconWarning('Attention : la modification des trackers n\'est pas sans risques !'); ?></a></li>
 				<li><a href="<?php echo $this->buildArgsURL(array('action' => 'changeAltMode')); ?>"><?php echo ($this->transSession->altSpeedEnabled) ? 'Désactiver' : 'Activer' ; ?> le mode tortue</a></li>
 				<?php
 			}
