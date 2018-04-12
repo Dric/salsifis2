@@ -1,7 +1,7 @@
-import { Modal } from '../mixin/index';
-import { $, docElement, isTouch, query, transitionend } from '../util/index';
+import {Modal} from '../mixin/index';
+import {$, addClass, css, hasClass, height, isTouch, once, removeClass, trigger, unwrap, width, wrapAll} from '../util/index';
 
-var scroll;
+let scroll;
 
 export default function (UIkit) {
 
@@ -19,13 +19,13 @@ export default function (UIkit) {
         },
 
         defaults: {
-            content: '.uk-offcanvas-content:first',
+            content: '.uk-offcanvas-content',
             mode: 'slide',
             flip: false,
             overlay: false,
             clsPage: 'uk-offcanvas-page',
             clsContainer: 'uk-offcanvas-container',
-            clsPanel: 'uk-offcanvas-bar',
+            selPanel: '.uk-offcanvas-bar',
             clsFlip: 'uk-offcanvas-flip',
             clsContent: 'uk-offcanvas-content',
             clsContentAnimation: 'uk-offcanvas-content-animation',
@@ -37,32 +37,32 @@ export default function (UIkit) {
 
         computed: {
 
-            content() {
-                return $(query(this.$props.content, this.$el));
+            content({content}) {
+                return $(content) || document.body;
             },
 
-            clsFlip() {
-                return this.flip ? this.$props.clsFlip : '';
+            clsFlip({flip, clsFlip}) {
+                return flip ? clsFlip : '';
             },
 
-            clsOverlay() {
-                return this.overlay ? this.$props.clsOverlay : '';
+            clsOverlay({overlay, clsOverlay}) {
+                return overlay ? clsOverlay : '';
             },
 
-            clsMode() {
-                return `${this.$props.clsMode}-${this.mode}`;
+            clsMode({mode, clsMode}) {
+                return `${clsMode}-${mode}`;
             },
 
-            clsSidebarAnimation() {
-                return this.mode === 'none' || this.mode === 'reveal' ? '' : this.$props.clsSidebarAnimation;
+            clsSidebarAnimation({mode, clsSidebarAnimation}) {
+                return mode === 'none' || mode === 'reveal' ? '' : clsSidebarAnimation;
             },
 
-            clsContentAnimation() {
-                return this.mode !== 'push' && this.mode !== 'reveal' ? '' : this.$props.clsContentAnimation
+            clsContentAnimation({mode, clsContentAnimation}) {
+                return mode !== 'push' && mode !== 'reveal' ? '' : clsContentAnimation;
             },
 
-            transitionElement() {
-                return this.mode === 'reveal' ? this.panel.parent() : this.panel;
+            transitionElement({mode}) {
+                return mode === 'reveal' ? this.panel.parentNode : this.panel;
             }
 
         },
@@ -71,17 +71,18 @@ export default function (UIkit) {
 
             write() {
 
-                if (this.isToggled()) {
+                if (this.getActive() === this) {
 
                     if (this.overlay || this.clsContentAnimation) {
-                        this.content.width(window.innerWidth - this.scrollbarWidth);
+                        width(this.content, width(window) - this.scrollbarWidth);
                     }
 
                     if (this.overlay) {
-                        this.content.height(window.innerHeight);
-                        scroll && this.content.scrollTop(scroll.y);
+                        height(this.content, height(window));
+                        if (scroll) {
+                            this.content.scrollTop = scroll.y;
+                        }
                     }
-
 
                 }
 
@@ -94,7 +95,41 @@ export default function (UIkit) {
         events: [
 
             {
-                name: 'beforeshow',
+
+                name: 'click',
+
+                delegate() {
+                    return 'a[href^="#"]';
+                },
+
+                handler({current}) {
+                    if (current.hash && $(current.hash, this.content)) {
+                        scroll = null;
+                        this.hide();
+                    }
+                }
+
+            },
+
+            {
+
+                name: 'beforescroll',
+
+                filter() {
+                    return this.overlay;
+                },
+
+                handler(e, scroll, target) {
+                    if (scroll && target && this.isToggled() && $(target, this.content)) {
+                        once(this.$el, 'hidden', () => scroll.scrollTo(target));
+                        e.preventDefault();
+                    }
+                }
+
+            },
+
+            {
+                name: 'show',
 
                 self: true,
 
@@ -102,30 +137,34 @@ export default function (UIkit) {
 
                     scroll = scroll || {x: window.pageXOffset, y: window.pageYOffset};
 
-                    if (this.mode === 'reveal' && !this.panel.parent().hasClass(this.clsMode)) {
-                        this.panel.wrap('<div>').parent().addClass(this.clsMode);
+                    if (this.mode === 'reveal' && !hasClass(this.panel, this.clsMode)) {
+                        wrapAll(this.panel, '<div>');
+                        addClass(this.panel.parentNode, this.clsMode);
                     }
 
-                    docElement.css('overflow-y', (!this.clsContentAnimation || this.flip) && this.scrollbarWidth && this.overlay ? 'scroll' : '');
-
-                    this.body.addClass(`${this.clsContainer} ${this.clsFlip} ${this.clsOverlay}`).height();
-                    this.content.addClass(this.clsContentAnimation);
-                    this.panel.addClass(`${this.clsSidebarAnimation} ${this.mode !== 'reveal' ? this.clsMode : ''}`);
-                    this.$el.addClass(this.clsOverlay).css('display', 'block').height();
+                    css(document.documentElement, 'overflowY', (!this.clsContentAnimation || this.flip) && this.scrollbarWidth && this.overlay ? 'scroll' : '');
+                    addClass(document.body, this.clsContainer, this.clsFlip, this.clsOverlay);
+                    height(document.body); // force reflow
+                    addClass(this.content, this.clsContentAnimation);
+                    addClass(this.panel, this.clsSidebarAnimation, this.mode !== 'reveal' ? this.clsMode : '');
+                    addClass(this.$el, this.clsOverlay);
+                    css(this.$el, 'display', 'block');
+                    height(this.$el); // force reflow
 
                 }
             },
 
             {
-                name: 'beforehide',
+                name: 'hide',
 
                 self: true,
 
                 handler() {
-                    this.content.removeClass(this.clsContentAnimation);
+                    removeClass(this.content, this.clsContentAnimation);
 
-                    if (this.mode === 'none' || this.getActive() && this.getActive() !== this) {
-                        this.panel.trigger(transitionend);
+                    const active = this.getActive();
+                    if (this.mode === 'none' || active && active !== this && active !== this.prev) {
+                        trigger(this.panel, 'transitionend');
                     }
                 }
             },
@@ -138,19 +177,26 @@ export default function (UIkit) {
                 handler() {
 
                     if (this.mode === 'reveal') {
-                        this.panel.unwrap();
+                        unwrap(this.panel);
                     }
 
                     if (!this.overlay) {
-                        scroll = {x: window.pageXOffset, y: window.pageYOffset}
+                        scroll = {x: window.pageXOffset, y: window.pageYOffset};
+                    } else if (!scroll) {
+                        const {scrollLeft: x, scrollTop: y} = this.content;
+                        scroll = {x, y};
                     }
 
-                    this.panel.removeClass(`${this.clsSidebarAnimation} ${this.clsMode}`);
-                    this.$el.removeClass(this.clsOverlay).css('display', '');
-                    this.body.removeClass(`${this.clsContainer} ${this.clsFlip} ${this.clsOverlay}`).scrollTop(scroll.y);
+                    removeClass(this.panel, this.clsSidebarAnimation, this.clsMode);
+                    removeClass(this.$el, this.clsOverlay);
+                    css(this.$el, 'display', '');
+                    removeClass(document.body, this.clsContainer, this.clsFlip, this.clsOverlay);
+                    document.body.scrollTop = scroll.y;
 
-                    docElement.css('overflow-y', '');
-                    this.content.width('').height('');
+                    css(document.documentElement, 'overflowY', '');
+
+                    width(this.content, '');
+                    height(this.content, '');
 
                     window.scrollTo(scroll.x, scroll.y);
 

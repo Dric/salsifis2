@@ -63,7 +63,8 @@ $navbar-dropdown-color:                          $global-color !default;
 $navbar-dropdown-grid-gutter-horizontal:         $global-gutter !default;
 $navbar-dropdown-grid-gutter-vertical:           $navbar-dropdown-grid-gutter-horizontal !default;
 
-$navbar-dropdown-dropbar-margin-bottom:          30px !default;
+$navbar-dropdown-dropbar-margin-top:             0 !default;
+$navbar-dropdown-dropbar-margin-bottom:          $navbar-dropdown-dropbar-margin-top !default;
 
 $navbar-dropdown-nav-item-color:                 $global-muted-color !default;
 $navbar-dropdown-nav-item-hover-color:           $global-color !default;
@@ -75,7 +76,7 @@ $navbar-dropdown-nav-sublist-item-color:         $global-muted-color !default;
 $navbar-dropdown-nav-sublist-item-hover-color:   $global-color !default;
 
 $navbar-dropbar-background:                      $navbar-dropdown-background !default;
-$navbar-dropbar-z-index:                         $global-z-index + 20 !default;
+$navbar-dropbar-z-index:                         $global-z-index - 20 !default;
 
 
 /* ========================================================================
@@ -87,8 +88,6 @@ $navbar-dropbar-z-index:                         $global-z-index + 20 !default;
  */
 
 .uk-navbar {
-    display: -ms-flexbox;
-    display: -webkit-flex;
     display: flex;
     /* 1 */
     position: relative;
@@ -107,7 +106,6 @@ $navbar-dropbar-z-index:                         $global-z-index + 20 !default;
 // Color Mode
 @if ( $navbar-color-mode == light ) { .uk-navbar-container:not(.uk-navbar-transparent) { @extend .uk-light !optional;} }
 @if ( $navbar-color-mode == dark ) { .uk-navbar-container:not(.uk-navbar-transparent) { @extend .uk-dark !optional;} }
-
 
 /*
  * Remove pseudo elements created by micro clearfix as precaution (if Container component is used)
@@ -130,13 +128,9 @@ $navbar-dropbar-z-index:                         $global-z-index + 20 !default;
 // 2. [class*='uk-navbar-center'],
 .uk-navbar-center,
 .uk-navbar-center-left > *,
-.uk-navbar-center-right > *, {
-    display: -ms-flexbox;
-    display: -webkit-flex;
+.uk-navbar-center-right > * {
     display: flex;
     /* 1 */
-    -ms-flex-align: center;
-    -webkit-align-items: center;
     align-items: center;
 }
 
@@ -162,7 +156,6 @@ $navbar-dropbar-z-index:                         $global-z-index + 20 !default;
     position: absolute;
     top: 50%;
     left: 50%;
-    -webkit-transform: translate(-50%,-50%);
     transform: translate(-50%,-50%);
     /* 2 */
     z-index: $global-z-index - 10;
@@ -192,12 +185,10 @@ $navbar-dropbar-z-index:                         $global-z-index + 20 !default;
  ========================================================================== */
 
 /*
- * 1. Reset lists
+ * 1. Reset list
  */
 
 .uk-navbar-nav {
-    display: -ms-flexbox;
-    display: -webkit-flex;
     display: flex;
     /* 1 */
     margin: 0;
@@ -212,11 +203,7 @@ $navbar-dropbar-z-index:                         $global-z-index + 20 !default;
 
 .uk-navbar-left,
 .uk-navbar-right,
-.uk-navbar-center:only-child {
-    -ms-flex-wrap: wrap;
-    -webkit-flex-wrap: wrap;
-    flex-wrap: wrap;
-}
+.uk-navbar-center:only-child { flex-wrap: wrap; }
 
 /*
  * Items
@@ -230,14 +217,8 @@ $navbar-dropbar-z-index:                         $global-z-index + 20 !default;
 .uk-navbar-item,            // Content item
 .uk-navbar-toggle {         // Clickable item
     /* 1 */
-    display: -ms-flexbox;
-    display: -webkit-flex;
     display: flex;
-    -ms-flex-pack: center;
-    -webkit-justify-content: center;
     justify-content: center;
-    -ms-flex-align: center;
-    -webkit-align-items: center;
     align-items: center;
     /* 2 */
     box-sizing: border-box;
@@ -417,6 +398,7 @@ $navbar-dropbar-z-index:                         $global-z-index + 20 !default;
  */
 
 .uk-navbar-dropdown-dropbar {
+    margin-top: $navbar-dropdown-dropbar-margin-top;
     margin-bottom: $navbar-dropdown-dropbar-margin-bottom;
     @if(mixin-exists(hook-navbar-dropdown-dropbar)) {@include hook-navbar-dropdown-dropbar();}
 }
@@ -484,9 +466,7 @@ $navbar-dropbar-z-index:                         $global-z-index + 20 !default;
  ========================================================================== */
 
 .uk-navbar-dropbar {
-    position: relative;
     background: $navbar-dropbar-background;
-    overflow: hidden;
     @if(mixin-exists(hook-navbar-dropbar)) {@include hook-navbar-dropbar();}
 }
 
@@ -499,6 +479,7 @@ $navbar-dropbar-z-index:                         $global-z-index + 20 !default;
     z-index: $navbar-dropbar-z-index;
     left: 0;
     right: 0;
+    @if(mixin-exists(hook-navbar-dropbar-slide)) {@include hook-navbar-dropbar-slide();}
 }
 
 
@@ -530,6 +511,7 @@ $navbar-dropbar-z-index:                         $global-z-index + 20 !default;
 // @mixin hook-navbar-dropdown-nav-header(){}
 // @mixin hook-navbar-dropdown-nav-divider(){}
 // @mixin hook-navbar-dropbar(){}
+// @mixin hook-navbar-dropbar-slide(){}
 // @mixin hook-navbar-misc(){}
 
 

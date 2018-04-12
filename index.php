@@ -85,6 +85,8 @@ if (Settings::USE_AUTH and !Auth::isLoggedIn()) {
 		}
 		?>
 	</title>
+	<!--<script defer src="https://use.fontawesome.com/releases/v5.0.6/js/all.js"></script>
+	<script defer src="https://use.fontawesome.com/releases/v5.0.6/js/v4-shims.js"></script>-->
 	<link rel="stylesheet" href="css/salsifis2.css" />
 	<link rel="apple-touch-icon" sizes="57x57" href="img/favicons/apple-icon-57x57.png">
 	<link rel="apple-touch-icon" sizes="60x60" href="img/favicons/apple-icon-60x60.png">

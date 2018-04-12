@@ -17,8 +17,8 @@
     ".idea"
   ],
   "dependencies": {
-    "uikit": "^3.0.0-beta.27",
+    "uikit": "^3.0.0-beta.42",
     "datatables.net": "latest",
-    "components-font-awesome": "latest"
+    "components-font-awesome": "4.7.0"
   }
 }

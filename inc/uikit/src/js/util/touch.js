@@ -3,166 +3,131 @@
     Copyright (c) 2010-2016 Thomas Fuchs
     http://zeptojs.com/
 */
+import {ready} from './dom';
+import {within} from './filter';
+import {on, trigger} from './event';
+import {pointerDown, pointerMove, pointerUp} from './env';
 
-import { $, Event, on, pointerDown, pointerMove, pointerUp, ready } from './index';
+let touch = {}, clickTimeout, swipeTimeout, tapTimeout, clicked;
 
-var touch = {}, touchTimeout, tapTimeout, swipeTimeout, gesture, clicked;
-
-function swipeDirection(x1, x2, y1, y2) {
+function swipeDirection({x1, x2, y1, y2}) {
     return Math.abs(x1 - x2) >= Math.abs(y1 - y2) ? (x1 - x2 > 0 ? 'Left' : 'Right') : (y1 - y2 > 0 ? 'Up' : 'Down');
 }
 
 function cancelAll() {
-    if (touchTimeout) clearTimeout(touchTimeout);
-    if (tapTimeout) clearTimeout(tapTimeout);
-    if (swipeTimeout) clearTimeout(swipeTimeout);
-    touchTimeout = tapTimeout = swipeTimeout = null;
+    clickTimeout && clearTimeout(clickTimeout);
+    swipeTimeout && clearTimeout(swipeTimeout);
+    tapTimeout && clearTimeout(tapTimeout);
+    clickTimeout = swipeTimeout = tapTimeout = null;
     touch = {};
 }
 
-ready(function () {
-
-    var now, delta, deltaX = 0, deltaY = 0;
-
-    if ('MSGesture' in window) {
-        gesture = new MSGesture();
-        gesture.target = document.body;
-    }
+ready(() => {
 
     on(document, 'click', () => clicked = true, true);
 
-    on(document, 'MSGestureEnd gestureend', function (e) {
+    on(document, pointerDown, e => {
 
-        var dir = e.velocityX > 1
-            ? 'Right'
-            : e.velocityX < -1
-                ? 'Left'
-                : e.velocityY > 1
-                    ? 'Down'
-                    : e.velocityY < -1
-                        ? 'Up'
-                        : null;
+        const {target} = e;
+        const {x, y} = getPos(e);
+        const now = Date.now();
+        const type = getType(e.type);
 
-        if (dir && touch.el !== undefined) {
-            touch.el.trigger('swipe');
-            touch.el.trigger(`swipe${dir}`);
+        if (touch.type && touch.type !== type) {
+            return;
         }
 
-    });
+        touch.el = 'tagName' in target ? target : target.parentNode;
 
-    on(document, pointerDown, function (e) {
+        clickTimeout && clearTimeout(clickTimeout);
 
-        var {target, pageX, pageY} = e.touches ? e.touches[0] : e;
+        touch.x1 = x;
+        touch.y1 = y;
 
-        now = Date.now();
-        delta = now - (touch.last || now);
-        touch.el = $('tagName' in target ? target : target.parentNode);
+        if (touch.last && now - touch.last <= 250) {
+            touch = {};
+        }
 
-        if (touchTimeout) clearTimeout(touchTimeout);
-
-        touch.x1 = pageX;
-        touch.y1 = pageY;
-
-        if (delta > 0 && delta <= 250) touch.isDoubleTap = true;
-
+        touch.type = type;
         touch.last = now;
-
-        // adds the current touch contact for IE gesture recognition
-        if (gesture && (e.type === 'pointerdown' || e.type === 'touchstart')) {
-            gesture.addPointer(e.pointerId);
-        }
 
         clicked = e.button > 0;
 
     });
 
-    on(document, pointerMove, function (e) {
+    on(document, pointerMove, e => {
 
-        var {pageX, pageY} = e.touches ? e.touches[0] : e;
+        if (e.defaultPrevented) {
+            return;
+        }
 
-        touch.x2 = pageX;
-        touch.y2 = pageY;
+        const {x, y} = getPos(e);
 
-        deltaX += Math.abs(touch.x1 - touch.x2);
-        deltaY += Math.abs(touch.y1 - touch.y2);
+        touch.x2 = x;
+        touch.y2 = y;
+
     });
 
-    on(document, pointerUp, function () {
+    on(document, pointerUp, ({type, target}) => {
+
+        if (touch.type !== getType(type)) {
+            return;
+        }
 
         // swipe
-        if ((touch.x2 && Math.abs(touch.x1 - touch.x2) > 30) || (touch.y2 && Math.abs(touch.y1 - touch.y2) > 30)) {
+        if (touch.x2 && Math.abs(touch.x1 - touch.x2) > 30 || touch.y2 && Math.abs(touch.y1 - touch.y2) > 30) {
 
-            swipeTimeout = setTimeout(function () {
-                if (touch.el !== undefined) {
-                    touch.el.trigger('swipe');
-                    touch.el.trigger(`swipe${swipeDirection(touch.x1, touch.x2, touch.y1, touch.y2)}`);
+            swipeTimeout = setTimeout(() => {
+                if (touch.el) {
+                    trigger(touch.el, 'swipe');
+                    trigger(touch.el, `swipe${swipeDirection(touch)}`);
                 }
                 touch = {};
             });
 
-            // normal tap
+        // normal tap
         } else if ('last' in touch) {
 
-            // don't fire tap when delta position changed by more than 30 pixels,
-            // for instance when moving to a point and back to origin
-            if (isNaN(deltaX) || (deltaX < 30 && deltaY < 30)) {
-                // delay by one tick so we can cancel the 'tap' event if 'scroll' fires
-                // ('tap' fires before 'scroll')
-                tapTimeout = setTimeout(function () {
+            tapTimeout = setTimeout(() => trigger(touch.el, 'tap'));
 
-                    // trigger universal 'tap' with the option to cancelTouch()
-                    // (cancelTouch cancels processing of single vs double taps for faster 'tap' response)
-                    var event = Event('tap');
-                    event.cancelTouch = cancelAll;
-
-                    if (touch.el !== undefined) {
-                        touch.el.trigger(event);
+            // trigger single click after 350ms of inactivity
+            if (touch.el && type !== 'mouseup' && within(target, touch.el)) {
+                clickTimeout = setTimeout(() => {
+                    clickTimeout = null;
+                    if (touch.el && !clicked) {
+                        trigger(touch.el, 'click');
                     }
-
-                    // trigger double tap immediately
-                    if (touch.isDoubleTap) {
-                        if (touch.el !== undefined) touch.el.trigger('doubleTap');
-                        touch = {};
-                    }
-
-                    // trigger single tap after 300ms of inactivity
-                    else {
-                        touchTimeout = setTimeout(function () {
-                            touchTimeout = null;
-                            if (touch.el !== undefined) {
-                                touch.el.trigger('singleTap');
-
-                                if (!clicked) {
-                                    touch.el.trigger('click');
-                                }
-
-                            }
-                            touch = {};
-                        }, 350);
-                    }
-                });
-            } else {
-                touch = {};
+                    touch = {};
+                }, 350);
             }
-            deltaX = deltaY = 0;
+
+        } else {
+            touch = {};
         }
+
     });
 
-    // when the browser window loses focus,
-    // for example when a modal dialog is shown,
-    // cancel all ongoing events
     on(document, 'touchcancel', cancelAll);
-
-    // scrolling the window indicates intention of the user
-    // to scroll, not tap or swipe, so cancel all ongoing events
     on(window, 'scroll', cancelAll);
+
 });
 
-var touching = false;
+let touching = false;
 on(document, 'touchstart', () => touching = true, true);
-on(document, 'click', () => {touching = false});
+on(document, 'click', () => {touching = false;});
 on(document, 'touchcancel', () => touching = false, true);
 
 export function isTouch(e) {
-    return touching || (e.originalEvent || e).pointerType === 'touch';
+    return touching || e.pointerType === 'touch';
+}
+
+export function getPos(e) {
+    const {touches, changedTouches} = e;
+    const {pageX: x, pageY: y} = touches && touches[0] || changedTouches && changedTouches[0] || e;
+
+    return {x, y};
+}
+
+function getType(type) {
+    return type.slice(0, 5);
 }

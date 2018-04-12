@@ -1,4 +1,5 @@
-import { doc, getDimensions } from './index';
+import {on} from './event';
+import {offset} from './dimensions';
 
 export function MouseTracker() {}
 
@@ -12,37 +13,39 @@ MouseTracker.prototype = {
         this.positions = [];
         this.position = null;
 
-        var ticking = false;
-        this.handler = e => {
+        let ticking = false;
+        this.unbind = on(document, 'mousemove', e => {
 
-            if (!ticking) {
-                setTimeout(() => {
-
-                    var time = Date.now(), length = this.positions.length;
-                    if (length && (time - this.positions[length - 1].time > 100)) {
-                        this.positions.splice(0, length);
-                    }
-
-                    this.positions.push({time, x: e.pageX, y: e.pageY});
-
-                    if (this.positions.length > 5) {
-                        this.positions.shift();
-                    }
-
-                    ticking = false;
-                }, 5);
+            if (ticking) {
+                return;
             }
 
-            ticking = true;
-        };
+            setTimeout(() => {
 
-        doc.on('mousemove', this.handler);
+                const time = Date.now();
+                const {length} = this.positions;
+
+                if (length && (time - this.positions[length - 1].time > 100)) {
+                    this.positions.splice(0, length);
+                }
+
+                this.positions.push({time, x: e.pageX, y: e.pageY});
+
+                if (this.positions.length > 5) {
+                    this.positions.shift();
+                }
+
+                ticking = false;
+            }, 5);
+
+            ticking = true;
+        });
 
     },
 
     cancel() {
-        if (this.handler) {
-            doc.off('mousemove', this.handler);
+        if (this.unbind) {
+            this.unbind();
         }
     },
 
@@ -52,21 +55,21 @@ MouseTracker.prototype = {
             return false;
         }
 
-        var p = getDimensions(target),
-            position = this.positions[this.positions.length - 1],
-            prevPos = this.positions[0];
+        const p = offset(target);
+        const position = this.positions[this.positions.length - 1];
+        const [prevPos] = this.positions;
 
         if (p.left <= position.x && position.x <= p.right && p.top <= position.y && position.y <= p.bottom) {
             return false;
         }
 
-        var points = [
+        const points = [
             [{x: p.left, y: p.top}, {x: p.right, y: p.bottom}],
             [{x: p.right, y: p.top}, {x: p.left, y: p.bottom}]
         ];
 
         if (p.right <= position.x) {
-
+            // empty
         } else if (p.left >= position.x) {
             points[0].reverse();
             points[1].reverse();

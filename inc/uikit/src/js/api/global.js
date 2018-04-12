@@ -1,4 +1,4 @@
-import { classify, createEvent, isString, mergeOptions, toNode } from '../util/index';
+import {$, apply, createEvent, isString, mergeOptions, toNode} from '../util/index';
 
 export default function (UIkit) {
 
@@ -28,8 +28,10 @@ export default function (UIkit) {
 
         options = options || {};
 
-        var Super = this, name = options.name || Super.options.name;
-        var Sub = createClass(name || 'UIkitComponent');
+        const Super = this;
+        const Sub = function UIkitComponent (options) {
+            this._init(options);
+        };
 
         Sub.prototype = Object.create(Super.prototype);
         Sub.prototype.constructor = Sub;
@@ -41,37 +43,23 @@ export default function (UIkit) {
         return Sub;
     };
 
-    UIkit.update = function (e, element, parents = false) {
+    UIkit.update = function (element, e) {
 
         e = createEvent(e || 'update');
+        element = element ? toNode(element) : document.body;
 
-        if (!element) {
+        apply(element, element => update(element[DATA], e));
 
-            update(UIkit.instances, e);
-            return;
+        while (element && element.parentNode) {
 
-        }
-
-        element = toNode(element);
-
-        if (parents) {
-
-            do {
-
-                update(element[DATA], e);
-                element = element.parentNode;
-
-            } while (element)
-
-        } else {
-
-            apply(element, element => update(element[DATA], e));
+            update(element.parentNode[DATA], e);
+            element = element.parentNode;
 
         }
 
     };
 
-    var container;
+    let container;
     Object.defineProperty(UIkit, 'container', {
 
         get() {
@@ -79,28 +67,10 @@ export default function (UIkit) {
         },
 
         set(element) {
-            container = element;
+            container = $(element);
         }
 
     });
-
-    function createClass(name) {
-        return new Function(`return function ${classify(name)} (options) { this._init(options); }`)();
-    }
-
-    function apply(node, fn) {
-
-        if (node.nodeType !== Node.ELEMENT_NODE) {
-            return;
-        }
-
-        fn(node);
-        node = node.firstChild;
-        while (node) {
-            apply(node, fn);
-            node = node.nextSibling;
-        }
-    }
 
     function update(data, e) {
 
@@ -108,7 +78,7 @@ export default function (UIkit) {
             return;
         }
 
-        for (var name in data) {
+        for (const name in data) {
             if (data[name]._isReady) {
                 data[name]._callUpdate(e);
             }

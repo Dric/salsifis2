@@ -1,20 +1,25 @@
-import { isInView } from '../util/index';
+import {isInView} from '../util/index';
 
 export default function (UIkit) {
 
+    // Deprecated
     UIkit.component('gif', {
 
         update: {
 
-            read() {
+            read(data) {
 
-                var inview = isInView(this.$el);
+                const inview = isInView(this.$el);
 
-                if (!this.isInView && inview) {
-                    this.$el[0].src = this.$el[0].src;
+                if (!inview || data.isInView === inview) {
+                    return false;
                 }
 
-                this.isInView = inview;
+                data.isInView = inview;
+            },
+
+            write() {
+                this.$el.src = this.$el.src;
             },
 
             events: ['scroll', 'load', 'resize']

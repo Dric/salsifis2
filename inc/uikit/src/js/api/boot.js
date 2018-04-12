@@ -1,35 +1,28 @@
-import { fastdom, Observer, on, ready } from '../util/index';
+import {getComponentName} from './component';
+import {fastdom, hasAttr} from '../util/index';
 
 export default function (UIkit) {
 
-    var doc = document.documentElement, {connect, disconnect} = UIkit;
+    const {connect, disconnect} = UIkit;
 
-    if (Observer) {
+    if (!('MutationObserver' in window)) {
+        return;
+    }
 
-        if (document.body) {
+    if (document.body) {
 
-            init();
-
-        } else {
-
-            (new Observer(function () {
-
-                if (document.body) {
-                    this.disconnect();
-                    init();
-                }
-
-            })).observe(doc, {childList: true, subtree: true});
-
-        }
+        init();
 
     } else {
 
-        ready(() => {
-            apply(document.body, connect);
-            on(doc, 'DOMNodeInserted', e => apply(e.target, connect));
-            on(doc, 'DOMNodeRemoved', e => apply(e.target, disconnect));
-        });
+        (new MutationObserver(function () {
+
+            if (document.body) {
+                this.disconnect();
+                init();
+            }
+
+        })).observe(document, {childList: true, subtree: true});
 
     }
 
@@ -39,35 +32,77 @@ export default function (UIkit) {
 
         fastdom.flush();
 
-        (new Observer(mutations =>
-            mutations.forEach(({addedNodes, removedNodes, target}) => {
-
-                for (var i = 0; i < addedNodes.length; i++) {
-                    apply(addedNodes[i], connect)
-                }
-
-                for (i = 0; i < removedNodes.length; i++) {
-                    apply(removedNodes[i], disconnect)
-                }
-
-                UIkit.update('update', target, true);
-
-            })
-        )).observe(doc, {childList: true, subtree: true, characterData: true, attributes: true, attributeFilter: ['href']});
+        (new MutationObserver(mutations => mutations.forEach(applyMutation))).observe(document, {
+            childList: true,
+            subtree: true,
+            characterData: true,
+            attributes: true
+        });
 
         UIkit._initialized = true;
     }
 
+    function applyMutation(mutation) {
+
+        const {target, type} = mutation;
+
+        const update = type !== 'attributes'
+            ? applyChildList(mutation)
+            : applyAttribute(mutation);
+
+        update && UIkit.update(target);
+
+    }
+
+    function applyAttribute({target, attributeName}) {
+
+        if (attributeName === 'href') {
+            return true;
+        }
+
+        const name = getComponentName(attributeName);
+
+        if (!name || !(name in UIkit.components)) {
+            return;
+        }
+
+        if (hasAttr(target, attributeName)) {
+            UIkit[name](target);
+            return true;
+        }
+
+        const component = UIkit.getComponent(target, name);
+
+        if (component) {
+            component.$destroy();
+            return true;
+        }
+
+    }
+
+    function applyChildList({addedNodes, removedNodes}) {
+
+        for (let i = 0; i < addedNodes.length; i++) {
+            apply(addedNodes[i], connect);
+        }
+
+        for (let i = 0; i < removedNodes.length; i++) {
+            apply(removedNodes[i], disconnect);
+        }
+
+        return true;
+    }
+
     function apply(node, fn) {
 
-        if (node.nodeType !== Node.ELEMENT_NODE || node.hasAttribute('uk-no-boot')) {
+        if (node.nodeType !== 1 || hasAttr(node, 'uk-no-boot')) {
             return;
         }
 
         fn(node);
-        node = node.firstChild;
+        node = node.firstElementChild;
         while (node) {
-            var next = node.nextSibling;
+            const next = node.nextElementSibling;
             apply(node, fn);
             node = next;
         }

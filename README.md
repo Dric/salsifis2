@@ -47,6 +47,7 @@ puis saisissez les commandes suivantes :
 
     cd /var/www
     sudo rm -R html/*
+    sudo apt install git
     git clone https://github.com/Dric/salsifis2.git html
 
 ### Récupération du script via FTP
@@ -87,3 +88,12 @@ En ligne de commande, ouvrez le fichier de conf de lighttpd pour php :
 Sauvegardez avec `CTRL` + `X`.
 
 Redémarrez le serveur.
+
+## Mise à jour
+
+### Via git
+
+Dans un terminal, saisissez :
+
+    cd /var/www/html
+    git pull

@@ -23,6 +23,7 @@ $base-link-text-decoration:                      none !default;
 $base-link-hover-color:                          $global-link-hover-color !default;
 $base-link-hover-text-decoration:                underline !default;
 
+$base-strong-font-weight:                        bolder !default;
 $base-code-font-size:                            $global-small-font-size !default;
 $base-code-font-family:                          Consolas, monaco, monospace !default;
 $base-code-color:                                $global-danger-background !default;
@@ -84,7 +85,7 @@ $base-selection-color:                           $global-inverse-color !default;
 /*
  * 1. Set `font-size` to support `rem` units
  *    Not using `font` property because a leading hyphen (e.g. -apple-system) causes the font to break in IE11 and Edge
- * 2. Prevent adjustments of font size after orientation changes in IE and iOS.
+ * 2. Prevent adjustments of font size after orientation changes in iOS.
  * 3. Style
  */
 
@@ -96,7 +97,6 @@ html {
     line-height: $base-body-line-height;
     /* 2 */
     -webkit-text-size-adjust: 100%;
-    -ms-text-size-adjust: 100%;
     /* 3 */
     background: $base-body-background;
     color: $base-body-color;
@@ -104,7 +104,7 @@ html {
 }
 
 /*
- * Removes default margin.
+ * Remove the margin in all browsers.
  */
 
 body { margin: 0; }
@@ -114,16 +114,10 @@ body { margin: 0; }
  ========================================================================== */
 
 /*
- * 1. Remove the gray background on active links in IE 10.
- * 2. Remove gaps in links underline in iOS 8+ and Safari 8+.
+ * Remove gaps in links underline in iOS 8+ and Safari 8+.
  */
 
-a {
-    /* 1 */
-    background-color: transparent;
-    /* 2 */
-    -webkit-text-decoration-skip: objects;
-}
+a { -webkit-text-decoration-skip: objects; }
 
 /*
  * Remove the outline on focused links when they are also active or hovered
@@ -156,33 +150,29 @@ a:hover,
  ========================================================================== */
 
 /*
- * 1. Remove the bottom border in Firefox 39-.
+ * 1. Remove the bottom border in Chrome 57-.
  * 2. Add the correct text decoration in Chrome, Edge, IE, Opera, and Safari.
  */
 
 abbr[title] {
-  border-bottom: none; /* 1 */
-  text-decoration: underline; /* 2 */
-  text-decoration: underline dotted; /* 2 */
+    /* 1 */
+    border-bottom: none;
+    /* 2 */
+    text-decoration: underline;
+    text-decoration: underline dotted;
 }
 
 
 /*
- * 1. Prevent the duplicate application of `bolder` by the next rule in Safari 6.
- * 2. Add the correct font weight in Chrome, Edge, and Safari.
+ * Add the correct font weight in Chrome, Edge, and Safari.
  */
 
-/* 1 */
 b,
-strong { font-weight: inherit; }
-
-/* 2 */
-b,
-strong { font-weight: bolder; }
+strong { font-weight: $base-strong-font-weight; }
 
 /*
- * 1. Correct the odd `em` font sizing in all browsers.
- * 2. Consolas has a better baseline in running text compared to `Courier`
+ * 1. Consolas has a better baseline in running text compared to `Courier`
+ * 2. Correct the odd `em` font sizing in all browsers.
  * 3. Style
  */
 
@@ -190,9 +180,9 @@ strong { font-weight: bolder; }
 :not(pre) > kbd,
 :not(pre) > samp {
     /* 1 */
-    font-size: $base-code-font-size;
-    /* 2 */
     font-family: $base-code-font-family;
+    /* 2 */
+    font-size: $base-code-font-size;
     /* 3 */
     color: $base-code-color;
     white-space: nowrap;
@@ -284,12 +274,6 @@ video {
     /* 3 */
     box-sizing: border-box;
 }
-
-/*
- * Remove the border on images inside links in IE 10-.
- */
-
-img { border-style: none; }
 
 /*
  * Hide the overflow in IE.
@@ -420,7 +404,8 @@ dd { margin-left: 0; }
 /*
  * 1. Add the correct box sizing and height in Firefox.
  * 2. Show the overflow in Edge and IE.
- * 3. Style
+ * 3. Add the correct text-align in Edge and IE.
+ * 4. Style
  */
 
 hr, .uk-hr {
@@ -430,6 +415,8 @@ hr, .uk-hr {
     /* 2 */
     overflow: visible;
     /* 3 */
+    text-align: inherit;
+    /* 4 */
     margin: 0 0 $base-hr-margin-vertical 0;
     border: 0;
     border-top: $base-hr-border-width solid $base-hr-border;
@@ -480,7 +467,6 @@ blockquote footer {
 
 /*
  * 1. Contain overflow in all browsers.
- * 2. Override UA
  */
 
 pre {
@@ -516,38 +502,26 @@ pre code { font-family: $base-pre-font-family; }
  ========================================================================== */
 
 /*
- * Add the correct display in IE 9-.
- * 1. Add the correct display in Edge, IE, and Firefox.
+ * 1. Add the correct display in Edge, IE 10+, and Firefox.
  * 2. Add the correct display in IE.
  */
 
-article,
-aside,
 details, /* 1 */
-figcaption,
-figure,
-footer,
-header,
-main, /* 2 */
-nav,
-section,
-summary { /* 1 */
+main { /* 2 */
     display: block;
 }
 
 /*
- * Add the correct vertical alignment in Chrome, Firefox, and Opera.
+ * Add the correct display in all browsers.
  */
 
-progress { vertical-align: baseline; }
+summary { display: list-item; }
 
 /*
- * Add the correct display in IE 10-.
- * 1. Add the correct display in IE.
+ * Add the correct display in IE.
  */
 
-template, /* 1 */
-[hidden] { display: none; }
+template { display: none; }
 
 
 /* Iframe
@@ -581,10 +555,10 @@ textarea { touch-action: manipulation; }
  * Breakpoints
  */
 
-.var-media-s:before  { content: '#{$breakpoint-small}'; }
-.var-media-m:before  { content: '#{$breakpoint-medium}'; }
-.var-media-l:before  { content: '#{$breakpoint-large}'; }
-.var-media-xl:before { content: '#{$breakpoint-xlarge}'; }
+.var-media-s::before  { content: '#{$breakpoint-small}'; }
+.var-media-m::before  { content: '#{$breakpoint-medium}'; }
+.var-media-l::before  { content: '#{$breakpoint-large}'; }
+.var-media-xl::before { content: '#{$breakpoint-xlarge}'; }
 
 
 // Hooks

@@ -1,21 +1,20 @@
-import UIkit from '../api/index';
-import { $, doc, docElement, isWithin, promise, requestAnimationFrame, toNode, toJQuery, toMs, transitionend } from '../util/index';
+import {$, addClass, append, css, hasClass, on, once, Promise, removeClass, toMs, width, within} from '../util/index';
 import Class from './class';
+import Container from './container';
 import Togglable from './togglable';
 
-var active;
+let active;
 
 export default {
 
-    mixins: [Class, Togglable],
+    mixins: [Class, Container, Togglable],
 
     props: {
-        clsPanel: String,
+        selPanel: String,
         selClose: String,
         escClose: Boolean,
         bgClose: Boolean,
-        stack: Boolean,
-        container: Boolean
+        stack: Boolean
     },
 
     defaults: {
@@ -23,22 +22,13 @@ export default {
         escClose: true,
         bgClose: true,
         overlay: true,
-        stack: false,
-        container: true
+        stack: false
     },
 
     computed: {
 
-        body() {
-            return $(document.body);
-        },
-
-        panel() {
-            return this.$el.find(`.${this.clsPanel}`);
-        },
-
-        container() {
-            return toNode(this.$props.container === true && UIkit.container || this.$props.container && toJQuery(this.$props.container));
+        panel({selPanel}, $el) {
+            return $(selPanel, $el);
         },
 
         transitionElement() {
@@ -46,7 +36,7 @@ export default {
         },
 
         transitionDuration() {
-            return toMs(this.transitionElement.css('transition-duration'));
+            return toMs(css(this.transitionElement, 'transitionDuration'));
         }
 
     },
@@ -72,7 +62,14 @@ export default {
 
             name: 'toggle',
 
+            self: true,
+
             handler(e) {
+
+                if (e.defaultPrevented) {
+                    return;
+                }
+
                 e.preventDefault();
                 this.toggle();
             }
@@ -80,18 +77,13 @@ export default {
         },
 
         {
-
             name: 'beforeshow',
 
             self: true,
 
-            handler() {
+            handler(e) {
 
-                if (this.isToggled()) {
-                    return false;
-                }
-
-                var prev = active && active !== this && active;
+                const prev = active && active !== this && active;
 
                 active = this;
 
@@ -100,18 +92,29 @@ export default {
                         this.prev = prev;
                     } else {
                         prev.hide().then(this.show);
-                        return false;
+                        e.preventDefault();
+                        return;
                     }
-                } else {
-                    requestAnimationFrame(() => register(this.$options.name));
                 }
 
-                if (!prev) {
-                    this.scrollbarWidth = window.innerWidth - docElement[0].offsetWidth;
-                    this.body.css('overflow-y', this.scrollbarWidth && this.overlay ? 'scroll' : '');
-                }
+                registerEvents();
 
-                docElement.addClass(this.clsPage);
+            }
+
+        },
+
+        {
+            name: 'beforehide',
+
+            self: true,
+
+            handler() {
+
+                active = active && active !== this && active || this.prev;
+
+                if (!active) {
+                    deregisterEvents();
+                }
 
             }
 
@@ -119,21 +122,18 @@ export default {
 
         {
 
-            name: 'beforehide',
+            name: 'show',
 
             self: true,
 
             handler() {
 
-                if (!this.isToggled()) {
-                    return false;
+                if (!hasClass(document.documentElement, this.clsPage)) {
+                    this.scrollbarWidth = width(window) - width(document);
+                    css(document.body, 'overflowY', this.scrollbarWidth && this.overlay ? 'scroll' : '');
                 }
 
-                active = active && active !== this && active || this.prev;
-
-                if (!active) {
-                    deregister(this.$options.name);
-                }
+                addClass(document.documentElement, this.clsPage);
 
             }
 
@@ -146,10 +146,26 @@ export default {
             self: true,
 
             handler() {
-                if (!active) {
-                    docElement.removeClass(this.clsPage);
-                    this.body.css('overflow-y', '');
+
+                let found, {prev} = this;
+
+                while (prev) {
+
+                    if (prev.clsPage === this.clsPage) {
+                        found = true;
+                        break;
+                    }
+
+                    prev = prev.prev;
+
                 }
+
+                if (!found) {
+                    removeClass(document.documentElement, this.clsPage);
+
+                }
+
+                !this.prev && css(document.body, 'overflowY', '');
             }
 
         }
@@ -163,20 +179,23 @@ export default {
         },
 
         show() {
-            if (this.container && !this.$el.parent().is(this.container)) {
-                this.container.appendChild(this.$el[0]);
-                return promise(resolve =>
-                    requestAnimationFrame(() =>
-                        resolve(this.show())
-                    )
-                )
+
+            if (this.isToggled()) {
+                return;
+            }
+
+            if (this.container && this.$el.parentNode !== this.container) {
+                append(this.container, this.$el);
+                this._callConnected();
             }
 
             return this.toggleNow(this.$el, true);
         },
 
         hide() {
-            return this.toggleNow(this.$el, false);
+            if (this.isToggled()) {
+                return this.toggleNow(this.$el, false);
+            }
         },
 
         getActive() {
@@ -184,50 +203,47 @@ export default {
         },
 
         _toggleImmediate(el, show) {
-            this._toggle(el, show);
+            return new Promise(resolve =>
+                requestAnimationFrame(() => {
+                    this._toggle(el, show);
 
-            return this.transitionDuration ? promise((resolve, reject) => {
-
-                if (this._transition) {
-                    this.transitionElement.off(transitionend, this._transition.handler);
-                    this._transition.reject();
-                }
-
-                this._transition = {
-                    reject,
-                    handler: () => {
+                    if (this.transitionDuration) {
+                        once(this.transitionElement, 'transitionend', resolve, false, e => e.target === this.transitionElement);
+                    } else {
                         resolve();
-                        this._transition = null;
                     }
-                };
+                })
+            );
+        }
 
-                this.transitionElement.one(transitionend, this._transition.handler);
-
-            }) : promise.resolve();
-        },
     }
 
-}
+};
 
-function register(name) {
-    doc.on({
+let events;
 
-        [`click.${name}`](e) {
-            if (active && active.bgClose && !e.isDefaultPrevented() && !isWithin(e.target, active.panel)) {
+function registerEvents() {
+
+    if (events) {
+        return;
+    }
+
+    events = [
+        on(document, 'click', ({target, defaultPrevented}) => {
+            if (active && active.bgClose && !defaultPrevented && (!active.overlay || within(target, active.$el)) && (!active.panel || !within(target, active.panel))) {
                 active.hide();
             }
-        },
-
-        [`keydown.${name}`](e) {
+        }),
+        on(document, 'keydown', e => {
             if (e.keyCode === 27 && active && active.escClose) {
                 e.preventDefault();
                 active.hide();
             }
-        }
-
-    });
+        })
+    ];
 }
 
-function deregister(name) {
-    doc.off(`click.${name}`).off(`keydown.${name}`);
+function deregisterEvents() {
+    events && events.forEach(unbind => unbind());
+    events = null;
 }

@@ -4,20 +4,18 @@
     https://github.com/wilsonpage/fastdom
 */
 
-import { requestAnimationFrame } from './index';
-
 export const fastdom = {
 
     reads: [],
     writes: [],
 
-    measure(task) {
+    read(task) {
         this.reads.push(task);
         scheduleFlush();
         return task;
     },
 
-    mutate(task) {
+    write(task) {
         this.writes.push(task);
         scheduleFlush();
         return task;
@@ -50,13 +48,13 @@ function scheduleFlush() {
 }
 
 function runTasks(tasks) {
-    var task;
-    while (task = tasks.shift()) {
+    let task;
+    while ((task = tasks.shift())) {
         task();
     }
 }
 
 function remove(array, item) {
-    var index = array.indexOf(item);
+    const index = array.indexOf(item);
     return !!~index && !!array.splice(index, 1);
 }

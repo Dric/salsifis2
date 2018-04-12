@@ -4,6 +4,8 @@ function plugin(UIkit) {
         return;
     }
 
+    const {$, empty, html} = UIkit.util;
+
     UIkit.component('countdown', {
 
         mixins: [UIkit.mixin.class],
@@ -22,28 +24,28 @@ function plugin(UIkit) {
 
         computed: {
 
-            date() {
-                return Date.parse(this.$props.date);
+            date({date}) {
+                return Date.parse(date);
             },
 
-            days() {
-                return this.$el.find(this.clsWrapper.replace('%unit%', 'days'));
+            days({clsWrapper}, $el) {
+                return $(clsWrapper.replace('%unit%', 'days'), $el);
             },
 
-            hours() {
-                return this.$el.find(this.clsWrapper.replace('%unit%', 'hours'));
+            hours({clsWrapper}, $el) {
+                return $(clsWrapper.replace('%unit%', 'hours'), $el);
             },
 
-            minutes() {
-                return this.$el.find(this.clsWrapper.replace('%unit%', 'minutes'));
+            minutes({clsWrapper}, $el) {
+                return $(clsWrapper.replace('%unit%', 'minutes'), $el);
             },
 
-            seconds() {
-                return this.$el.find(this.clsWrapper.replace('%unit%', 'seconds'));
+            seconds({clsWrapper}, $el) {
+                return $(clsWrapper.replace('%unit%', 'seconds'), $el);
             },
 
             units() {
-                return ['days', 'hours', 'minutes', 'seconds'].filter(unit => this[unit].length);
+                return ['days', 'hours', 'minutes', 'seconds'].filter(unit => this[unit]);
             }
 
         },
@@ -54,14 +56,34 @@ function plugin(UIkit) {
 
         disconnected() {
             this.stop();
-            this.units.forEach(unit => this[unit].empty());
+            this.units.forEach(unit => empty(this[unit]));
         },
+
+        events: [
+
+            {
+
+                name: 'visibilitychange',
+
+                el: document,
+
+                handler() {
+                    if (document.hidden) {
+                        this.stop();
+                    } else {
+                        this.start();
+                    }
+                }
+
+            }
+
+        ],
 
         update: {
 
             write() {
 
-                var timespan = getTimeSpan(this.date);
+                const timespan = getTimeSpan(this.date);
 
                 if (timespan.total <= 0) {
 
@@ -76,19 +98,19 @@ function plugin(UIkit) {
 
                 this.units.forEach(unit => {
 
-                    var digits = String(Math.floor(timespan[unit]));
+                    let digits = String(Math.floor(timespan[unit]));
 
                     digits = digits.length < 2 ? `0${digits}` : digits;
 
-                    if (this[unit].text() !== digits) {
-                        var el = this[unit];
+                    const el = this[unit];
+                    if (el.textContent !== digits) {
                         digits = digits.split('');
 
-                        if (digits.length !== el.children().length) {
-                            el.empty().append(digits.map(() => '<span></span>').join(''));
+                        if (digits.length !== el.children.length) {
+                            html(el, digits.map(() => '<span></span>').join(''));
                         }
 
-                        digits.forEach((digit, i) => el[0].childNodes[i].innerText = digit);
+                        digits.forEach((digit, i) => el.children[i].textContent = digit);
                     }
 
                 });
@@ -125,7 +147,7 @@ function plugin(UIkit) {
 
     function getTimeSpan(date) {
 
-        var total = date - Date.now();
+        const total = date - Date.now();
 
         return {
             total,
