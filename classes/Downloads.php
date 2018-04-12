@@ -127,10 +127,10 @@ class Downloads extends Page{
 			$_SESSION['alerts'][] = array('type' => 'danger', 'message' => 'L\'identifiant du téléchargement est manquant !');
 			return false;
 		}
-		if(!isset($_REQUEST['deleteFiles'])) $_REQUEST['deleteFiles'] = true;
+		$deleteFiles = (isset($_REQUEST['deleteFiles']) and ($_REQUEST['deleteFiles'] == true or $_REQUEST['deleteFiles'] == 1 or $_REQUEST['deleteFiles'] == '1')) ? true : false;
 
 		$ts = $this->getTransSession();
-		$ret = $ts->remove((int)$_REQUEST['torrentId'], $_REQUEST['deleteFiles']);
+		$ret = $ts->remove((int)$_REQUEST['torrentId'], $deleteFiles);
 		if ($ret->result == 'success'){
 			$_SESSION['alerts'][] = array('type' => 'success', 'message' => 'Le téléchargement a été supprimé !');
 			return true;
@@ -382,7 +382,7 @@ class Downloads extends Page{
 	        <input type="hidden" name="torrentId" value="<?php echo $torrent->id; ?>">
 	        <button class="uk-button uk-button-default uk-modal-close" type="button">Annuler</button>
 	        <button name="deleteTorrent" class="uk-button uk-button-danger" type="button">Supprimer</button>
-	        <div uk-dropdown>
+	        <div uk-dropdown class="uk-text-left uk-dark">
 	          <ul class="uk-nav uk-dropdown-nav">
 	            <li class="uk-active"><a href="<?php echo $this->buildArgsURL(array('torrentId' => $torrent->id, 'action' => 'delTorrent', 'deleteFiles' => true)); ?>">Supprimer le téléchargement ainsi que les fichiers</a></li>
               <li><a href="<?php echo $this->buildArgsURL(array('torrentId' => $torrent->id, 'action' => 'delTorrent', 'deleteFiles' => false)); ?>">Supprimer le téléchargement sans toucher aux fichiers</a></li>
