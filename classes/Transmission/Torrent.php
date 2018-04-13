@@ -342,7 +342,7 @@ Class Torrent{
 		$valuesToReturn = array('doneDate', 'leftUntilDone', 'eta', 'isFinished', 'uploadRatio', 'percentDone', 'status', 'statusIcon', 'ratioPercentDone', 'totalSize');
 		$dataToReturn = array();
 		foreach ($valuesToReturn as $value) {
-			$dataToReturn[$value] = $this->$value;
+			$dataToReturn[$value] = $this->get($value);
 		}
 		return json_encode($dataToReturn);
 	}
