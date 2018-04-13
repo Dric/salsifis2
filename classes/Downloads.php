@@ -406,7 +406,7 @@ class Downloads extends Page{
 				var refreshId = setInterval(function() {
 					$.getJSON( '.?aSync=1&refreshTorrentDetails=<?php echo $torrent->id; ?>', function( data ) {
 					  console.log(data);
-						if (data.isFinished === true) {
+						if (data.percentDone === 1) {
 							$('#torrent-estimated-end_<?php echo $torrent->id; ?>').html(' : ' + data.doneDate);
 						} else {
 							$('#torrent-estimated-end_<?php echo $torrent->id; ?>').html(data.eta);
