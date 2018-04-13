@@ -39,6 +39,14 @@ class Async {
 				Admin::displayServerSettings();
 			}elseif ($request == 'serverVersion'){
 				Admin::displayServerVersion();
+			}elseif ($request == 'refreshTorrentDetails'){
+				$downloads = new Downloads();
+				if (isset($args)){
+					header('Content-Type: application/json');
+					echo $downloads->JSONTorrentDetail((int)$args);
+				} else {
+					return false;
+				}
 			}
 		}
 		return true;

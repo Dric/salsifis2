@@ -308,6 +308,11 @@ class Downloads extends Page{
 		<?php
 	}
 
+	public function JSONTorrentDetail($id){
+		/** @var Torrent $torrent */
+		return $this->torrents[$id]->getJSONData();
+	}
+
 	public function torrentDetail($id){
 		/** @var Torrent $torrent */
 		$torrent = $this->torrents[$id];
@@ -321,9 +326,15 @@ class Downloads extends Page{
 	      <ul>
 	        <li>
 	        <?php
-	         echo 'Début : <code>' . $torrent->addedDate . '</code>, fin';
-	         echo ($torrent->isFinished) ? ' : <code>'. $torrent->doneDate . '</code>' : ' estimée dans <code><span id="torrent_estimated_end_'. $torrent->id. '">' . $torrent->eta . '</span></code>';
-	        ?>
+	          echo 'Début <code>' . $torrent->addedDate . '</code>, fin';
+          ?>
+            <span id="torrent-estimated-end_<?php echo $torrent->id; ?>">
+              <code>
+	            <?php
+		            echo ($torrent->isFinished) ? ' '. $torrent->doneDate  : ' estimée dans ' . $torrent->eta ;
+		          ?>
+	            </code>
+	          </span>
 					</li>
 					<?php if ($torrent->isFinished){ ?>
 					<li>Ratio d'envoi/réception : <code><span id="torrent-ratio_<?php echo $torrent->id; ?>"><?php echo $torrent->uploadRatio.' ('.$torrent->uploadedEver.' envoyés'. (($this->transSession->isRatioLimited) ? ', ' . $torrent->ratioPercentDone.'% du ratio atteint)' : ''); ?>)</span></code></li>
@@ -384,14 +395,26 @@ class Downloads extends Page{
 	        <button name="deleteTorrent" class="uk-button uk-button-danger" type="button">Supprimer</button>
 	        <div uk-dropdown class="uk-text-left">
 	          <ul class="uk-nav uk-dropdown-nav">
-	            <li class="uk-active"><a href="<?php echo $this->buildArgsURL(array('torrentId' => $torrent->id, 'action' => 'delTorrent', 'deleteFiles' => true)); ?>">Supprimer tout</a> <span title="Supprimer le téléchargement ainsi que les fichiers qui ont été téléchargés" class="fa fa-question-circle help-icon"></span></li>
+	            <li class="uk-active"><a title="Supprimer le téléchargement ainsi que les fichiers qui ont été téléchargés" href="<?php echo $this->buildArgsURL(array('torrentId' => $torrent->id, 'action' => 'delTorrent', 'deleteFiles' => true)); ?>">Supprimer tout</a></li>
               <li class="uk-nav-divider"></li>
-              <li><a href="<?php echo $this->buildArgsURL(array('torrentId' => $torrent->id, 'action' => 'delTorrent', 'deleteFiles' => false)); ?>">Supprimer seulement le téléchargement</a> <span title="Supprimer le téléchargement sans supprimer les fichiers téléchargés. Ceci est utile pour ne plus partager les fichiers mais en les gardant pour soi comme une(e) sale petit(e) égoïste" class="fa fa-question-circle help-icon"></span></span></li>
+              <li><a title="Supprimer le téléchargement sans supprimer les fichiers téléchargés. Ceci est utile pour ne plus partager les fichiers mais en les gardant pour soi comme une(e) sale petit(e) égoïste" href="<?php echo $this->buildArgsURL(array('torrentId' => $torrent->id, 'action' => 'delTorrent', 'deleteFiles' => false)); ?>">Supprimer seulement le téléchargement</a></li>
 						</ul>
 					</div>
 				</form>
 			</div>
-
+			<script>
+				var refreshId = setInterval(function() {
+					$.getJSON( '.?aSync=1&refreshTorrentDetails=<?php echo $torrent->id; ?>', function( data ) {
+					  console.log(data);
+						if (data.isFinished === true) {
+							$('#torrent-estimated-end_<?php echo $torrent->id; ?>').html(' : ' + data.doneDate);
+						} else {
+							$('#torrent-estimated-end_<?php echo $torrent->id; ?>').html(data.eta);
+							$('#torrent-leftuntildone_<?php echo $torrent->id; ?>').html(data.leftUntilDone+'/'+data.totalSize);
+						}
+					});
+       }, 5000);
+			</script>
     </div>
 		<?php
 	}

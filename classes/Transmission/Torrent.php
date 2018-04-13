@@ -334,6 +334,19 @@ Class Torrent{
 		}
 	}
 
+	/**
+	 * Retourne les valeurs permettant de mettre à jour les infos de téléchargement en JSON
+	 * @return string
+	 */
+	public function getJSONData(){
+		$valuesToReturn = array('doneDate', 'leftUntilDone', 'eta', 'isFinished', 'uploadRatio', 'percentDone', 'status', 'statusIcon', 'ratioPercentDone', 'totalSize');
+		$dataToReturn = array();
+		foreach ($valuesToReturn as $value) {
+			$dataToReturn[$value] = $this->$value;
+		}
+		return json_encode($dataToReturn);
+	}
+
 
 	/**
 	 * Nettoie le nom d'un téléchargement
