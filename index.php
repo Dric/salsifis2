@@ -165,12 +165,12 @@ if (Settings::USE_AUTH and !Auth::isLoggedIn()) {
 		<a href="#" class="totop" uk-totop uk-scroll></a>
 	</div>
 	<!-- Le Javascript -->
-	<script src="inc/jquery/dist/jquery.min.js"></script>
-	<script src="inc/uikit/dist/js/uikit.min.js"></script>
-	<script src="inc/uikit/dist/js/uikit-icons.min.js"></script>
+	<script src="node_modules/jquery/dist/jquery.min.js"></script>
+	<script src="node_modules/uikit/dist/js/uikit.min.js"></script>
+	<script src="node_modules/uikit/dist/js/uikit-icons.min.js"></script>
 	<?php
 	if (isset($_REQUEST['page']) and in_array($_REQUEST['page'], array('downloads', 'files'))) {
-		?><script src="inc/datatables.net/js/jquery.dataTables.min.js"></script><?php
+		?><script src="node_modules/datatables.net/js/jquery.dataTables.min.js"></script><?php
 	}
 	?>
 	<script type="text/javascript">

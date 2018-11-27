@@ -1,0 +1,14 @@
+{
+    "name": "salsifis2",
+    "version": "1.1.0",
+    "description": "Serveur média",
+    "main": "index.php",
+    "author": "Dric",
+    "license": "MIT",
+    "private": true,
+    "dependencies": {
+        "datatables.net": "^1.10.19",
+        "font-awesome": "^4.7.0",
+        "uikit": "^3.0.0-rc.24"
+    }
+}
