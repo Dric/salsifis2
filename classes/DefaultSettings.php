@@ -14,8 +14,10 @@ class DefaultSettings {
 	const BG_IMG                = "bg.jpg";
 	/** Répertoire des données */
 	const DATA_PARTITION        = '/media/data';
+	/** Répertoire des données pour les invités */
+	const GUEST_DATA_PARTITION        = '/media/data/dlna/videos';
 	/** Lien vers l'interface web de Transmission */
-	const TRANSMISSION_WEB_URL  = "/:9091/bt/web";
+	const TRANSMISSION_WEB_URL  = ":9091/bt/web";
 	/** Lien vers l'API RPC de Transmission */
 	const TRANSMISSION_RPC_URL  = "http://localhost:9091/bt/rpc";
 	/** Répertoires de téléchargement */
@@ -29,9 +31,11 @@ class DefaultSettings {
 	  'fichiers'            => 'Fichiers'
 	);
 	/** Utiliser un mot de passe pour se connecter */
-	const USE_AUTH              = false;
-	/** Mot de passe (chiffré) */
-	const PASSWORD              = null;
+	const USE_AUTH = false;
+	/** Mot de passe accès complet (chiffré) */
+	const PASSWORD = null;
+	/** Mot de passe visiteur (chiffré) */
+	const GUEST_PASSWORD = null;
 	/** Afficher l'adresse IP externe */
 	const DISPLAY_EXTERNAL_IP = false;
 }

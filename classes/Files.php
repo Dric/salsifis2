@@ -13,13 +13,14 @@ class Files extends Page{
 	protected $tmdbUrl = 'https://www.themoviedb.org/';
 
 	public function main() {
+		$isGuest = (!Settings::USE_AUTH or (Settings::USE_AUTH and !Auth::isGuest())) ? false : true;
 		$file = null;
 		if (isset($_REQUEST['file'])){
 			$file = urldecode($_REQUEST['file']);
 			if (!file_exists($file)){
 				Components::Alert('danger', 'Le fichier <code>'.$file.'</code> n\'existe pas !');
 				$file = null;
-			}elseif (strpos($file, Settings::DATA_PARTITION) === false){
+			}elseif ((!$isGuest and strpos($file, Settings::DATA_PARTITION) === false) or ($isGuest  and strpos($file, Settings::GUEST_DATA_PARTITION) === false)){
 				Components::Alert('danger', 'Vous n\'avez pas l\'autorisation de visualiser ce fichier !');
 				$file = null;
 			}
@@ -28,13 +29,13 @@ class Files extends Page{
 			$this->fileDownload();
 		}
 		if (empty($file)){
-			$folder = (isset($_REQUEST['folder'])) ? urldecode($_REQUEST['folder']): Settings::DATA_PARTITION;
+			$folder = (isset($_REQUEST['folder'])) ? urldecode($_REQUEST['folder']): (!$isGuest) ? Settings::DATA_PARTITION : Settings::GUEST_DATA_PARTITION;
 			if (!file_exists($folder)){
 				Components::Alert('danger', 'Le répertoire <code>'.$folder.'</code> n\'existe pas !');
-				$folder = Settings::DATA_PARTITION;
-			}elseif (strpos($folder, Settings::DATA_PARTITION) === false){
+				$folder = (!$isGuest) ? Settings::DATA_PARTITION : Settings::GUEST_DATA_PARTITION;
+			}elseif ((!$isGuest and strpos($folder, Settings::DATA_PARTITION) === false) or ($isGuest  and strpos($folder, Settings::GUEST_DATA_PARTITION) === false)){
 				Components::Alert('danger', 'Vous n\'avez pas l\'autorisation de visualiser ce répertoire !');
-				$folder = Settings::DATA_PARTITION;
+				$folder = (!$isGuest) ? Settings::DATA_PARTITION : Settings::GUEST_DATA_PARTITION;
 			}
 			$this->displayFolder($folder);
 		}else{
@@ -53,7 +54,8 @@ class Files extends Page{
 	}
 
 	protected function displayFolder($folder){
-		$rootFolder = realpath(Settings::DATA_PARTITION);
+		$isGuest = (!Settings::USE_AUTH or (Settings::USE_AUTH and !Auth::isGuest())) ? false : true;
+		$rootFolder = (!$isGuest) ? realpath(Settings::DATA_PARTITION) : realpath(Settings::GUEST_DATA_PARTITION);
 		$fs = new Fs($folder);
 		if (!$fs->getIsMounted()){
 			Components::Alert('danger', 'Impossible d\'afficher le contenu du répertoire !');
@@ -172,24 +174,26 @@ class Files extends Page{
 
 	protected function fileDownload(){
 		$file = null;
+		$isGuest = (!Settings::USE_AUTH or (Settings::USE_AUTH and !Auth::isGuest())) ? false : true;
+
 		if (isset($_REQUEST['file'])){
 			$file = urldecode($_REQUEST['file']);
 			if (!file_exists($file)){
 				Components::Alert('danger', 'Le fichier <code>'.$file.'</code> n\'existe pas !');
 				$file = null;
-			}elseif (strpos($file, Settings::DATA_PARTITION) === false){
+			}elseif ((!$isGuest and strpos($file, Settings::DATA_PARTITION) === false) or ($isGuest and strpos($file, Settings::GUEST_DATA_PARTITION) === false)){
 				Components::Alert('danger', 'Vous n\'avez pas l\'autorisation de visualiser ce fichier !');
 				$file = null;
 			}
 		}
 		if (empty($file)){
-			$folder = (isset($_REQUEST['folder'])) ? urldecode($_REQUEST['folder']): Settings::DATA_PARTITION;
+			$folder = (isset($_REQUEST['folder'])) ? urldecode($_REQUEST['folder']): (!$isGuest) ? Settings::DATA_PARTITION : Settings::GUEST_DATA_PARTITION;
 			if (!file_exists($folder)){
 				Components::Alert('danger', 'Le répertoire <code>'.$folder.'</code> n\'existe pas !');
-				$folder = Settings::DATA_PARTITION;
-			}elseif (strpos($folder, Settings::DATA_PARTITION) === false){
+				$folder = (!$isGuest) ? Settings::DATA_PARTITION : Settings::GUEST_DATA_PARTITION;
+			}elseif ((!$isGuest and strpos($folder, Settings::DATA_PARTITION) === false) or ($isGuest and strpos($folder, Settings::GUEST_DATA_PARTITION) === false)){
 				Components::Alert('danger', 'Vous n\'avez pas l\'autorisation de visualiser ce répertoire !');
-				$folder = Settings::DATA_PARTITION;
+				$folder = (!$isGuest) ? Settings::DATA_PARTITION : Settings::GUEST_DATA_PARTITION;
 			}
 		}
 		$finfo = finfo_open(FILEINFO_MIME_TYPE);
@@ -425,7 +429,8 @@ class Files extends Page{
 	 * @return string
 	 */
 	protected function breadcrumbTitle($folder){
-		$rootFolder = realpath(Settings::DATA_PARTITION);
+		$isGuest = (!Settings::USE_AUTH or (Settings::USE_AUTH and !Auth::isGuest())) ? false : true;
+		$rootFolder = (!$isGuest) ? realpath(Settings::DATA_PARTITION) : realpath(Settings::GUEST_DATA_PARTITION);
 		$breadcrumb = '</ol>';
 		do{
 			$currentFolderPath = $folder;

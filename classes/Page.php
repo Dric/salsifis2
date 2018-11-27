@@ -33,31 +33,32 @@ class Page {
 			// On empêche de resoumettre les formulaires en cas de rafraîchissement de page (https://stackoverflow.com/a/722567/1749967)
 			header('Location: .');
 		}
+		$isGuest = (!Settings::USE_AUTH or (Settings::USE_AUTH and !Auth::isGuest())) ? false : true;
 		?>
 		<div class="uk-child-width-1-3@m uk-grid-small uk-grid-match uk-animation-fade" uk-grid>
-			<a href="?page=downloads" title="Pour savoir où en sont vos téléchargements, pour les classer ou les supprimer, c'est par ici !" class="salsifis-main-menu-link" uk-tooltip="pos: bottom">
-				<div class="uk-card uk-background-blend-multiply uk-card-body uk-border-rounded uk-box-shadow-medium uk-overlay-default salsifis-main-menu salsifis-main-downloads">
+			<?php if ($isGuest) { ?><a href="?page=downloads" title="Pour savoir où en sont vos téléchargements, pour les classer ou les supprimer, c'est par ici !" class="salsifis-main-menu-link" uk-tooltip="pos: bottom"><?php } ?>
+				<div class="<?php if ($isGuest) { ?>uk-text-muted <?php } ?>uk-card uk-background-blend-multiply uk-card-body uk-border-rounded uk-box-shadow-medium uk-overlay-default salsifis-main-menu salsifis-main-downloads">
 					<h3 class="uk-card-title">Téléchargements</h3>
 					<p>Vos téléchargements en cours</p>
 				</div>
-			</a>
+			<?php if ($isGuest) { ?></a><?php } ?>
 			<a href="?page=files" title="Cliquez ici pour voir les fichiers stockés sur le serveur et obtenir des détails." class="salsifis-main-menu-link" uk-tooltip="pos: bottom">
 				<div class="uk-card uk-background-blend-multiply uk-card-body uk-border-rounded uk-box-shadow-medium uk-overlay-default salsifis-main-menu salsifis-main-library">
 					<h3 class="uk-card-title">Fichiers</h3>
 					<p>La liste des fichiers sur le serveur</p>
 				</div>
 			</a>
-			<a href="?page=reboot" title="Parfois, les choses ne vont pas comme on le voudrait. <br><br>En informatique, la manoeuvre la plus élémentaire consiste non pas à jeter le matériel par la fenêtre, mais à le redémarrer." class="salsifis-main-menu-link" uk-tooltip="pos: bottom">
-				<div class="uk-card uk-background-blend-multiply uk-card-body uk-border-rounded uk-box-shadow-medium uk-overlay-default salsifis-main-menu salsifis-main-exit">
+			<?php if ($isGuest) { ?><a href="?page=reboot" title="Parfois, les choses ne vont pas comme on le voudrait. <br><br>En informatique, la manoeuvre la plus élémentaire consiste non pas à jeter le matériel par la fenêtre, mais à le redémarrer." class="salsifis-main-menu-link" uk-tooltip="pos: bottom"><?php } ?>
+				<div class="<?php if ($isGuest) { ?>uk-text-muted <?php } ?>uk-card uk-background-blend-multiply uk-card-body uk-border-rounded uk-box-shadow-medium uk-overlay-default salsifis-main-menu salsifis-main-exit">
 					<h3 class="uk-card-title">Redémarrer</h3>
 					<p>Un problème ? redémarrez.</p>
 				</div>
-			</a>
+			<?php if ($isGuest) { ?></a><?php } ?>
 		</div>
 
 		<div class="uk-section" id="diskUsage">
 		</div>
-		<?php if (Settings::DISPLAY_EXTERNAL_IP) { ?>
+		<?php if (Settings::DISPLAY_EXTERNAL_IP and !$isGuest) { ?>
 		<div class="uk-section" id="externalIP">
 		</div>
 		<?php } ?>
@@ -97,9 +98,10 @@ class Page {
 	 * Menu latéral
 	 */
 	public function menu(){
+		$isGuest = (!Settings::USE_AUTH or (Settings::USE_AUTH and !Auth::isGuest())) ? false : true;
 		?>
 		<ul class="uk-nav uk-nav-default uk-margin-auto-vertical">
-			<li><a class="serverSettingsLink" href="#serverSettings" uk-toggle>Paramètres <?php echo Get::getTitleWithArticle(); ?></a></li>
+			<li><?php if (!$isGuest) { ?><a class="serverSettingsLink" href="#serverSettings" uk-toggle><? } else { ?><span class="uk-text-muted"><?php } ?>Paramètres <?php echo Get::getTitleWithArticle(); ?><?php if (!$isGuest) { ?></a><? } else { ?><span class="uk-text-muted"><?php } ?></li>
 		</ul>
 		<?php
 	}

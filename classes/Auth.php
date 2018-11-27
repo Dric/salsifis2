@@ -7,6 +7,17 @@
  * Time: 00:01
  */
 class Auth {
+
+	/**
+	 * Vérifie que l'utilisateur connecté est un invité
+	 *
+	 * @return boolean
+	 */
+	static function isGuest(){
+		$cookieName = Sanitize::sanitizeFilename(Settings::TITLE);
+		return ($_COOKIE[$cookieName] === Settings::GUEST_PASSWORD);
+	}
+
 	/**
 	 * Suppression du cookie d'authentification et de la session PHP
 	 */
@@ -25,19 +36,21 @@ class Auth {
 	 */
 	static function isValidCookie(){
 		$cookieName = Sanitize::sanitizeFilename(Settings::TITLE);
-		return (isset($_COOKIE[$cookieName]) and $_COOKIE[$cookieName] === hash('sha256', Settings::TITLE.$_SERVER['SERVER_ADDR'])) ? true : false;
+		return (isset($_COOKIE[$cookieName]) and ($_COOKIE[$cookieName] === Settings::PASSWORD or $_COOKIE[$cookieName] === Settings::GUEST_PASSWORD)) ? true : false;
 	}
 
 	/**
 	 * Crée un cookie avec une durée de validité
 	 *
-	 * @param int $expiration
+	 * @param int 		$expiration
+	 * @param string	$pwd		Mot de passe utilisé
 	 *
 	 * @return bool
 	 */
-	static function setCookie($expiration = 0){
+	static function setCookie($expiration = 0, $pwd){
 		$cookieName = Sanitize::sanitizeFilename(Settings::TITLE);
-		return setcookie($cookieName, hash('sha256', Settings::TITLE.$_SERVER['SERVER_ADDR']), $expiration, '/', '', FALSE, TRUE);
+		// Mettre le mot de passe dans le cookie est probablement horrible d'un point de vue sécurité, mais on ne cherche pas non plus à sécuriser Fort Knox.
+		return setcookie($cookieName, $pwd, $expiration, '/', '', FALSE, TRUE);
 	}
 
 	/**
@@ -62,7 +75,10 @@ class Auth {
 		$loginPwd = htmlspecialchars($_REQUEST['loginPwd']);
 		$stayConnected = (isset($_REQUEST['stayConnected'])) ? true : false;
 		if (password_verify($loginPwd, Settings::PASSWORD)){
-			self::doLogin($stayConnected, $from);
+			self::doLogin($stayConnected, $from, Settings::PASSWORD);
+		}
+		if (password_verify($loginPwd, Settings::GUEST_PASSWORD)){
+			self::doLogin($stayConnected, $from, Settings::GUEST_PASSWORD);
 		}
 		Components::Alert('danger', 'Mot de passe incorrect !');
 		if (!isset($_SESSION['loginAttempts'][$_SERVER['REMOTE_ADDR']])) {
@@ -79,13 +95,14 @@ class Auth {
 	/**
 	 * Effectue la connexion et redirige vers la page demandée le cas échéant
 	 *
-	 * @param bool    $stayConnected
-	 * @param string  $from
+	 * @param bool		$stayConnected	Le cookie n'expire pas à la fin de la session
+	 * @param string	$from			Page d'origine
+	 * @param string	$pwd			Mot de passe chiffré
 	 */
-	static function doLogin($stayConnected = false, $from = null){
+	static function doLogin($stayConnected = false, $from = null, $pwd){
 		$cookieExpiration = ($stayConnected) ? (time()+15552000) : 0;
 		unset($_SESSION['loginAttempts'][$_SERVER['REMOTE_ADDR']]);
-		if (self::setCookie($cookieExpiration)) {
+		if (self::setCookie($cookieExpiration, $pwd)) {
 			if (!empty($from)){
 				$args = Get::urlParamsToArray($from);
 				unset($args['from']);

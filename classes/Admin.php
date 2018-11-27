@@ -32,8 +32,8 @@ class Admin {
 				$constantName = trim($matchesLine[1], " ");
 				$constants[$constantName] = array(
 					'explain'   => $explain,
-				  'value'     => null,
-				  'selectIn'  => null
+					'value'     => null,
+					'selectIn'  => null
 				);
 				if (preg_match('/array\(/i', $matchesLine[2])){
 					$constants[$constantName]['type'] = 'array'; // On a affaire à un tableau
@@ -132,7 +132,8 @@ class Admin {
 		$related = array(
 			'pwd'   => array(
 				'USE_AUTH',
-			  'PASSWORD'
+				'PASSWORD',
+				'GUEST_PASSWORD'
 			),
 		  'adv'   => array(
 			  'DEBUG',
@@ -388,7 +389,7 @@ class Settings extends DefaultSettings {
 		$isArray = false;
 		switch ($constants[$constantName]['type']) {
 			case 'string':
-				if ($constantName == 'PASSWORD' and $constants[$constantName]['value'] != Settings::PASSWORD) {
+				if (($constantName == 'PASSWORD' and $constants[$constantName]['value'] != Settings::PASSWORD) or ($constantName == 'GUEST_PASSWORD' and $constants[$constantName]['value'] != Settings::GUEST_PASSWORD)) {
 						$constants[$constantName]['value'] = password_hash($constants[$constantName]['value'], PASSWORD_DEFAULT);
 				}
 				$value = '\'' . $constants[$constantName]['value'] . '\';';
