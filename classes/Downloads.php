@@ -275,7 +275,7 @@ class Downloads extends Page{
 		?>
 		<tr id="torrent_<?php echo $torrent->id; ?>">
 			<td class="uk-table-expand uk-table-link uk-text-truncate torrent-name"><a href="#torrentDetail" class="torrentDetailLink uk-link-reset" data-id="<?php echo $torrent->id; ?>"><?php echo $torrent->sanitizedName; ?></a></td>
-			<td id="torrent_<?php echo $torrent->id; ?>_status" class="uk-table-shrink uk-text-nowrap uk-visible@m torrent-status" data-search="<?php echo $torrent->status; ?>" data-order="<?php echo $torrent->statusInt; ?>"><span title="<?php echo $torrent->status; ?>" uk-tooltip="pos: bottom" class="fa fa-<?php echo $torrent->statusIcon; ?>"></span></td>
+			<td id="torrent_<?php echo $torrent->id; ?>_status" class="uk-table-shrink uk-text-nowrap uk-visible@m torrent-status" data-search="<?php echo $torrent->status; ?>" data-order="<?php echo $torrent->statusInt; ?>"><span title="<?php echo $torrent->status; ?>" uk-tooltip="pos: bottom" class="fas fa-<?php echo $torrent->statusIcon; ?>"></span></td>
 			<td id="torrent_<?php echo $torrent->id; ?>_downloadDir" class="uk-table-shrink uk-text-nowrap uk-visible@m torrent-downloadDir" data-order="<?php echo $torrent->rawDownloadDir; ?>">
 				<?php
 				if (Settings::DATA_PARTITION . DIRECTORY_SEPARATOR . $torrent->downloadDir == $this->transSession->defaultDownloadDir) {
@@ -458,9 +458,9 @@ class Downloads extends Page{
 			//echo Get::varDump($this->transSession);
 			$this->serverSettings();
 			if($this->transSession->altSpeedEnabled){
-				Components::Alert('warning', '<span class="fa-stack fa-lg"><i class="fa fa-rocket fa-flip-horizontal fa-stack-1x"></i><i class="fa fa-ban fa-stack-2x uk-text-danger"></i></span> Le mode tortue est activé : vos téléchargements sont bridés à '.$this->transSession->altDlSpeed.'/s en téléchargement et '.$this->transSession->altUpSpeed.'/s en partage.');
+				Components::Alert('warning', '<span class="fa-stack fa-lg"><i class="fas fa-rocket fa-flip-horizontal fa-stack-1x"></i><i class="fas fa-ban fa-stack-2x uk-text-danger"></i></span> Le mode tortue est activé : vos téléchargements sont bridés à '.$this->transSession->altDlSpeed.'/s en téléchargement et '.$this->transSession->altUpSpeed.'/s en partage.');
 			} else {
-				Components::Alert('warning', '<span class="fa-stack fa-lg"><i class="fa fa-rocket fa-flip-horizontal fa-stack-1x"></i><i class="fa fa-circle-o fa-stack-2x uk-text-success"></i></span> Le mode tortue est désactivé : vous téléchargez à '.$this->transSession->dlSpeed.'/s et vous partagez à '.$this->transSession->upSpeed.'/s.');
+				Components::Alert('warning', '<span class="fa-stack fa-lg"><i class="fas fa-rocket fa-flip-horizontal fa-stack-1x"></i><i class="fas fa-circle-o fa-stack-2x uk-text-success"></i></span> Le mode tortue est désactivé : vous téléchargez à '.$this->transSession->dlSpeed.'/s et vous partagez à '.$this->transSession->upSpeed.'/s.');
 			}
 			// On affiche les torrents
 			$this->listTorrents();
@@ -530,7 +530,7 @@ class Downloads extends Page{
 				<div class="uk-alert uk-alert-warning">
 					Si vous ne savez pas ce que vous faites, abstenez-vous !
 				</div>
-				<a uk-toggle="target: #salsifis-help-trackers; animation: uk-animation-fade"><span class="fa fa-question-circle"></span> Aide</a>
+				<a uk-toggle="target: #salsifis-help-trackers; animation: uk-animation-fade"><span class="fas fa-question-circle"></span> Aide</a>
 				<div id="salsifis-help-trackers" class="uk-text-small uk-card uk-box-shadow-medium uk-card-body" hidden>
 					Un tracker permet de trouver d'autres machines qui partagent les fichiers que vous téléchargez.<br>
 					Les trackers permettent souvent de compatibiliser votre ratio, ils utilisent pour cela un identifiant dans leur url.<br>
@@ -631,7 +631,7 @@ class Downloads extends Page{
 					<ul class="uk-switcher uk-margin">
 						<li>
 								<fieldset class="uk-fieldset">
-									<a uk-toggle="target: #salsifis-help-vitesse; animation: uk-animation-fade"><span class="fa fa-question-circle"></span> Aide</a>
+									<a uk-toggle="target: #salsifis-help-vitesse; animation: uk-animation-fade"><span class="fas fa-question-circle"></span> Aide</a>
 									<div id="salsifis-help-vitesse" class="uk-text-small uk-card uk-box-shadow-medium uk-card-body" hidden>
 										Pour déterminer quelles sont les vitesses de téléchargement et partage que vous devez utiliser, le mieux est de vous rendre sur <a target="_blank" href="http://beta.speedtest.net/fr">SpeedTest</a> et d'effectuer un test.<br>
 										Il faut ensuite prendre 80% de ces valeurs pour obtenir des vitesses qui ne saturent pas votre bande passante.<br>
@@ -660,7 +660,7 @@ class Downloads extends Page{
 						</li>
 						<li>
 							<fieldset class="uk-fieldset">
-								<a uk-toggle="target: #salsifis-help-tortue; animation: uk-animation-fade"><span class="fa fa-question-circle"></span> Aide</a>
+								<a uk-toggle="target: #salsifis-help-tortue; animation: uk-animation-fade"><span class="fas fa-question-circle"></span> Aide</a>
 								<div id="salsifis-help-tortue" class="uk-text-small uk-card uk-box-shadow-medium uk-card-body" hidden>
 									Le mode tortue vous permet de réduire les débits de partage et téléchargement pendant la journée, afin d'avoir de la bande passante disponible pour utiliser Internet.<br>
 									Si vous laissez <?php echo Settings::TITLE; ?> télécharger à plein puissance, tout ce que vous ferez sur Internet à côté sera fortement ralenti. En activant le mode tortue pendant la journée, vous bridez votre serveur de téléchargements.<br>

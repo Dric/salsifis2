@@ -89,7 +89,7 @@ class Components {
 	 */
 	public static function iconHelp($text, $tooltipPosition = 'bottom'){
 		?>
-		<span class="fa fa-question-circle help-icon" title="<?php echo $text; ?>" uk-tooltip="pos: <?php echo $tooltipPosition; ?>"></span>
+		<span class="fas fa-question-circle help-icon" title="<?php echo $text; ?>" uk-tooltip="pos: <?php echo $tooltipPosition; ?>"></span>
 		<?php
 	}
 
@@ -108,7 +108,7 @@ class Components {
 	 */
 	public static function iconWarning($text, $tooltipPosition = 'bottom'){
 		?>
-		<span class="fa fa-warning warning-icon" title="<?php echo $text; ?>" uk-tooltip="pos: <?php echo $tooltipPosition; ?>"></span>
+		<span class="fas fa-warning warning-icon" title="<?php echo $text; ?>" uk-tooltip="pos: <?php echo $tooltipPosition; ?>"></span>
 		<?php
 	}
 }

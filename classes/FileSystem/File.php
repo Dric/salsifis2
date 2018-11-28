@@ -299,11 +299,11 @@ class File {
 			case 'Répertoire':
 				return 'folder';
 			case 'Fichier texte':
-				return 'file-text-o';
+				return 'file-text';
 			case 'Archive':
-				return 'file-archive-o';
+				return 'file-archive';
 			case 'Archives Outlook':
-				return 'envelope-o';
+				return 'envelope';
 			case 'Exécutable':
 				return 'cog';
 			case 'Composant':
@@ -311,33 +311,33 @@ class File {
 			case 'Certificat':
 				return 'key';
 			case 'Fichier code':
-				return 'file-code-o';
+				return 'file-code';
 			case 'Paramétrage':
 				return 'sliders';
 			case 'Installateur':
 				return 'download';
 			case 'Image ISO':
-				return 'hdd-o';
+				return 'hdd';
 			case 'Image':
 				return 'image';
 			case 'Information':
 				return 'info-circle';
 			case 'Raccourci':
-				return 'share-square-o';
+				return 'share-square';
 			case 'Document Word':
-				return 'file-word-o';
+				return 'file-word';
 			case 'Document Excel':
-				return 'file-excel-o';
+				return 'file-excel';
 			case 'Document Powerpoint':
-				return 'file-powerpoint-o';
+				return 'file-powerpoint';
 			case 'Musique':
 				return 'music';
 			case 'PDF':
-				return 'file-pdf-o';
+				return 'file-pdf';
 			case 'Vidéo':
 				return 'film';
 			default:
-				return 'file-o';
+				return 'file';
 		}
 	}
 
@@ -345,7 +345,7 @@ class File {
 	 * Affiche l'icône en rapport avec le fichier
 	 */
 	public function displayIcon(){
-		?><span class="fa fa-<?php echo $this->getIcon(); ?>"></span>&nbsp;<?php
+		?><span class="fas fa-<?php echo $this->getIcon(); ?>"></span>&nbsp;<?php
 	}
 
 	/**

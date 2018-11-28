@@ -7,8 +7,8 @@
     "license": "MIT",
     "private": true,
     "dependencies": {
+        "@fortawesome/fontawesome-free": "^5.5.0",
         "datatables.net": "^1.10.19",
-        "font-awesome": "^4.7.0",
         "uikit": "^3.0.0-rc.24"
     }
 }
