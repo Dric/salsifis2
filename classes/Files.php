@@ -29,7 +29,7 @@ class Files extends Page{
 			$this->fileDownload();
 		}
 		if (empty($file)){
-			$folder = (isset($_REQUEST['folder'])) ? urldecode($_REQUEST['folder']): (!$isGuest) ? Settings::DATA_PARTITION : Settings::GUEST_DATA_PARTITION;
+			$folder = (isset($_REQUEST['folder'])) ? urldecode($_REQUEST['folder']): ((!$isGuest) ? Settings::DATA_PARTITION : Settings::GUEST_DATA_PARTITION);
 			if (!file_exists($folder)){
 				Components::Alert('danger', 'Le répertoire <code>'.$folder.'</code> n\'existe pas !');
 				$folder = (!$isGuest) ? Settings::DATA_PARTITION : Settings::GUEST_DATA_PARTITION;
@@ -130,7 +130,7 @@ class Files extends Page{
 		?>
 		<h2><span class="uk-icon-button" uk-icon="icon: <?php echo $fileMeta->getIcon(); ?>; ratio: 2"></span>&nbsp;<?php echo $file; ?></h2>
 		<div class="uk-box-shadow-medium uk-overlay-default uk-padding-small">
-			<p>Dans <a class="uk-link-reset" href="<?php echo $this->buildArgsURL(array('folder' => urlencode($fileMeta->parentFolder))); ?>"><?php echo $fileMeta->parentFolder; ?></a></p>
+			<p>Dans <a title="retourner au répertoire" class="uk-link-reset" href="<?php echo $this->buildArgsURL(array('folder' => urlencode($fileMeta->parentFolder))); ?>"><?php echo $fileMeta->parentFolder; ?></a></p>
 			<ul>
 				<li>Date de création : <?php echo \Sanitize::date($fileMeta->dateCreated, 'dateTime'); ?></li>
 				<li>Date de dernière modification : <?php echo \Sanitize::date($fileMeta->dateModified, 'dateTime'); ?></li>
@@ -187,7 +187,7 @@ class Files extends Page{
 			}
 		}
 		if (empty($file)){
-			$folder = (isset($_REQUEST['folder'])) ? urldecode($_REQUEST['folder']): (!$isGuest) ? Settings::DATA_PARTITION : Settings::GUEST_DATA_PARTITION;
+			$folder = (isset($_REQUEST['folder'])) ? urldecode($_REQUEST['folder']): ((!$isGuest) ? Settings::DATA_PARTITION : Settings::GUEST_DATA_PARTITION);
 			if (!file_exists($folder)){
 				Components::Alert('danger', 'Le répertoire <code>'.$folder.'</code> n\'existe pas !');
 				$folder = (!$isGuest) ? Settings::DATA_PARTITION : Settings::GUEST_DATA_PARTITION;

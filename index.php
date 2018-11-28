@@ -47,6 +47,7 @@ if (Settings::USE_AUTH and !Auth::isLoggedIn()) {
 }elseif(isset($_REQUEST['logoff'])){
 	Auth::deleteCookie();
 	header('location: .');
+	exit;
 }elseif (isset($_REQUEST['aSync'])){
 	Async::getAsyncRequest();
 	exit;
