@@ -20,7 +20,10 @@ class Reboot extends Page{
 	protected $title = 'Redémarrage';
 
 	public function main() {
-		global $absolutePath;
+		global $absolutePath, $isGuest;
+		if ($isGuest) {
+			header('Location: .');
+		}
 		$disabled = !$this->checkFiles();
 		if (!$disabled and isset($_REQUEST['action']) and $_REQUEST['action'] == 'reboot'){
 			$this->runReboot();

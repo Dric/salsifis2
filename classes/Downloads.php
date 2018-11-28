@@ -446,6 +446,10 @@ class Downloads extends Page{
 	 * Contenu principal
 	 */
 	public function main() {
+		global $isGuest;
+		if ($isGuest) {
+			header('Location: .');
+		}
 		if ($this->transSession){
 			if ($this->runAction()) {
 				// On empêche de resoumettre les formulaires en cas de rafraîchissement de page (https://stackoverflow.com/a/722567/1749967)

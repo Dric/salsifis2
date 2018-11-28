@@ -13,7 +13,7 @@ class Files extends Page{
 	protected $tmdbUrl = 'https://www.themoviedb.org/';
 
 	public function main() {
-		$isGuest = (!Settings::USE_AUTH or (Settings::USE_AUTH and !Auth::isGuest())) ? false : true;
+		global $isGuest;
 		$file = null;
 		if (isset($_REQUEST['file'])){
 			$file = urldecode($_REQUEST['file']);
@@ -54,7 +54,7 @@ class Files extends Page{
 	}
 
 	protected function displayFolder($folder){
-		$isGuest = (!Settings::USE_AUTH or (Settings::USE_AUTH and !Auth::isGuest())) ? false : true;
+		global $isGuest;
 		$rootFolder = (!$isGuest) ? realpath(Settings::DATA_PARTITION) : realpath(Settings::GUEST_DATA_PARTITION);
 		$fs = new Fs($folder);
 		if (!$fs->getIsMounted()){
@@ -174,7 +174,7 @@ class Files extends Page{
 
 	protected function fileDownload(){
 		$file = null;
-		$isGuest = (!Settings::USE_AUTH or (Settings::USE_AUTH and !Auth::isGuest())) ? false : true;
+		global $isGuest;
 
 		if (isset($_REQUEST['file'])){
 			$file = urldecode($_REQUEST['file']);
@@ -429,7 +429,7 @@ class Files extends Page{
 	 * @return string
 	 */
 	protected function breadcrumbTitle($folder){
-		$isGuest = (!Settings::USE_AUTH or (Settings::USE_AUTH and !Auth::isGuest())) ? false : true;
+		global $isGuest;
 		$rootFolder = (!$isGuest) ? realpath(Settings::DATA_PARTITION) : realpath(Settings::GUEST_DATA_PARTITION);
 		$breadcrumb = '</ol>';
 		do{

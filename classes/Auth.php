@@ -15,7 +15,7 @@ class Auth {
 	 */
 	static function isGuest(){
 		$cookieName = Sanitize::sanitizeFilename(Settings::TITLE);
-		return ($_COOKIE[$cookieName] === Settings::GUEST_PASSWORD);
+		return (isset($_COOKIE[$cookieName]) and $_COOKIE[$cookieName] === Settings::GUEST_PASSWORD);
 	}
 
 	/**

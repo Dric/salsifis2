@@ -138,6 +138,7 @@ class Admin {
 		  'adv'   => array(
 			  'DEBUG',
 			  'DATA_PARTITION',
+			  'GUEST_DATA_PARTITION',
 			  'DISPLAY_EXTERNAL_IP'
 		  ),
 		  'trans' => array(
@@ -302,6 +303,10 @@ class Admin {
 			$constants['USE_AUTH']['value'] = null;
 			Components::setAlert('danger', 'L\'authentification a été désactivée car aucun mot de passe n\'a été saisi !');
 		}
+		if ($constants['PASSWORD']['value'] === $constants['GUEST_PASSWORD']['value']){
+			Components::setAlert('danger', 'Le mot de passe des invités est le même que le mot de passe administrateur !');
+			return false;
+		}
 		//echo Get::varDump($constants);
 		$fs = new Fs('classes');
 		if (!$fs->fileExists('Settings.php')){
@@ -369,7 +374,7 @@ class Settings extends DefaultSettings {
 		//echo Get::varDump($settingsFile);
 		$ret = $fs->writeFile('Settings.php', $settingsFile, false, false, true);
 		if ($ret){
-			$fs->setChmod('Settings.php', 777);
+			//$fs->setChmod('Settings.php', 777);
 			$_SESSION['alerts'][] = array('type'=>'success','message'=>'Paramètres sauvegardés !');
 		} else {
 			$_SESSION['alerts'][] = array('type'=>'danger','message'=>'Impossible de sauvegarder les paramètres !');

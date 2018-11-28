@@ -70,6 +70,8 @@ if (Settings::USE_AUTH and !Auth::isLoggedIn()) {
 }
 
 
+$isGuest = (!Settings::USE_AUTH or (Settings::USE_AUTH and !Auth::isGuest())) ? false : true;
+
 ?>
 <!DOCTYPE html>
 <html lang="fr">
