@@ -22,6 +22,10 @@ class Login extends Page{
 			<form action="?action=login" method="post">
 				<input type="hidden" name="action" value="login">
 				<div class="uk-margin uk-padding uk-padding-remove-bottom uk-margin-remove-bottom">
+					<label class="">Nom</label>
+					<input name="loginName" class="uk-input uk-form-large" type="text" placeholder="Votre nom ou pseudonyme"><br>
+				</div>
+				<div class="uk-margin uk-padding uk-padding-remove-bottom uk-margin-remove-bottom">
 					<label class="">Mot de passe</label>
 					<input name="loginPwd" class="uk-input uk-form-large" type="password" placeholder="Votre mot de passe très secret"><br>
 				</div>

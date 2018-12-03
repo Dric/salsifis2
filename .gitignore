@@ -8,3 +8,5 @@
 
 /classes/Settings.php
 yarn-error.log
+settings/creds.conf
+logs/sessions.log

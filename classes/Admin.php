@@ -131,9 +131,7 @@ class Admin {
 		$constants = self::readSettings();
 		$related = array(
 			'pwd'   => array(
-				'USE_AUTH',
-				'PASSWORD',
-				'GUEST_PASSWORD'
+				'USE_AUTH'
 			),
 		  'adv'   => array(
 			  'DEBUG',
@@ -181,6 +179,7 @@ class Admin {
 						<li>
 							<?php
 							self::createFormInputs($constants['pwd']);
+							self::createFormUsers();
 							?>
 						</li>
 						<li>
@@ -272,6 +271,55 @@ class Admin {
 		}
 	}
 
+	protected static function createFormUsers() {
+		$creds = Auth::getSavedCreds();
+		?>
+		<div class="uk-margin">
+			Pour supprimer un utilisateur, il suffit de vider ses champs nom et mot de passe
+		</div>
+		<?php
+		if (!empty($creds)) {
+			foreach ($creds as $login => $pwd) {
+				// Les utilisateurs en accès complet sont préfixés avec `@@@_`. Les autres sont des invités.
+				$isGuest = true;
+				if (substr($login, 0, 4) === '@@@_') {
+					$isGuest = false;
+					$login = substr($login, 4);
+				}
+				?>
+				<div class="uk-margin uk-grid-small" style="align-items: center" uk-grid>
+					<div class="uk-width-1-3@s">
+						<label class="uk-form-label">Utilisateur</label>
+						<input name="user_<?php echo $login; ?>" class="uk-input" type="text" value="<?php echo $login; ?>">
+					</div>
+					<div class="uk-width-1-3@s">
+						<label class="uk-form-label">Mot de passe <?php Components::iconHelp('Si vous ne souhaitez pas modifier ce mot de passe, laissez le champ vide.'); ?></label>
+						<input name="pwd_<?php echo $login; ?>" class="uk-input" type="password" value="">
+						</div>
+					<div class="uk-width-1-3@s">
+						<label><input name="isGuest_<?php echo $login; ?>" class="uk-checkbox" type="checkbox" <?php if ($isGuest) { echo 'checked'; } ?>> Invité <?php Components::iconHelp('Un compte invité a des accès très restreints.'); ?></label>
+					</div>
+				</div>
+				<?php
+			}
+		}
+		?>
+		<div class="uk-margin uk-grid-small" style="align-items: center" uk-grid>
+			<div class="uk-width-1-3@s">
+				<label class="uk-form-label">Nouvel Utilisateur</label>
+				<input name="user_new" class="uk-input" type="text" value="">
+			</div>
+			<div class="uk-width-1-3@s">
+				<label class="uk-form-label">Mot de passe</label>
+				<input name="pwd_new" class="uk-input" type="password" value="">
+			</div>
+			<div class="uk-width-1-3@s">
+				<label class="<?php if (empty($creds)) { echo ' uk-text-muted" uk-tooltip="Le premier utilisateur doit obligatoirement obtenir un accès complet'; } ?>"><input name="isGuest_new" class="uk-checkbox" type="checkbox" <?php if (empty($creds)) { echo 'disabled'; } ?>> Invité <?php Components::iconHelp('Un compte invité a des accès très restreints.'); ?></label>
+			</div>
+		</div>
+		<?php
+	}
+
 	/**
 	 * Sauvegarde les paramètres du serveur dans un fichier de config php
 	 *
@@ -279,6 +327,7 @@ class Admin {
 	 */
 	public static function saveServerSettings(){
 		$constants = self::readSettings(true);
+		//var_dump($_REQUEST);
 		foreach ($constants as $constant => $tab){
 			if (isset($_REQUEST[$constant]) and !empty($_REQUEST[$constant])){
 				$request = htmlspecialchars($_REQUEST[$constant]);
@@ -298,14 +347,56 @@ class Admin {
 				$constants[$constant]['value'] = $value;
 			}
 		}
-		// Si l'authentification est activée mais que le mot de passe est vide, on désactive l'authentification
-		if ($constants['USE_AUTH']['value'] === true and is_null($constants['PASSWORD']['value'])){
-			$constants['USE_AUTH']['value'] = null;
-			Components::setAlert('danger', 'L\'authentification a été désactivée car aucun mot de passe n\'a été saisi !');
+		$reqCreds = array();
+		foreach ($_REQUEST as $req => $value) {
+			if (!empty($value) and preg_match('/(user|pwd|isGuest)_(.+?)$/i', $req, $matches)) {
+				$reqCreds[htmlspecialchars($matches[2])][$matches[1]] = htmlspecialchars($value);
+			}
 		}
-		if ($constants['PASSWORD']['value'] === $constants['GUEST_PASSWORD']['value']){
-			Components::setAlert('danger', 'Le mot de passe des invités est le même que le mot de passe administrateur !');
-			return false;
+		//var_dump($reqCreds);
+		if (!empty($reqCreds)){
+			$usersError = false;
+			$savedCreds = Auth::getSavedCreds();
+			$finalCreds = array();
+			foreach ($reqCreds as $user => $userSettings) {
+				if ($user == 'new') {
+					if (!empty($userSettings['user'])) {
+						$user = $userSettings['user'];
+						if (!isset($userSettings['pwd']) or empty($userSettings['pwd'])) {
+							Components::setAlert('danger', 'Le mot de passe de l\'utilisateur <code>'.$user.'</code> est vide ! Les utilisateurs ne seront pas sauvegardés.');
+							$usersError = true;
+							break;
+						}
+						if (isset($userSettings['isGuest']) and empty($savedCreds)) {
+							Components::setAlert('danger', 'L\'utilisateur <code>'.$user.'</code> ne peut pas être un invité ! Les utilisateurs ne seront pas sauvegardés.');
+							$usersError = true;
+							break;
+						}
+					}
+				}
+				if (isset($userSettings['pwd'])) {
+					if (!isset($userSettings['isGuest'])) {
+						$user = '@@@_'.$user;
+					}
+					$finalCreds[$user] = $userSettings['pwd'];
+				}
+			}
+			if (!$usersError) {
+				foreach ($savedCreds as $user => $pwd) {
+					if (!isset($reqCreds[$user]) and !isset($reqCreds['@@@_'.$user])) {
+						Auth::removeLogin($user);
+					}
+				}
+				$ret = Auth::saveCreds($finalCreds);
+				if (!$ret) {
+					Components::setAlert('danger', 'Impossible de sauvegarder les utilisateurs !');
+				}
+			}
+		}
+		// Si l'authentification est activée mais que le mot de passe est vide, on désactive l'authentification
+		if ($constants['USE_AUTH']['value'] === true and !empty($creds)){
+			$constants['USE_AUTH']['value'] = null;
+			Components::setAlert('danger', 'L\'authentification a été désactivée car aucun utilisateur n\'a été défini !');
 		}
 		//echo Get::varDump($constants);
 		$fs = new Fs('classes');
@@ -394,9 +485,6 @@ class Settings extends DefaultSettings {
 		$isArray = false;
 		switch ($constants[$constantName]['type']) {
 			case 'string':
-				if (($constantName == 'PASSWORD' and $constants[$constantName]['value'] != Settings::PASSWORD) or ($constantName == 'GUEST_PASSWORD' and $constants[$constantName]['value'] != Settings::GUEST_PASSWORD)) {
-						$constants[$constantName]['value'] = password_hash($constants[$constantName]['value'], PASSWORD_DEFAULT);
-				}
 				$value = '\'' . $constants[$constantName]['value'] . '\';';
 				break;
 			case 'int':

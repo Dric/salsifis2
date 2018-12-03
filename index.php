@@ -42,36 +42,51 @@ $absolutePath = dirname(__FILE__);
 
 
 // Actions
-if (Settings::USE_AUTH and !Auth::isLoggedIn()) {
-	$page = new Login;
-}elseif(isset($_REQUEST['logoff'])){
-	Auth::deleteCookie();
-	header('location: .');
-	exit;
-}elseif (isset($_REQUEST['aSync'])){
-	Async::getAsyncRequest();
-	exit;
-}elseif(isset($_REQUEST['page'])){
-	switch ($_REQUEST['page']){
-		case 'downloads':
-			$page = new Downloads;
-			break;
-		case 'files':
-			$page = new Files;
-			break;
-		case 'reboot':
-			$page = new Reboot;
-			break;
-		default:
-			$page = new Page;
+
+// Authentification
+if (Settings::USE_AUTH) {
+	// On récupère le nom de l'utilsiateur connecté via son cookie
+	$user = Auth::isLoggedIn();
+	if ($user === false) {
+		$page = new Login;
 	}
-}else{
-	// Page par défaut
-	$page = new Page;
+	$isGuest = true;
+	// Les utilisateurs en accès complet sont préfixés avec `@@@_`. Les autres sont des invités.
+	if (substr($user, 0, 4) === '@@@_') {
+		$isGuest = false;
+		$user = substr($user, 4);
+	}
+} else {
+	$isGuest = false;
 }
 
-
-$isGuest = (!Settings::USE_AUTH or (Settings::USE_AUTH and !Auth::isGuest())) ? false : true;
+if (!isset($page)) {
+	if(isset($_REQUEST['logoff'])){
+		Auth::deleteCookie();
+		header('location: .');
+		exit;
+	}elseif (isset($_REQUEST['aSync'])){
+		Async::getAsyncRequest();
+		exit;
+	}elseif(isset($_REQUEST['page'])){
+		switch ($_REQUEST['page']){
+			case 'downloads':
+				$page = new Downloads;
+				break;
+			case 'files':
+				$page = new Files;
+				break;
+			case 'reboot':
+				$page = new Reboot;
+				break;
+			default:
+				$page = new Page;
+		}
+	}else{
+		// Page par défaut
+		$page = new Page;
+	}
+}
 
 ?>
 <!DOCTYPE html>
@@ -120,7 +135,10 @@ $isGuest = (!Settings::USE_AUTH or (Settings::USE_AUTH and !Auth::isGuest())) ? 
 		<header class="">
 			<h1 class="uk-heading-hero uk-heading-line uk-text-center">
 				<span>
-					<a href="." title="Accueil" class="uk-link-reset"><?php echo Settings::TITLE; ?></a><br>
+					<a href="." title="Accueil" class="uk-link-reset">
+						<?php echo Settings::TITLE; ?><?php if (Settings::USE_AUTH) { ?><sup class="uk-label uk-label-warning" style="vertical-align: super;"><?php echo $user; ?></sup><?php } ?>
+					</a>
+					<br>
 					<span class="uk-text-lead uk-align-right salsifis-sub-title"><?php echo $page->subTitle(); ?></span>
 				</span>
 			</h1>

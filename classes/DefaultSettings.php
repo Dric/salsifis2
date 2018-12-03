@@ -32,10 +32,6 @@ class DefaultSettings {
 	);
 	/** Utiliser un mot de passe pour se connecter */
 	const USE_AUTH = false;
-	/** Mot de passe accès complet (chiffré) */
-	const PASSWORD = null;
-	/** Mot de passe visiteur (chiffré) - Ne mettez pas le même que pour l'accès complet sans quoi vous ne pourrez plus vous connecter qu'en tant qu'invité */
-	const GUEST_PASSWORD = null;
 	/** Afficher l'adresse IP externe */
 	const DISPLAY_EXTERNAL_IP = false;
 }
