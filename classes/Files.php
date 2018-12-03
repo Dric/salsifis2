@@ -12,6 +12,13 @@ class Files extends Page{
 	protected $title = 'Fichiers';
 	protected $tmdbUrl = 'https://www.themoviedb.org/';
 
+	public function __construct() {
+		parent::__construct();
+		if (isset($_REQUEST['action']) and $_REQUEST['action'] == 'displayImage'){
+			$this->displayImage();
+		}
+	}
+
 	public function main() {
 		global $isGuest;
 		$file = null;
@@ -28,6 +35,7 @@ class Files extends Page{
 		if (isset($_REQUEST['action']) and $_REQUEST['action'] == 'fileDownload'){
 			$this->fileDownload();
 		}
+		
 		if (empty($file)){
 			$folder = (isset($_REQUEST['folder'])) ? urldecode($_REQUEST['folder']): ((!$isGuest) ? Settings::DATA_PARTITION : Settings::GUEST_DATA_PARTITION);
 			if (!file_exists($folder)){
@@ -130,7 +138,7 @@ class Files extends Page{
 		?>
 		<h2><span class="uk-icon-button" uk-icon="icon: <?php echo $fileMeta->getIcon(); ?>; ratio: 2"></span>&nbsp;<?php echo $file; ?></h2>
 		<div class="uk-box-shadow-medium uk-overlay-default uk-padding-small">
-			<p>Dans <a title="retourner au répertoire" class="uk-link-reset" href="<?php echo $this->buildArgsURL(array('folder' => urlencode($fileMeta->parentFolder))); ?>"><?php echo $fileMeta->parentFolder; ?></a></p>
+			<p>Dans <a title="retourner au répertoire" class="uk-link-reset uk-icon" uk-tooltip="pos: bottom" href="<?php echo $this->buildArgsURL(array('folder' => urlencode($fileMeta->parentFolder))); ?>" uk-icon="icon: arrow-up"><?php echo $fileMeta->parentFolder; ?></a></p>
 			<ul>
 				<li>Date de création : <?php echo \Sanitize::date($fileMeta->dateCreated, 'dateTime'); ?></li>
 				<li>Date de dernière modification : <?php echo \Sanitize::date($fileMeta->dateModified, 'dateTime'); ?></li>
@@ -141,7 +149,7 @@ class Files extends Page{
 					<?php
 					switch ($fileMeta->type){
 						case 'Image':
-							?><img class="img-thumbnail" alt="<?php echo $file; ?>" src="<?php echo $this->url.'&action=displayImage&file='.$fileMeta->fullName; ?>"<?php
+							?><img class="img-thumbnail" alt="<?php echo $file; ?>" src="<?php echo $this->url.'&action=displayImage&file='.$fileMeta->fullName; ?>"><?php
 							break;
 						case 'Fichier texte':
 						case 'Information':
@@ -228,39 +236,40 @@ class Files extends Page{
 		 * Nettoie le nom d'un téléchargement
 		 */
 		$replace = array(
-			'.mkv'        => '',
-			'.mp4'        => '',
-			'x264'        => '',
-			'H264'        => '',
-			'720p'        => '',
-			'1080p'       => '',
-			'dvdrip'      => '',
-			'h.264'       => '',
-			'BluRay'      => '',
-			'Blu-Ray'     => '',
-			'XviD'        => '',
-			'BRRip'       => '',
-			'BDRip'       => '',
-			'HDrip'       => '',
-			' HD '        => '',
-			'mHD'         => '',
-			'HDLIGHT'     => '',
-			'WEB.DL'      => '',
-			'WEB-DL'      => '',
-			'PS3'         => '',
-			'XBOX360'     => '',
-			'V.longue'    => '',
-			'TRUEFRENCH'  => '',
-			'french'      => '',
-			'vff'         => '',
-			'vf'          => '',
-			'subforces'   => '',
-			' MULTI '     => '',
-			'ac3'         => '',
-			'aac'         => '',
-			'5.1'         => '',
-			'.'           => ' ',
-			'  '          => ' '
+			'.mkv'        	=> '',
+			'.mp4'       	=> '',
+			'x264'        	=> '',
+			'H264'        	=> '',
+			'720p'        	=> '',
+			'1080p'       	=> '',
+			'dvdrip'      	=> '',
+			'h.264'       	=> '',
+			'BluRay'      	=> '',
+			'Blu-Ray'     	=> '',
+			'XviD'        	=> '',
+			'BRRip'       	=> '',
+			'BDRip'       	=> '',
+			'HDrip'       	=> '',
+			' HD '        	=> '',
+			'mHD'         	=> '',
+			'HDLIGHT'     	=> '',
+			'WEB.DL'      	=> '',
+			'WEB-DL'      	=> '',
+			'PS3'         	=> '',
+			'XBOX360'     	=> '',
+			'V.longue'    	=> '',
+			'TRUEFRENCH'	=> '',
+			'french'    	=> '',
+			'vff'			=> '',
+			'vf'        	=> '',
+			'vf2-eng'		=> '',
+			'subforces' 	=> '',
+			' MULTI '   	=> '',
+			'ac3'       	=> '',
+			'aac'       	=> '',
+			'5.1'       	=> '',
+			'.'         	=> ' ',
+			'  '        	=> ' '
 		);
 		// On vire les éventuels numéros aux débuts des films, mais seulement ceux qui sont suivis immédiatement par un `. `
 		$name = preg_replace('/^(\d+)\. /i', '', $fileName);
@@ -418,6 +427,9 @@ class Files extends Page{
 		header('content-type: '. $file->fullType);
 		header('content-disposition: inline; filename="'.$fileName.'";');
 		readfile($fileName);
+		/*$imageData = base64_encode(file_get_contents($fileName));
+		$src = 'data: '.$file->fullType.';base64,'.$imageData;
+		echo '<img src="' . $src . '">';*/
 		exit();
 	}
 

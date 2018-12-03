@@ -91,29 +91,28 @@ class File {
 			 *
 			 * Dans ce cas, il faut passer par la commande linux `stat` pour récupérer les infos.
 			 */
-			$stat = @stat($this->fullName);
-			if ($stat === false){
-				exec('stat -c "%s %a %U %G %W %Y" "'.$this->fullName.'"', $out);
-				list($this->size, $this->chmod, $this->owner, $this->groupOwner, $this->dateCreated, $this->dateModified) = explode(' ', $out[0]);
-				if ((!empty($filters) and in_array('type', $filters)) or empty($filters)){
+			//$stat = @stat($this->fullName);
+				exec('stat -c "%s@%a@%U@%G@%W@%Y@%F" "'.$this->fullName.'"', $out);
+				list($this->size, $this->chmod, $this->owner, $this->groupOwner, $this->dateCreated, $this->dateModified, $this->fullType) = explode('@', $out[0]);
+				$this->fullType = @finfo_file(finfo_open(FILEINFO_MIME_TYPE), $this->fullName);
+				$this->type();
+				//if ((!empty($filters) and in_array('type', $filters)) or empty($filters)){
 					/**
 					 * @warning Il se peut que cette commande ne renvoie pas le bon type MIME.
 					 *  Dans ce cas, il faut faire une mise à jour des types MIME du serveur avec `sudo update-mime-database /usr/share/mime`
 					 */
-					exec('file -b --mime-type "'.$this->fullName.'"', $out);
-					$this->fullType = end($out);
-					$this->type();
-				}
-			}else{
+					//exec('file -b --mime-type "'.$this->fullName.'"', $out);
+					//$this->fullType = end($out);
+					//$this->fullType =  @finfo_file(finfo_open(FILEINFO_MIME_TYPE), $this->fullName);
+					//$this->type();
+				//}
+			/*}else{
 				if ((!empty($filters) and (in_array('dateCreated', $filters) or in_array('dateModified', $filters) or in_array('size', $filters))) or empty($filters)){
 					$this->dateCreated = $stat['ctime'];
 					$this->dateModified = $stat['mtime'];
 					$this->size = $this->getFileSize();
 				}
 				if ((!empty($filters) and in_array('type', $filters)) or empty($filters)){
-					/**
-					 * @var \finfo $fInfo
-					 */
 					$this->fullType = @finfo_file(finfo_open(FILEINFO_MIME_TYPE), $this->fullName);
 					$this->type();
 				}
@@ -127,7 +126,7 @@ class File {
 				if ((!empty($filters) and in_array('groupOwner', $filters)) or empty($filters)){
 					$this->groupOwner = posix_getgrgid(@filegroup($this->fullName))['name'];
 				}
-			}
+			}*/
 		}else{
 			\Components::Alert('warning', '<code>File Constructor</code> : le fichier <code>'.$this->fullName.'</code> n\'existe pas !');
 			$this->name = null;
@@ -188,7 +187,11 @@ class File {
 		}
 		switch ($this->fullType){
 			case 'directory':
+			case 'inode/directory':
 				$ext = 'Répertoire';
+				break;
+			case 'symbolic link':
+				$ext = 'Lien symbolique';
 				break;
 			case 'text/plain':
 				switch ($this->extension){
@@ -299,7 +302,7 @@ class File {
 			case 'Répertoire':
 				return 'folder';
 			case 'Fichier texte':
-				return 'file-text';
+				return 'file-alt';
 			case 'Archive':
 				return 'file-archive';
 			case 'Archives Outlook':
@@ -336,6 +339,8 @@ class File {
 				return 'file-pdf';
 			case 'Vidéo':
 				return 'film';
+			case 'Lien symbolique':
+				return 'external-link-alt';
 			default:
 				return 'file';
 		}
@@ -364,9 +369,9 @@ class File {
 		$class = '';
 		switch ($this->type){
 			case 'Répertoire':
-				$class = 'text-warning';
+				$class = 'uk-text-warning';
 		}
-		if ($this->linuxHidden) $class = 'text-muted';
+		if ($this->linuxHidden) $class = 'text-transparent';
 		return $class;
 	}
 } 

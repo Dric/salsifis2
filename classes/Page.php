@@ -17,6 +17,10 @@ class Page {
 
 	protected $url = '';
 
+	public function __construct() {
+		
+	}
+
 	/**
 	 * Entête
 	 */
