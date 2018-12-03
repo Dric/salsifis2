@@ -183,7 +183,7 @@ if (!isset($page)) {
 			</div>
 		</div>
 		<!-- Fin Menu latéral -->
-		<a href="#" class="totop" uk-totop uk-scroll></a>
+		<a href="#" class="tothetop" title="Retour en haut de la page" uk-totop uk-scroll uk-tooltip="pos: top"></a>
 	</div>
 	<!-- Le Javascript -->
 	<script src="node_modules/jquery/dist/jquery.min.js"></script>

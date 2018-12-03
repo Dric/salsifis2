@@ -290,7 +290,7 @@ class Admin {
 				<div class="uk-margin uk-grid-small" style="align-items: center" uk-grid>
 					<div class="uk-width-1-3@s">
 						<label class="uk-form-label">Utilisateur</label>
-						<input name="user_<?php echo $login; ?>" class="uk-input" type="text" value="<?php echo $login; ?>">
+						<input name="user_<?php echo $login; ?>" class="uk-input" type="text" value="<?php echo strtoupper($login); ?>">
 					</div>
 					<div class="uk-width-1-3@s">
 						<label class="uk-form-label">Mot de passe <?php Components::iconHelp('Si vous ne souhaitez pas modifier ce mot de passe, laissez le champ vide.'); ?></label>

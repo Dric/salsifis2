@@ -39,25 +39,25 @@ class Page {
 		}
 		global $isGuest;
 		?>
-		<div class="uk-child-width-1-3@m uk-grid-small uk-grid-match uk-animation-fade" uk-grid>
-			<a href="<?php if (!$isGuest) { ?>?page=downloads<?php } ?>" title="Pour savoir où en sont vos téléchargements, pour les classer ou les supprimer, c'est par ici !" class="salsifis-main-menu-link" uk-tooltip="pos: bottom">
+		<div class="<?php if (!$isGuest) { ?>uk-child-width-1-3@m<?php } else { ?>uk-child-width-1-1@m<?php } ?> uk-grid-small uk-grid-match uk-animation-fade" uk-grid>
+		<?php if (!$isGuest) { ?><a href="?page=downloads" title="Pour savoir où en sont vos téléchargements, pour les classer ou les supprimer, c'est par ici !" class="salsifis-main-menu-link" uk-tooltip="pos: bottom">
 				<div class="uk-card uk-background-blend-multiply uk-card-body uk-border-rounded uk-box-shadow-medium uk-overlay-default salsifis-main-menu salsifis-main-downloads">
-					<h3 class="uk-card-title<?php if ($isGuest) { ?> uk-text-muted<?php } ?>">Téléchargements</h3>
+					<h3 class="uk-card-title<?php if ($isGuest) { ?> text-transprent<?php } ?>">Téléchargements</h3>
 					<p>Vos téléchargements en cours</p>
 				</div>
-			</a>
+			</a><?php } ?>
 			<a href="?page=files" title="Cliquez ici pour voir les fichiers stockés sur le serveur et obtenir des détails." class="salsifis-main-menu-link" uk-tooltip="pos: bottom">
 				<div class="uk-card uk-background-blend-multiply uk-card-body uk-border-rounded uk-box-shadow-medium uk-overlay-default salsifis-main-menu salsifis-main-library">
 					<h3 class="uk-card-title">Fichiers</h3>
 					<p>La liste des fichiers sur le serveur</p>
 				</div>
 			</a>
-			<a href="<?php if (!$isGuest) { ?>?page=reboot<?php } ?>" title="Parfois, les choses ne vont pas comme on le voudrait. <br><br>En informatique, la manoeuvre la plus élémentaire consiste non pas à jeter le matériel par la fenêtre, mais à le redémarrer." class="salsifis-main-menu-link" uk-tooltip="pos: bottom">
+			<?php if (!$isGuest) { ?><a href="?page=reboot" title="Parfois, les choses ne vont pas comme on le voudrait. <br><br>En informatique, la manoeuvre la plus élémentaire consiste non pas à jeter le matériel par la fenêtre, mais à le redémarrer." class="salsifis-main-menu-link" uk-tooltip="pos: bottom">
 				<div class="uk-card uk-background-blend-multiply uk-card-body uk-border-rounded uk-box-shadow-medium uk-overlay-default salsifis-main-menu salsifis-main-exit">
-					<h3 class="uk-card-title<?php if ($isGuest) { ?> uk-text-muted<?php } ?>">Redémarrer</h3>
+					<h3 class="uk-card-title<?php if ($isGuest) { ?> text-transprent<?php } ?>">Redémarrer</h3>
 					<p>Un problème ? redémarrez.</p>
 				</div>
-			</a>
+			</a><?php } ?>
 		</div>
 
 		<div class="uk-section" id="diskUsage">

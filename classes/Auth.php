@@ -97,7 +97,7 @@ class Auth {
 			Components::Alert('danger', 'Erreur : Le mot de passe est requis !');
 			return false;
 		}
-		$loginName = htmlspecialchars($_REQUEST['loginName']);
+		$loginName = strtolower(htmlspecialchars($_REQUEST['loginName']));
 		// On va vérifier le mot de passe directement sans rien faire d'autre, pas besoin de triturer la chaîne envoyée.
 		$loginPwd = $_REQUEST['loginPwd'];
 		$stayConnected = (isset($_REQUEST['stayConnected'])) ? true : false;
@@ -164,7 +164,7 @@ class Auth {
 				$line = trim($line);
 				if (!empty($line)) {
 					list($login, $pwd) = explode('=', $line);
-					$creds[$login] = $pwd;
+					$creds[strtolower($login)] = $pwd;
 				}
 			}
 		}
@@ -203,7 +203,7 @@ class Auth {
 		$toSave = '';
 		foreach ($creds as $login => $pwd) {
 			if (!empty($login) and !empty($pwd)) {
-				$toSave .= $login . '=' .  $pwd . PHP_EOL ;
+				$toSave .= strtolower($login) . '=' .  $pwd . PHP_EOL ;
 			}
 		}
 		$toSave = rtrim($toSave);
