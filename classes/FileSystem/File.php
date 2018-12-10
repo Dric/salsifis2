@@ -376,8 +376,8 @@ class File {
 		}else{
 			$labels['type'] = 'movie';
 			if (preg_match('/^(.+?)(\d{4})/i', $name, $matches)) {
-				$name = trim($matches[1], '[]( .');
 				$labels['year'] = $matches[2];
+				$name = trim($matches[1], '[]( .');
 			}else{
 				// Et on vire les noms à la noix en fin de torrent
 				$name = trim(preg_replace('/(-.\S*)$/i', '', $name), ' -');
@@ -409,7 +409,7 @@ class File {
 		if (\Settings::DISPLAY_CLEAN_FILENAMES) {
 			if (!empty($this->labels['labels'])) {
 				foreach ($this->labels['labels'] as $label) {
-					if (in_array($label, array('VF', 'VFF', 'VFI', 'ENG'))) echo '&nbsp;<img src="./img/flags/'.$label.'svg" width="16px" height="16px" alt="'.$label.'">';
+					if (in_array($label, array('VF', 'VFF', 'VFI', 'ENG'))) echo '&nbsp;<img src="./img/flags/'.$label.'.svg" width="16px" height="16px" alt="'.$label.'">';
 					if ($label == 'HD') {
 						echo '&nbsp;<span class="uk-label uk-label-warning">HD</span>';
 					}
