@@ -12,7 +12,7 @@ class Components {
 	 * @return false|string
 	 */
 	static public function getUptimeJSDate(){
-		return date('Y-m-d\TH:i:sP', (int)(time() - (shell_exec("cut -d. -f1 /proc/uptime"))));
+		return date('Y-m-d\TH:i:sP', (time() - (int)(trim(shell_exec("cut -d. -f1 /proc/uptime")))));
 	}
 
 	/**

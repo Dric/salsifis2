@@ -215,12 +215,6 @@ class Files extends Page{
 		header("X-Sendfile: " . $file);
 		header("Content-Length: " . filesize($file));
 
-		/*header("Content-Type: application/octet-stream;");
-		header("Cache-Control: no-cache, must-revalidate");
-		header("Expires: Mon, 26 Jul 1997 05:00:00 GMT");*/
-		/*ob_clean();
-		flush();
-		readfile($file);*/
 		exit;
 	}
 
@@ -232,6 +226,7 @@ class Files extends Page{
 	 * @param string $fileName Nom du fichier
 	 */
 	protected function getTMDBData($fileName){
+
 		/**
 		 * Nettoie le nom d'un téléchargement
 		 */
@@ -301,6 +296,8 @@ class Files extends Page{
 			}
 		}
 		$name = \Sanitize::removeAccents($name);
+
+		
 		//var_dump($name);
 		echo '<!-- name : '.\Get::varDump($name).' -->'."\n";
 		if ($type =='tv') echo '<!-- saison : '.\Get::varDump($season).' - épisode : '.\Get::varDump($episode).' -->'."\n";

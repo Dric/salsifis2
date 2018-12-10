@@ -34,4 +34,6 @@ class DefaultSettings {
 	const USE_AUTH = false;
 	/** Afficher l'adresse IP externe */
 	const DISPLAY_EXTERNAL_IP = false;
+	/** Afficher des noms de fichiers nettoyés (peut ralentir fortement la navigation) */
+	const DISPLAY_CLEAN_FILENAMES = false;
 }

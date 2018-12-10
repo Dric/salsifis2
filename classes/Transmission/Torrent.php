@@ -87,7 +87,7 @@ Class Torrent{
 	protected $statusLabels = array(
 		0 => 'Arrêté',
 		1 => 'En attente de vérification',
-  	2 => 'En cours de vérification',
+  		2 => 'En cours de vérification',
 		3 => 'En attente de téléchargement',
 		4 => 'En cours de téléchargement',
 		5 => 'En attente de partage',
@@ -101,11 +101,11 @@ Class Torrent{
 	protected $statusIcons = array(
 		0 => 'pause',
 		1 => 'spinner',
-  	2 => 'warning',
+  		2 => 'exclamation-triangle',
 		3 => 'spinner',
-		4 => 'cloud-download',
+		4 => 'cloud-download-alt',
 		5 => 'spinner',
-		6 => 'cloud-upload'
+		6 => 'cloud-upload-alt'
 	);
 	
 	/**

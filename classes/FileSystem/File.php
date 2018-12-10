@@ -9,14 +9,13 @@
 namespace FileSystem;
 
 
-use Logs\Alert;
-
 /**
  * Objet fichier
  *
  * @package FileSystem
  *
- * @property-read int $name
+ * @property-read string $name
+ * @property-read string $cleanName
  * @property-read string $fullName
  * @property-read int $dateCreated
  * @property-read int $dateModified
@@ -24,6 +23,7 @@ use Logs\Alert;
  * @property-read string $extension
  * @property-read string $fullType
  * @property-read string $type
+ * @property-read array $labels
  * @property-read int $chmod
  * @property-read int $advChmod
  * @property-read bool $writable
@@ -35,6 +35,7 @@ use Logs\Alert;
 class File {
 
 	protected $name = null;
+	protected $cleanName = null;
 	protected $fullName = null;
 	protected $dateCreated = 0;
 	protected $dateModified = 0;
@@ -43,6 +44,7 @@ class File {
 	protected $encoding = null;
 	protected $fullType = null;
 	protected $type = null;
+	protected $labels = array();
 	protected $chmod = 0;
 	protected $advChmod = 0;
 	protected $writable = false;
@@ -85,48 +87,15 @@ class File {
 			if (!empty($this->filters)) $this->filters[] = 'linuxHidden';
 			$this->parentFolder = dirname($this->fullName);
 			if (!empty($this->filters)) $this->filters[] = 'parentFolder';
-			/**
-			 * On teste si stat retourne une erreur.
-			 * Si oui, il y a de fortes chances que ce soit à cause d'un fichier trop gros pour être géré en PHP 32 bits.
-			 *
-			 * Dans ce cas, il faut passer par la commande linux `stat` pour récupérer les infos.
-			 */
-			//$stat = @stat($this->fullName);
-				exec('stat -c "%s@%a@%U@%G@%W@%Y@%F" "'.$this->fullName.'"', $out);
-				list($this->size, $this->chmod, $this->owner, $this->groupOwner, $this->dateCreated, $this->dateModified, $this->fullType) = explode('@', $out[0]);
-				$this->fullType = @finfo_file(finfo_open(FILEINFO_MIME_TYPE), $this->fullName);
-				$this->type();
-				//if ((!empty($filters) and in_array('type', $filters)) or empty($filters)){
-					/**
-					 * @warning Il se peut que cette commande ne renvoie pas le bon type MIME.
-					 *  Dans ce cas, il faut faire une mise à jour des types MIME du serveur avec `sudo update-mime-database /usr/share/mime`
-					 */
-					//exec('file -b --mime-type "'.$this->fullName.'"', $out);
-					//$this->fullType = end($out);
-					//$this->fullType =  @finfo_file(finfo_open(FILEINFO_MIME_TYPE), $this->fullName);
-					//$this->type();
-				//}
-			/*}else{
-				if ((!empty($filters) and (in_array('dateCreated', $filters) or in_array('dateModified', $filters) or in_array('size', $filters))) or empty($filters)){
-					$this->dateCreated = $stat['ctime'];
-					$this->dateModified = $stat['mtime'];
-					$this->size = $this->getFileSize();
-				}
-				if ((!empty($filters) and in_array('type', $filters)) or empty($filters)){
-					$this->fullType = @finfo_file(finfo_open(FILEINFO_MIME_TYPE), $this->fullName);
-					$this->type();
-				}
-				if ((!empty($filters) and in_array('chmod', $filters)) or empty($filters)){
-					$this->chmod = (int)decoct(@fileperms($this->fullName) & 0777);
-					$this->advChmod = (int)substr(decoct(@fileperms($this->fullName)),2);
-				}
-				if ((!empty($filters) and in_array('owner', $filters)) or empty($filters)){
-					$this->owner = posix_getpwuid(@fileowner($this->fullName))['name'];
-				}
-				if ((!empty($filters) and in_array('groupOwner', $filters)) or empty($filters)){
-					$this->groupOwner = posix_getgrgid(@filegroup($this->fullName))['name'];
-				}
-			}*/
+			exec('stat -c "%s@%a@%U@%G@%W@%Y@%F" "'.$this->fullName.'"', $out);
+			list($this->size, $this->chmod, $this->owner, $this->groupOwner, $this->dateCreated, $this->dateModified, $this->fullType) = explode('@', $out[0]);
+			$this->fullType = @finfo_file(finfo_open(FILEINFO_MIME_TYPE), $this->fullName);
+			$this->type();
+			if (\Settings::DISPLAY_CLEAN_FILENAMES) {
+				$this->extractNameAndLabels();
+			} else {
+				$this->cleanName = $this->name;
+			}
 		}else{
 			\Components::Alert('warning', '<code>File Constructor</code> : le fichier <code>'.$this->fullName.'</code> n\'existe pas !');
 			$this->name = null;
@@ -346,6 +315,84 @@ class File {
 		}
 	}
 
+	protected function extractNameAndLabels() {
+		$labels = array();
+		$search = array(
+			'.mkv'        	=> '',
+			'.mp4'       	=> '',
+			'x264'        	=> '',
+			'H264'        	=> '',
+			'720p'        	=> 'HD',
+			'1080p'       	=> 'FullHD',
+			'dvdrip'      	=> '',
+			'h.264'       	=> '',
+			'BluRay'      	=> '',
+			'Blu-Ray'     	=> '',
+			'XviD'        	=> '',
+			'BRRip'       	=> '',
+			'BDRip'       	=> '',
+			'HDrip'       	=> '',
+			' HD '        	=> '',
+			'mHD'         	=> '',
+			'HDLIGHT'     	=> 'LIGHT',
+			'WEB.DL'      	=> '',
+			'WEB-DL'      	=> '',
+			'PS3'         	=> '',
+			'XBOX360'     	=> '',
+			'V.longue'    	=> '',
+			'TRUEFRENCH'	=> 'VFF',
+			'french'    	=> 'VF',
+			'vff'			=> 'VFF',
+			'vf'        	=> 'VF',
+			'vo'			=> 'ENG',
+			'vf2'			=> 'VFF',
+			'-eng'			=> 'ENG',
+			'subforces' 	=> '',
+			' MULTI '   	=> 'VF',
+			'ac3'       	=> '',
+			'aac'       	=> '',
+			'5.1'       	=> '',
+			'.'         	=> ' ',
+			'  '        	=> ' '
+		);
+		// On vire les éventuels numéros aux débuts des films, mais seulement ceux qui sont suivis immédiatement par un `. `
+		$name = preg_replace('/^(\d+)\. /i', '', $this->name);
+		$name =  str_ireplace(array_keys($search), '', $name);
+		// On convertit les chiffres romains en nombres
+		$name = str_replace('III', '3', $name);
+		$name = str_replace('II', '2', $name);
+		// Détection d'un épisode de série TV
+		preg_match_all('/\sS(\d{1,2})E(\d{1,2})/im', $name, $matches);
+		if (!empty($matches[0])){
+			$season = intval($matches[1][0]);
+			$episode = intval($matches[2][0]);
+			unset($matches);
+			$name = preg_replace('/\sS(\d{1,2})E(\d{1,2})/i', '', $name);
+			// On vire les indications de qualité ou de compatibilité entre crochets
+			$name = preg_replace('/\[.*\]/i', '', $name);
+			// Et on vire les noms à la noix en fin de torrent
+			$name = trim(preg_replace('/(-.\S*)$/i', '', $name), ' -');
+			$labels['type'] = 'tv';
+		}else{
+			$labels['type'] = 'movie';
+			if (preg_match('/^(.+?)(\d{4})/i', $name, $matches)) {
+				$name = trim($matches[1], '[]( .');
+				$labels['year'] = $matches[2];
+			}else{
+				// Et on vire les noms à la noix en fin de torrent
+				$name = trim(preg_replace('/(-.\S*)$/i', '', $name), ' -');
+				$name = trim($name, '[]( .');
+			}
+		}
+		foreach ($search as $searched => $foundLabel) {
+			if (!empty($foundLabel) and preg_match('/'.$searched.'/', $this->name))	{
+    			$labels['labels'][] = $foundLabel;
+  			} 
+		}
+		$this->cleanName = \Sanitize::removeAccents($name);
+		$this->labels = $labels;
+	}
+
 	/**
 	 * Affiche l'icône en rapport avec le fichier
 	 */
@@ -358,7 +405,23 @@ class File {
 	 */
 	public function display(){
 		$this->displayIcon();
-		echo '&nbsp;'.$this->name;
+		echo '&nbsp;'.$this->cleanName;
+		if (\Settings::DISPLAY_CLEAN_FILENAMES) {
+			if (!empty($this->labels['labels'])) {
+				foreach ($this->labels['labels'] as $label) {
+					if (in_array($label, array('VF', 'VFF', 'VFI', 'ENG'))) echo '&nbsp;<img src="./img/flags/'.$label.'svg" width="16px" height="16px" alt="'.$label.'">';
+					if ($label == 'HD') {
+						echo '&nbsp;<span class="uk-label uk-label-warning">HD</span>';
+					}
+					if ($label == 'FullHD') {
+						echo '&nbsp;<span class="uk-label uk-label-success">Full HD</span>';
+					}
+				}
+			}
+			if (!empty($this->labels['year'])) {
+				echo '&nbsp;<span class="uk-label">'.$this->labels['year'].'</span>';
+			}
+		}
 	}
 
 	/**
