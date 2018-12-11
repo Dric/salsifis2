@@ -351,13 +351,13 @@ class File {
 			' MULTI '   	=> 'VF',
 			'ac3'       	=> '',
 			'aac'       	=> '',
-			'5.1'       	=> '',
-			'.'         	=> ' ',
-			'  '        	=> ' '
+			'5.1'       	=> ''
 		);
 		// On vire les éventuels numéros aux débuts des films, mais seulement ceux qui sont suivis immédiatement par un `. `
 		$name = preg_replace('/^(\d+)\. /i', '', $this->name);
-		$name =  str_ireplace(array_keys($search), '', $name);
+		$name = str_ireplace(array_keys($search), '', $name);
+		$name = str_replace('.', ' ', $name);
+		$name = str_replace('  ', ' ', $name);
 		// On convertit les chiffres romains en nombres
 		$name = str_replace('III', '3', $name);
 		$name = str_replace('II', '2', $name);
@@ -409,7 +409,7 @@ class File {
 		if (\Settings::DISPLAY_CLEAN_FILENAMES) {
 			if (!empty($this->labels['labels'])) {
 				foreach ($this->labels['labels'] as $label) {
-					if (in_array($label, array('VF', 'VFF', 'VFI', 'ENG'))) echo '&nbsp;<img src="./img/flags/'.$label.'.svg" width="16px" height="16px" alt="'.$label.'">';
+					if (in_array($label, array('VF', 'VFF', 'VFI', 'ENG'))) echo '&nbsp;<img src="./img/flags/'.$label.'.svg" width="21px" height="21px" alt="'.$label.'">';
 					if ($label == 'HD') {
 						echo '&nbsp;<span class="uk-label uk-label-warning">HD</span>';
 					}
@@ -419,7 +419,7 @@ class File {
 				}
 			}
 			if (!empty($this->labels['year'])) {
-				echo '&nbsp;<span class="uk-label">'.$this->labels['year'].'</span>';
+				echo '&nbsp;<span class="uk-label"><i class="fas fa-calendar-alt"></i> '.$this->labels['year'].'</span>';
 			}
 		}
 	}
