@@ -91,7 +91,7 @@ class File {
 			list($this->size, $this->chmod, $this->owner, $this->groupOwner, $this->dateCreated, $this->dateModified, $this->fullType) = explode('@', $out[0]);
 			$this->fullType = @finfo_file(finfo_open(FILEINFO_MIME_TYPE), $this->fullName);
 			$this->type();
-			if (\Settings::DISPLAY_CLEAN_FILENAMES) {
+			if (\Settings::DISPLAY_CLEAN_FILENAMES and $this->type == 'Vidéo') {
 				$this->extractNameAndLabels();
 			} else {
 				$this->cleanName = $this->name;
@@ -320,11 +320,13 @@ class File {
 		$search = array(
 			'.mkv'        	=> '',
 			'.mp4'       	=> '',
+			'.avi'			=> '',
 			'x264'        	=> '',
 			'H264'        	=> '',
 			'720p'        	=> 'HD',
 			'1080p'       	=> 'FullHD',
 			'dvdrip'      	=> '',
+			'Divx'			=> '',
 			'h.264'       	=> '',
 			'BluRay'      	=> '',
 			'Blu-Ray'     	=> '',
@@ -337,6 +339,7 @@ class File {
 			'HDLIGHT'     	=> 'LIGHT',
 			'WEB.DL'      	=> '',
 			'WEB-DL'      	=> '',
+			'WEBRIP'		=> '',
 			'PS3'         	=> '',
 			'XBOX360'     	=> '',
 			'V.longue'    	=> '',
@@ -351,12 +354,16 @@ class File {
 			' MULTI '   	=> 'VF',
 			'ac3'       	=> '',
 			'aac'       	=> '',
-			'5.1'       	=> ''
+			'5.1'       	=> '',
+			'6ch'			=> '',
+			'3D'			=> '3D',
+			'side by side'	=> ''
 		);
 		// On vire les éventuels numéros aux débuts des films, mais seulement ceux qui sont suivis immédiatement par un `. `
 		$name = preg_replace('/^(\d+)\. /i', '', $this->name);
 		$name = str_ireplace(array_keys($search), '', $name);
 		$name = str_replace('.', ' ', $name);
+		$name = str_replace(' - ', ' ', $name);
 		$name = str_replace('  ', ' ', $name);
 		// On convertit les chiffres romains en nombres
 		$name = str_replace('III', '3', $name);
@@ -385,11 +392,14 @@ class File {
 			}
 		}
 		foreach ($search as $searched => $foundLabel) {
-			if (!empty($foundLabel) and preg_match('/'.$searched.'/', $this->name))	{
-    			$labels['labels'][] = $foundLabel;
+			if (!empty($foundLabel) and preg_match('/'.$searched.'/i', $this->name)) {
+				$labels['labels'][] = $foundLabel;
   			} 
 		}
-		$this->cleanName = \Sanitize::removeAccents($name);
+		if (in_array('VFF', $labels['labels']) and ($key = array_search('VF', $labels['labels'])) !== false) {
+			unset($labels['labels'][$key]);
+		}
+		$this->cleanName = $name;
 		$this->labels = $labels;
 	}
 
@@ -407,20 +417,25 @@ class File {
 		$this->displayIcon();
 		echo '&nbsp;'.$this->cleanName;
 		if (\Settings::DISPLAY_CLEAN_FILENAMES) {
+			echo '<span class="uk-align-right uk-margin-remove-bottom">';
 			if (!empty($this->labels['labels'])) {
 				foreach ($this->labels['labels'] as $label) {
-					if (in_array($label, array('VF', 'VFF', 'VFI', 'ENG'))) echo '&nbsp;<img src="./img/flags/'.$label.'.svg" width="21px" height="21px" alt="'.$label.'">';
+					if (in_array($label, array('VF', 'VFF', 'VFI', 'ENG'))) echo '&nbsp;<img class="uk-preserve movie-flag" src="./img/flags/'.$label.'.svg" width="24" height="21" alt="'.$label.'" uk-svg>';
 					if ($label == 'HD') {
 						echo '&nbsp;<span class="uk-label uk-label-warning">HD</span>';
 					}
 					if ($label == 'FullHD') {
 						echo '&nbsp;<span class="uk-label uk-label-success">Full HD</span>';
 					}
+					if ($label == '3D') {
+						echo '&nbsp;<span class="uk-label">3D</span>';
+					}
 				}
 			}
 			if (!empty($this->labels['year'])) {
-				echo '&nbsp;<span class="uk-label"><i class="fas fa-calendar-alt"></i> '.$this->labels['year'].'</span>';
+				echo '&nbsp;<span class="uk-label">'.$this->labels['year'].'</span>';
 			}
+			echo '</span>';
 		}
 	}
 

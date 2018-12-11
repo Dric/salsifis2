@@ -10,3 +10,5 @@
 yarn-error.log
 settings/creds.conf
 logs/sessions.log
+classes/FileSystem/File.php
+/test
