@@ -277,9 +277,7 @@ class Files extends Page{
 		// On vire les éventuels numéros aux débuts des films, mais seulement ceux qui sont suivis immédiatement par un `. `
 		$name = preg_replace('/^(\d+)\. /i', '', $fileName);
 		$name = str_ireplace(array_keys($search), '', $name);
-		$name = str_replace('.', ' ', $name);
-		$name = str_replace(' - ', ' ', $name);
-		$name = str_replace('  ', ' ', $name);
+		$name = preg_replace('/(\.|_|\s{2,})/i', ' ', $name);
 		// On convertit les chiffres romains en nombres (mais pas au delà de 3, car `IV` peut ne pas être un chiffre romain dans la chaîne de caractères)
 		$name = str_replace('III', '3', $name);
 		$name = str_replace('II', '2', $name);
@@ -302,10 +300,10 @@ class Files extends Page{
 				$name = trim($matches[1]);
 			}
 			// Et on vire les noms à la noix en fin de torrent
-			$name = trim(preg_replace('/((?>\.|-|~).\S+?)$/i', '', $name), ' -');
+			$name = preg_replace('/((\.|-|~)\S+?)$/i', '', $name);
 		}
 		// On supprime tout ce qui est entre parenthèses ou entre crochets
-		$name = preg_replace('/\[(.*?)\]|\((.*?)\)/i', '', $name);
+		$name = preg_replace('/\[(.*?)\]|\((.*?)\)|(-\s){2,}/i', '', $name);
 		$name = trim($name, '[]() .');
 
 		$name = \Sanitize::removeAccents($name);
