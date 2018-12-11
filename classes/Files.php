@@ -218,15 +218,7 @@ class Files extends Page{
 		exit;
 	}
 
-	/**
-	 * Récupère les informations d'un film ou d'un épisode de série TV auprès de TheMovieDataBase.org
-	 *
-	 * Un filtre est effectué pour nettoyer le nom du fichier et augmenter les chances de récupérer le bon film ou épisode TV.
-	 *
-	 * @param string $fileName Nom du fichier
-	 */
-	protected function getTMDBData($fileName){
-
+	public static function cleanName($fileName) {
 		$search = array(
 			'.mkv'        	=> '',
 			'.mp4'       	=> '',
@@ -245,6 +237,7 @@ class Files extends Page{
 			'BDRip'       	=> '',
 			'HDrip'       	=> '',
 			' HD '        	=> '',
+			'mHDgz'			=> '',
 			'mHD'         	=> '',
 			'HDLIGHT'     	=> 'LIGHT',
 			'WEB.DL'      	=> '',
@@ -254,6 +247,7 @@ class Files extends Page{
 			'XBOX360'     	=> '',
 			'V.longue'    	=> '',
 			'TRUEFRENCH'	=> 'VFF',
+			'TRUEFR'		=> 'VFF',
 			'french'    	=> 'VF',
 			'vff'			=> 'VFF',
 			'vf2'			=> 'VFF',
@@ -263,6 +257,7 @@ class Files extends Page{
 			'vf'        	=> 'VF',
 			'[FR]'			=> 'VF',
 			'-eng'			=> 'ENG',
+			' EN '			=> 'ENG',
 			'subforces' 	=> '',
 			' MULTI '   	=> 'VF',
 			'.MULTI.'		=> 'VF',
@@ -282,6 +277,7 @@ class Files extends Page{
 		$name = str_replace('III', '3', $name);
 		$name = str_replace('II', '2', $name);
 		// Détection d'un épisode de série TV
+		$season = $episode = $year = null;
 		preg_match_all('/\sS(\d{1,2})E(\d{1,2})/im', $name, $matches);
 		if (!empty($matches[0])){
 			$season = intval($matches[1][0]);
@@ -293,9 +289,17 @@ class Files extends Page{
 			$type = 'tv';
 		}else{
 			$type = 'movie';
-			if (preg_match('/^(.+?)(\d{4})/i', $name, $matches)) {
-				$year = $matches[2];
-				$name = trim($matches[1]);
+			// Il est compliqué d'isoler la date vu que certains films en ont dans leur titre. De plus, la date peut être confondue avec la résolution (sur 4 chiffres).
+			// On ne récupère donc que les dates qui n'ont pas de lettre immédiatement derrière
+			if (preg_match('/^(.+?)[^a-z](\d{4})(?>[^@]+?(\d{4}[^a-z])|)/i', $name, $matches)) {
+				// Si le nom du film comporte une année (ex : `Blade Runner 2049`), on regarde si l'année n'est pas spécifiée plus loin
+				if (isset($matches[3])) {
+					$year = $matches[3];
+					$name = trim($matches[1].' '.$matches[2]);
+				} else {
+					$year = $matches[2];
+					$name = trim($matches[1]);
+				}
 			}
 		}
 		// Et on vire les noms à la noix en fin de torrent
@@ -304,11 +308,47 @@ class Files extends Page{
 		$name = preg_replace('/\[(.*?)\]|\((.*?)\)|\s{2,}(.*?)\s{1,}|(-\s){2,}/i', '', $name);
 		$name = trim($name, '[]() .');
 
-		$name = \Sanitize::removeAccents($name);
+		$labels = array();
+		foreach ($search as $searched => $foundLabel) {
+			if (!empty($foundLabel) and preg_match('/'.preg_quote($searched).'/i', $fileName)) {
+				$labels[$foundLabel] = $foundLabel;
+  			} 
+		}
+		if (isset($labels['VFF']) and isset($labels['VF'])) {
+			unset($labels['VF']);
+		}
 
+		return array(
+			'name'		=> $name,
+			'type'		=> $type,
+			'labels'	=> $labels,
+			'year'		=> $year,
+			'season'	=> $season,
+			'episode'	=> $episode
+		);
+	}
+
+	/**
+	 * Récupère les informations d'un film ou d'un épisode de série TV auprès de TheMovieDataBase.org
+	 *
+	 * Un filtre est effectué pour nettoyer le nom du fichier et augmenter les chances de récupérer le bon film ou épisode TV.
+	 *
+	 * @param string $fileName Nom du fichier
+	 */
+	protected function getTMDBData($fileName){
+
+		$fileDetails = $self::cleanName($fileName);
+		//$name = \Sanitize::removeAccents($fileDetails['name']);
+		$name = $fileDetails['name'];
+		$type = $fileDetails['type'];
+		$year = $fileDetails['year'];
+		$season = $fileDetails['season'];
+		$episode = $fileDetails['episode'];
 		
 		//var_dump($name);
 		echo '<!-- name : '.\Get::varDump($name).' -->'."\n";
+		echo '<!-- type : '.\Get::varDump($type).' -->'."\n";
+		echo '<!-- year : '.\Get::varDump($year).' -->'."\n";
 		if ($type =='tv') echo '<!-- saison : '.\Get::varDump($season).' - épisode : '.\Get::varDump($episode).' -->'."\n";
 		/** @var \TMDB\Client $tmdb */
 		$tmdb = \TMDB\Client::getInstance('dfac51ae8cfdf42455ba6b01f392940f');

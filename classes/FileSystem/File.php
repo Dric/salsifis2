@@ -317,90 +317,9 @@ class File {
 	}
 
 	protected function extractNameAndLabels() {
-		$labels = array();
-		$search = array(
-			'.mkv'        	=> '',
-			'.mp4'       	=> '',
-			'.avi'			=> '',
-			'x264'        	=> '',
-			'H264'        	=> '',
-			'720p'        	=> 'HD',
-			'1080p'       	=> 'FullHD',
-			'dvdrip'      	=> '',
-			'Divx'			=> '',
-			'h.264'       	=> '',
-			'BluRay'      	=> '',
-			'Blu-Ray'     	=> '',
-			'XviD'        	=> '',
-			'BRRip'       	=> '',
-			'BDRip'       	=> '',
-			'HDrip'       	=> '',
-			' HD '        	=> '',
-			'mHD'         	=> '',
-			'HDLIGHT'     	=> 'LIGHT',
-			'WEB.DL'      	=> '',
-			'WEB-DL'      	=> '',
-			'WEBRIP'		=> '',
-			'PS3'         	=> '',
-			'XBOX360'     	=> '',
-			'V.longue'    	=> '',
-			'TRUEFRENCH'	=> 'VFF',
-			'french'    	=> 'VF',
-			'vff'			=> 'VFF',
-			'vf2'			=> 'VFF',
-			'vfi'			=> 'VF',
-			'vfq'			=> 'VFQ',
-			'vo'			=> 'ENG',
-			'vf'        	=> 'VF',
-			'[FR]'			=> 'VF',
-			'-eng'			=> 'ENG',
-			'subforces' 	=> '',
-			' MULTI '   	=> 'VF',
-			'.MULTI.'		=> 'VF',
-			'ac3'       	=> '',
-			'aac'       	=> '',
-			'DTS'			=> '',
-			'5.1'       	=> '',
-			'6ch'			=> '',
-			'3D'			=> '3D',
-			'side by side'	=> 'SBS'
-		);
-		// On vire les éventuels numéros aux débuts des films, mais seulement ceux qui sont suivis immédiatement par un `. `
-		$name = preg_replace('/^(\d+)\. /i', '', $this->name);
-		$name = str_ireplace(array_keys($search), '', $name);
-		$name = preg_replace('/(\.|_|\s{2,})/i', ' ', $name);
-		// On convertit les chiffres romains en nombres (mais pas au delà de 3, car `IV` peut ne pas être un chiffre romain dans la chaîne de caractères)
-		$name = str_replace('III', '3', $name);
-		$name = str_replace('II', '2', $name);
-		// Détection d'un épisode de série TV
-		preg_match_all('/\sS(\d{1,2})E(\d{1,2})/im', $name, $matches);
-		if (!empty($matches[0])){
-			$season = intval($matches[1][0]);
-			$episode = intval($matches[2][0]);
-			unset($matches);
-			$name = preg_replace('/\sS(\d{1,2})E(\d{1,2})/i', '', $name);
-			$labels['type'] = 'tv';
-		}else{
-			$labels['type'] = 'movie';
-			if (preg_match('/^(.+?)(\d{4})/i', $name, $matches)) {
-				$labels['year'] = $matches[2];
-				$name = trim($matches[1]);
-			}
-		}
-		// Et on vire les noms à la noix en fin de torrent
-		$name = preg_replace('/\s((\.|-|~)\S+?)$/i', '', $name);
-		// On supprime tout ce qui est entre parenthèses, crochets, espaces multiples
-		$name = preg_replace('/\[(.*?)\]|\((.*?)\)|\s{2,}(.*?)\s{1,}|(-\s){2,}/i', '', $name);
-		$name = trim($name, '[]() .');
-		foreach ($search as $searched => $foundLabel) {
-			if (!empty($foundLabel) and preg_match('/'.preg_quote($searched).'/i', $this->name)) {
-				$labels['labels'][$foundLabel] = $foundLabel;
-  			} 
-		}
-		if (isset($labels['labels']['VFF']) and isset($labels['labels']['VF'])) {
-			unset($labels['labels']['VF']);
-		}
-		$this->cleanName = $name;
+		$fileDetails = \Files::cleanName($this->name);
+		$labels = $fileDetails;
+		$this->cleanName = $fileDetails['name'];
 		$this->labels = $labels;
 	}
 
@@ -442,7 +361,7 @@ class File {
 							echo '&nbsp;<span class="uk-label uk-label-warning" title="720p" uk-tooltip>HD</span>';
 							break;
 						case '3D':
-							echo '&nbsp;<span class="uk-label" '.((isset($this->labels['labels']['SBS'])) ? 'title="Image côte à côte (SBS)" uk-tooltip':'').'>3D</span>';
+							echo '&nbsp;<span class="uk-label uk-label-danger" '.((isset($this->labels['labels']['SBS'])) ? 'title="Image côte à côte (SBS) - Attention : assurez-vous que votre écran gère la 3D" uk-tooltip':'').'>3D</span>';
 							break;
 
 					}
