@@ -294,9 +294,9 @@ class Files extends Page{
 			$name = preg_replace('/\[.*\]/i', '', $name);
 			// Et on vire les noms à la noix en fin de torrent
 			$name = trim(preg_replace('/(-.\S*)$/i', '', $name), ' -');
-			$labels['type'] = 'tv';
+			$type = 'tv';
 		}else{
-			$labels['type'] = 'movie';
+			$type = 'movie';
 			if (preg_match('/^(.+?)(\d{4})/i', $name, $matches)) {
 				$year = $matches[2];
 				$name = trim($matches[1]);
