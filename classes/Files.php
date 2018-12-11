@@ -290,8 +290,6 @@ class Files extends Page{
 			$name = preg_replace('/\sS(\d{1,2})E(\d{1,2})/i', '', $name);
 			// On vire les indications de qualité ou de compatibilité entre crochets
 			$name = preg_replace('/\[.*\]/i', '', $name);
-			// Et on vire les noms à la noix en fin de torrent
-			$name = trim(preg_replace('/(-.\S*)$/i', '', $name), ' -');
 			$type = 'tv';
 		}else{
 			$type = 'movie';
@@ -299,11 +297,11 @@ class Files extends Page{
 				$year = $matches[2];
 				$name = trim($matches[1]);
 			}
-			// Et on vire les noms à la noix en fin de torrent
-			$name = preg_replace('/((\.|-|~)\S+?)$/i', '', $name);
 		}
-		// On supprime tout ce qui est entre parenthèses ou entre crochets
-		$name = preg_replace('/\[(.*?)\]|\((.*?)\)|(-\s){2,}/i', '', $name);
+		// Et on vire les noms à la noix en fin de torrent
+		$name = preg_replace('/\s((\.|-|~)\S+?)$/i', '', $name);
+		// On supprime tout ce qui est entre parenthèses, crochets, espaces multiples
+		$name = preg_replace('/\[(.*?)\]|\((.*?)\)|\s{2,}(.*?)\s{1,}|(-\s){2,}/i', '', $name);
 		$name = trim($name, '[]() .');
 
 		$name = \Sanitize::removeAccents($name);
