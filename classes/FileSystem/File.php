@@ -92,6 +92,7 @@ class File {
 			$this->fullType = @finfo_file(finfo_open(FILEINFO_MIME_TYPE), $this->fullName);
 			$this->type();
 			if (\Settings::DISPLAY_CLEAN_FILENAMES and $this->type == 'Vidéo') {
+			//if (\Settings::DISPLAY_CLEAN_FILENAMES) {
 				$this->extractNameAndLabels();
 			} else {
 				$this->cleanName = $this->name;
@@ -346,18 +347,23 @@ class File {
 			'TRUEFRENCH'	=> 'VFF',
 			'french'    	=> 'VF',
 			'vff'			=> 'VFF',
-			'vf'        	=> 'VF',
-			'vo'			=> 'ENG',
 			'vf2'			=> 'VFF',
+			'vfi'			=> 'VF',
+			'vfq'			=> 'VFQ',
+			'vo'			=> 'ENG',
+			'vf'        	=> 'VF',
+			'[FR]'			=> 'VF',
 			'-eng'			=> 'ENG',
 			'subforces' 	=> '',
 			' MULTI '   	=> 'VF',
+			'.MULTI.'		=> 'VF',
 			'ac3'       	=> '',
 			'aac'       	=> '',
+			'DTS'			=> '',
 			'5.1'       	=> '',
 			'6ch'			=> '',
 			'3D'			=> '3D',
-			'side by side'	=> ''
+			'side by side'	=> 'SBS'
 		);
 		// On vire les éventuels numéros aux débuts des films, mais seulement ceux qui sont suivis immédiatement par un `. `
 		$name = preg_replace('/^(\d+)\. /i', '', $this->name);
@@ -365,7 +371,7 @@ class File {
 		$name = str_replace('.', ' ', $name);
 		$name = str_replace(' - ', ' ', $name);
 		$name = str_replace('  ', ' ', $name);
-		// On convertit les chiffres romains en nombres
+		// On convertit les chiffres romains en nombres (mais pas au delà de 3, car `IV` peut ne pas être un chiffre romain dans la chaîne de caractères)
 		$name = str_replace('III', '3', $name);
 		$name = str_replace('II', '2', $name);
 		// Détection d'un épisode de série TV
@@ -384,20 +390,21 @@ class File {
 			$labels['type'] = 'movie';
 			if (preg_match('/^(.+?)(\d{4})/i', $name, $matches)) {
 				$labels['year'] = $matches[2];
-				$name = trim($matches[1], '[]( .');
-			}else{
-				// Et on vire les noms à la noix en fin de torrent
-				$name = trim(preg_replace('/(-.\S*)$/i', '', $name), ' -');
-				$name = trim($name, '[]( .');
+				$name = trim($matches[1]);
 			}
+			// Et on vire les noms à la noix en fin de torrent
+			$name = trim(preg_replace('/((?>\.|-|~).\S+?)$/i', '', $name), ' -');
 		}
+		// On supprime tout ce qui est entre parenthèses ou entre crochets
+		$name = preg_replace('/\[(.*?)\]|\((.*?)\)/i', '', $name);
+		$name = trim($name, '[]() .');
 		foreach ($search as $searched => $foundLabel) {
-			if (!empty($foundLabel) and preg_match('/'.$searched.'/i', $this->name)) {
-				$labels['labels'][] = $foundLabel;
+			if (!empty($foundLabel) and preg_match('/'.preg_quote($searched).'/i', $this->name)) {
+				$labels['labels'][$foundLabel] = $foundLabel;
   			} 
 		}
-		if (in_array('VFF', $labels['labels']) and ($key = array_search('VF', $labels['labels'])) !== false) {
-			unset($labels['labels'][$key]);
+		if (isset($labels['labels']['VFF']) and isset($labels['labels']['VF'])) {
+			unset($labels['labels']['VF']);
 		}
 		$this->cleanName = $name;
 		$this->labels = $labels;
@@ -420,20 +427,36 @@ class File {
 			echo '<span class="uk-align-right uk-margin-remove-bottom">';
 			if (!empty($this->labels['labels'])) {
 				foreach ($this->labels['labels'] as $label) {
-					if (in_array($label, array('VF', 'VFF', 'VFI', 'ENG'))) echo '&nbsp;<img class="uk-preserve movie-flag" src="./img/flags/'.$label.'.svg" width="24" height="21" alt="'.$label.'" uk-svg>';
-					if ($label == 'HD') {
-						echo '&nbsp;<span class="uk-label uk-label-warning">HD</span>';
+					switch ($label) {
+						case 'VF':
+						case 'VFI':
+							$tooltip = 'Version française internationale (certaines voix peuvent avoir été changées)';
+							break;
+						case 'VFF':
+							$tooltip = 'Version française (TrueFrench)';
+							break;
+						case 'VFQ':
+							$tooltip = 'Version québecquoise';
+							break;
+						case 'ENG':
+							$tooltip = 'Langue anglaise';
+							break;
+						case 'FullHD':
+							echo '&nbsp;<span class="uk-label uk-label-success" title="1080p" uk-tooltip>Full HD</span>';
+							break;
+						case 'HD':
+							echo '&nbsp;<span class="uk-label uk-label-warning" title="720p" uk-tooltip>HD</span>';
+							break;
+						case '3D':
+							echo '&nbsp;<span class="uk-label" '.((isset($this->labels['labels']['SBS'])) ? 'title="Image côte à côte (SBS)" uk-tooltip':'').'>3D</span>';
+							break;
+
 					}
-					if ($label == 'FullHD') {
-						echo '&nbsp;<span class="uk-label uk-label-success">Full HD</span>';
-					}
-					if ($label == '3D') {
-						echo '&nbsp;<span class="uk-label">3D</span>';
-					}
+					if (in_array($label, array('VF', 'VFF', 'VFI', 'ENG'))) echo '&nbsp;<img title="'.$tooltip.'" class="movie-flag" src="./img/flags/'.$label.'.svg"alt="'.$label.'" uk-tooltip>';
 				}
 			}
 			if (!empty($this->labels['year'])) {
-				echo '&nbsp;<span class="uk-label">'.$this->labels['year'].'</span>';
+				echo '&nbsp;<span title="Film sorti au cinéma en '.$this->labels['year'].'" class="uk-label" uk-tooltip>'.$this->labels['year'].'</span>';
 			}
 			echo '</span>';
 		}

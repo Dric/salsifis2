@@ -227,17 +227,16 @@ class Files extends Page{
 	 */
 	protected function getTMDBData($fileName){
 
-		/**
-		 * Nettoie le nom d'un téléchargement
-		 */
-		$replace = array(
+		$search = array(
 			'.mkv'        	=> '',
 			'.mp4'       	=> '',
+			'.avi'			=> '',
 			'x264'        	=> '',
 			'H264'        	=> '',
-			'720p'        	=> '',
-			'1080p'       	=> '',
+			'720p'        	=> 'HD',
+			'1080p'       	=> 'FullHD',
 			'dvdrip'      	=> '',
+			'Divx'			=> '',
 			'h.264'       	=> '',
 			'BluRay'      	=> '',
 			'Blu-Ray'     	=> '',
@@ -247,29 +246,41 @@ class Files extends Page{
 			'HDrip'       	=> '',
 			' HD '        	=> '',
 			'mHD'         	=> '',
-			'HDLIGHT'     	=> '',
+			'HDLIGHT'     	=> 'LIGHT',
 			'WEB.DL'      	=> '',
 			'WEB-DL'      	=> '',
+			'WEBRIP'		=> '',
 			'PS3'         	=> '',
 			'XBOX360'     	=> '',
 			'V.longue'    	=> '',
-			'TRUEFRENCH'	=> '',
-			'french'    	=> '',
-			'vff'			=> '',
-			'vf'        	=> '',
-			'vf2-eng'		=> '',
+			'TRUEFRENCH'	=> 'VFF',
+			'french'    	=> 'VF',
+			'vff'			=> 'VFF',
+			'vf2'			=> 'VFF',
+			'vfi'			=> 'VF',
+			'vfq'			=> 'VFQ',
+			'vo'			=> 'ENG',
+			'vf'        	=> 'VF',
+			'[FR]'			=> 'VF',
+			'-eng'			=> 'ENG',
 			'subforces' 	=> '',
-			' MULTI '   	=> '',
+			' MULTI '   	=> 'VF',
+			'.MULTI.'		=> 'VF',
 			'ac3'       	=> '',
 			'aac'       	=> '',
+			'DTS'			=> '',
 			'5.1'       	=> '',
-			'.'         	=> ' ',
-			'  '        	=> ' '
+			'6ch'			=> '',
+			'3D'			=> '3D',
+			'side by side'	=> 'SBS'
 		);
 		// On vire les éventuels numéros aux débuts des films, mais seulement ceux qui sont suivis immédiatement par un `. `
 		$name = preg_replace('/^(\d+)\. /i', '', $fileName);
-		$name =  str_ireplace(array_keys($replace), array_values($replace), $name);
-		// On convertit les chiffres romains en nombres
+		$name = str_ireplace(array_keys($search), '', $name);
+		$name = str_replace('.', ' ', $name);
+		$name = str_replace(' - ', ' ', $name);
+		$name = str_replace('  ', ' ', $name);
+		// On convertit les chiffres romains en nombres (mais pas au delà de 3, car `IV` peut ne pas être un chiffre romain dans la chaîne de caractères)
 		$name = str_replace('III', '3', $name);
 		$name = str_replace('II', '2', $name);
 		// Détection d'un épisode de série TV
@@ -283,18 +294,20 @@ class Files extends Page{
 			$name = preg_replace('/\[.*\]/i', '', $name);
 			// Et on vire les noms à la noix en fin de torrent
 			$name = trim(preg_replace('/(-.\S*)$/i', '', $name), ' -');
-			$type = 'tv';
+			$labels['type'] = 'tv';
 		}else{
-			$type = 'movie';
+			$labels['type'] = 'movie';
 			if (preg_match('/^(.+?)(\d{4})/i', $name, $matches)) {
-				$name = trim($matches[1], '[]( .');
 				$year = $matches[2];
-			}else{
-				// Et on vire les noms à la noix en fin de torrent
-				$name = trim(preg_replace('/(-.\S*)$/i', '', $name), ' -');
-				$name = trim($name, '[]( .');
+				$name = trim($matches[1]);
 			}
+			// Et on vire les noms à la noix en fin de torrent
+			$name = trim(preg_replace('/((?>\.|-|~).\S+?)$/i', '', $name), ' -');
 		}
+		// On supprime tout ce qui est entre parenthèses ou entre crochets
+		$name = preg_replace('/\[(.*?)\]|\((.*?)\)/i', '', $name);
+		$name = trim($name, '[]() .');
+
 		$name = \Sanitize::removeAccents($name);
 
 		
