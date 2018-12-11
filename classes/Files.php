@@ -337,7 +337,7 @@ class Files extends Page{
 	 */
 	protected function getTMDBData($fileName){
 
-		$fileDetails = $self::cleanName($fileName);
+		$fileDetails = self::cleanName($fileName);
 		//$name = \Sanitize::removeAccents($fileDetails['name']);
 		$name = $fileDetails['name'];
 		$type = $fileDetails['type'];
