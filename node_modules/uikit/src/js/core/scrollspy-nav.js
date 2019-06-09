@@ -1,4 +1,4 @@
-import {$, $$, addClass, closest, filter, height, isInView, offset, removeClass, trigger} from 'uikit-util';
+import {$, $$, addClass, closest, escape, filter, height, isInView, offset, removeClass, trigger} from 'uikit-util';
 
 export default {
 
@@ -24,12 +24,12 @@ export default {
             return $$('a[href^="#"]', $el).filter(el => el.hash);
         },
 
-        elements() {
-            return this.closest ? closest(this.links, this.closest) : this.links;
+        elements({closest: selector}) {
+            return closest(this.links, selector || '*');
         },
 
         targets() {
-            return $$(this.links.map(el => el.hash).join(','));
+            return $$(this.links.map(el => escape(el.hash).substr(1)).join(','));
         }
 
     },
@@ -94,7 +94,7 @@ export default {
 
             },
 
-            events: ['scroll', 'load', 'resize']
+            events: ['scroll', 'resize']
 
         }
 

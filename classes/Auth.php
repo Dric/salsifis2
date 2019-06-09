@@ -102,8 +102,12 @@ class Auth {
 		$loginPwd = $_REQUEST['loginPwd'];
 		$stayConnected = (isset($_REQUEST['stayConnected'])) ? true : false;
 		$creds = Auth::getSavedCreds();
-		if (isset($creds[$loginName]) or isset($creds['@@@_'.$loginName])) {
-			if (password_verify($loginPwd, $creds[$loginName]) or password_verify($loginPwd, $creds['@@@_'.$loginName])){
+		if (isset($creds[$loginName])) {
+			if (password_verify($loginPwd, $creds[$loginName])){
+				self::doLogin($stayConnected, $from, $loginName);
+			}
+		} else if (isset($creds['@@@_'.$loginName])) {
+			if (password_verify($loginPwd, $creds['@@@_'.$loginName])){
 				self::doLogin($stayConnected, $from, $loginName);
 			}
 		}

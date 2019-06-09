@@ -43,6 +43,7 @@ export default {
 
             return {
                 width,
+                fill: this.fill,
                 changed: changed || prev !== width,
                 hide: !this.matchMedia
             };
@@ -54,12 +55,12 @@ export default {
 
             if (data.changed) {
                 data.changed = false;
-                attr(this.wrapper, this.attrFill, new Array(data.width).join(this.fill));
+                attr(this.wrapper, this.attrFill, new Array(data.width).join(data.fill));
             }
 
         },
 
-        events: ['load', 'resize']
+        events: ['resize']
 
     }
 

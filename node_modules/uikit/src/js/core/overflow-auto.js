@@ -7,12 +7,12 @@ export default {
 
     props: {
         selContainer: String,
-        selContent: String,
+        selContent: String
     },
 
     data: {
         selContainer: '.uk-modal',
-        selContent: '.uk-modal-dialog',
+        selContent: '.uk-modal-dialog'
     },
 
     computed: {
@@ -52,7 +52,7 @@ export default {
             }
         },
 
-        events: ['load', 'resize']
+        events: ['resize']
 
     }
 
