@@ -8,7 +8,7 @@
     "private": true,
     "dependencies": {
         "@fortawesome/fontawesome-free": "^5.9.0",
-        "datatables.net": "^1.10.19",
+        "datatables.net": "^1.10.22",
         "uikit": "^3.1.5"
     }
 }
